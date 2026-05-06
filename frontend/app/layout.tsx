@@ -15,30 +15,32 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: `${brandConfig.name} | E-commerce Deportivo`,
+  title: {
+    default: `${brandConfig.name} | Premium E-commerce`,
+    template: `%s | ${brandConfig.name}`
+  },
   description: brandConfig.seo.description,
   keywords: brandConfig.seo.keywords,
   generator: "Next.js",
-  metadataBase: new URL("https://yenfit.shop"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"),
 
   icons: {
     icon: [
-      { url: "/ico/9yj.ico", media: "(prefers-color-scheme: light)" },
-      { url: "/ico/4yj.ico", media: "(prefers-color-scheme: dark)" }
+      { url: "/favicon.ico" }
     ]
   },
 
   openGraph: {
-    title: `${brandConfig.name} | E-commerce Deportivo`,
+    title: `${brandConfig.name} | Premium E-commerce`,
     description: brandConfig.seo.description,
     type: "website",
     locale: "es_ES",
-    url: "https://yenfit.shop"
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"
   },
 
   twitter: {
     card: "summary_large_image",
-    title: `${brandConfig.name} | E-commerce Deportivo`,
+    title: `${brandConfig.name} | Premium E-commerce`,
     description: brandConfig.seo.description,
   }
 }

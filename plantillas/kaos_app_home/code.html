@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KAOS Urban Athletics - Homepage</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "error-container": "#93000a",
+                "tertiary": "#ffffff",
+                "on-primary-fixed-variant": "#454747",
+                "surface-container": "#201f1f",
+                "on-secondary": "#30302f",
+                "on-secondary-fixed": "#1b1c1b",
+                "on-primary": "#2f3131",
+                "on-tertiary-container": "#686362",
+                "surface-variant": "#353534",
+                "primary": "#ffffff",
+                "surface-container-high": "#2a2a2a",
+                "surface-container-low": "#1c1b1b",
+                "secondary-fixed": "#e4e2e0",
+                "inverse-surface": "#e5e2e1",
+                "on-surface-variant": "#c4c7c8",
+                "tertiary-fixed-dim": "#ccc5c4",
+                "surface-tint": "#c6c6c6",
+                "on-primary-container": "#636565",
+                "primary-container": "#e2e2e2",
+                "on-secondary-container": "#b6b5b3",
+                "primary-fixed-dim": "#c6c6c6",
+                "inverse-on-surface": "#313030",
+                "on-background": "#e5e2e1",
+                "on-tertiary": "#33302f",
+                "on-secondary-fixed-variant": "#474745",
+                "error": "#ffb4ab",
+                "on-surface": "#e5e2e1",
+                "primary-fixed": "#e2e2e2",
+                "surface": "#131313",
+                "surface-container-lowest": "#0e0e0e",
+                "on-error-container": "#ffdad6",
+                "tertiary-fixed": "#e8e1df",
+                "secondary-container": "#474745",
+                "surface-bright": "#393939",
+                "surface-container-highest": "#353534",
+                "on-tertiary-fixed-variant": "#4a4645",
+                "tertiary-container": "#e8e1df",
+                "on-tertiary-fixed": "#1e1b1a",
+                "on-error": "#690005",
+                "secondary-fixed-dim": "#c8c6c4",
+                "outline": "#8e9192",
+                "surface-dim": "#131313",
+                "secondary": "#c8c6c4",
+                "outline-variant": "#444748",
+                "inverse-primary": "#5d5f5f",
+                "on-primary-fixed": "#1a1c1c",
+                "background": "#131313"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "gutter": "16px",
+                "xxl": "80px",
+                "md": "16px",
+                "lg": "24px",
+                "sm": "8px",
+                "xl": "48px",
+                "margin": "24px",
+                "unit": "4px",
+                "xs": "4px"
+        },
+        "fontFamily": {
+                "body-lg": [
+                        "Space Grotesk"
+                ],
+                "mono-data": [
+                        "Space Grotesk"
+                ],
+                "h3": [
+                        "Space Grotesk"
+                ],
+                "h2": [
+                        "Space Grotesk"
+                ],
+                "display": [
+                        "Space Grotesk"
+                ],
+                "label-caps": [
+                        "Space Grotesk"
+                ],
+                "h1": [
+                        "Space Grotesk"
+                ],
+                "body-md": [
+                        "Space Grotesk"
+                ]
+        },
+        "fontSize": {
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "1.6",
+                                "letterSpacing": "0em",
+                                "fontWeight": "400"
+                        }
+                ],
+                "mono-data": [
+                        "14px",
+                        {
+                                "lineHeight": "1",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "500"
+                        }
+                ],
+                "h3": [
+                        "24px",
+                        {
+                                "lineHeight": "1.3",
+                                "letterSpacing": "0em",
+                                "fontWeight": "500"
+                        }
+                ],
+                "h2": [
+                        "32px",
+                        {
+                                "lineHeight": "1.2",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "display": [
+                        "72px",
+                        {
+                                "lineHeight": "1.1",
+                                "letterSpacing": "-0.04em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "label-caps": [
+                        "12px",
+                        {
+                                "lineHeight": "1",
+                                "letterSpacing": "0.15em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "h1": [
+                        "48px",
+                        {
+                                "lineHeight": "1.2",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "1.6",
+                                "letterSpacing": "0em",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-[90px] font-body-md">
+<!-- Top Action Bar (Mobile Specific) -->
+<header class="sticky top-0 z-40 bg-surface/80 backdrop-blur-xl px-gutter py-4 border-b border-outline-variant/20 flex items-center justify-between">
+<h1 class="font-h3 text-h3 font-bold text-primary uppercase">KAOS</h1>
+<div class="flex gap-4">
+<button class="text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</button>
+</div>
+</header>
+<main class="flex flex-col gap-8 pt-6">
+<!-- Story-style Category Shortcuts -->
+<section class="w-full px-gutter">
+<div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+<!-- Drop -->
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-16 h-16 rounded-full bg-surface-container-high border-2 border-primary p-0.5 flex items-center justify-center">
+<img alt="New Drops Category" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0uiuxaqwt-Al9Y8TOwfa6Y5KJNgqpUm2UxubKnTmadCFlAvcauIY6NlPbDspiuLgg-qE69dqL0ZVJfSkz23ZO0GxvX3BX9Q39UTB5IAdnIWJLxXS2qAQ_bC6SnJvtuX0W46Y11g_pDBMVxfqIIOvtgvPVMSRLVFL0wqH-VtpD1_Nm0FeZIWEQjMH0XHCh71E9PM0EO_KrNiwQUZ4LNhuaOiSTBMhOt9r0yNWzJBU24MbwZ4Qv7dhuJwJqAkb15-6zgepaR8Hkc4a64U"/>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-center w-full truncate">Drops</span>
+</div>
+<!-- Men -->
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-16 h-16 rounded-full bg-surface-container-high border-2 border-outline-variant/30 p-0.5 flex items-center justify-center">
+<div class="w-full h-full rounded-full bg-surface-variant flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A close-up fashion portrait of a male model wearing technical urban streetwear. The lighting is moody and dramatic, with a focus on textures and sharp angles. The aesthetic is high-contrast, blending dark urban core with subtle, intense neon highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM4IdyM0Zczo4cC34RHKF3dLfJf1hNoyTAp1wQHmZE9H-p5lsqZ7HhbUnRLwx00E_Z_i2Q6lkvDtzIk5mOwQCIMDTSN5GuY1wrehtzAaFGi94pAjWS3sFKvuSUwxpbqhjb07_O3CeHWpPR4DINDl5mgtgpgYBJW6BD6NYWtaMP8BZAY5cJQCHut6ZdfJBFxp3rv5hRFZmlgPz9UN5kO_o06NxCRqXV3wKi69ddtxa7evSRgf69LU7ZQ6ctBhbLTM0FVHhLt66ZwAGJ"/>
+</div>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-center w-full truncate">Men</span>
+</div>
+<!-- Women -->
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-16 h-16 rounded-full bg-surface-container-high border-2 border-outline-variant/30 p-0.5 flex items-center justify-center">
+<div class="w-full h-full rounded-full bg-surface-variant flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A dynamic action shot of a female athlete in high-performance urban gear. The scene is lit with striking, harsh directional light against a deep black background, emphasizing power and movement. The color palette revolves around sleek dark tones with bright white accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUCSORX9X63ey4lr7f4QOUT54cQz0BAtfwfe6GS3hKoieY89gVV0q2nF-cVeC_0v0vSX0QBEq6Nc-jPwVsGWfsmLQhfm6-lBkXVW8bHie35E2Aw6NeVXHWgQ_9yHY5jEeGUnGqt0kv6MIUw3TGDBMYRwlYdoXOn1JueBYghYRpKv65JhEaxlm5A6cU-PqXXDZORtF2OWyCdmpjgsCHqH9lTPeDi06-cEyICrb3KApLoQCDK0-3l6tjzel3Zt_DiMC6_mwgXGuQbBGY"/>
+</div>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-center w-full truncate">Women</span>
+</div>
+<!-- Collabs -->
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-16 h-16 rounded-full bg-surface-container-high border-2 border-outline-variant/30 p-0.5 flex items-center justify-center">
+<div class="w-full h-full rounded-full bg-surface-variant flex items-center justify-center overflow-hidden bg-surface-container-lowest">
+<span class="material-symbols-outlined text-primary" data-icon="handshake">handshake</span>
+</div>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-center w-full truncate">Collabs</span>
+</div>
+<!-- Accessories -->
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-16 h-16 rounded-full bg-surface-container-high border-2 border-outline-variant/30 p-0.5 flex items-center justify-center">
+<div class="w-full h-full rounded-full bg-surface-variant flex items-center justify-center overflow-hidden bg-surface-container-lowest">
+<span class="material-symbols-outlined text-primary" data-icon="backpack">backpack</span>
+</div>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase text-center w-full truncate">Gear</span>
+</div>
+</div>
+</section>
+<!-- Hero Section -->
+<section class="px-gutter w-full">
+<div class="relative w-full aspect-[4/5] bg-surface-container-high rounded-[0px] overflow-hidden">
+<img alt="Latest Collection" class="w-full h-full object-cover opacity-80" data-alt="A dramatic full-body shot of a model wearing minimalist, tactical urban streetwear in a stark concrete environment. High contrast monochrome lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzPJ9J6Wmp9bKHYbRvjK00ro7WzbpHQ1QgIaX7RNe_kOjAFgMbNEeGfjql6Y0fEDphalt4_irin6SV_sRi9F0uZtoSvjq_c1FlUAd9msj86HRO03fZKBbxlIhA9QrVUROU5Fh7U6rToT4zJ4G9EYkBauMnNFzuoHI4nWFEjK8pZiTup9LTF4R6t5wd18NF96sRna4xojNdgAkGRT4HNnq9Tj5g6fxQinve7UBYCoTookUS21Vd8xAlQGgnHBm7vDxLMHB-6YdL0qrM"/>
+<!-- Overlay Gradient -->
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6 flex flex-col gap-4">
+<span class="self-start px-3 py-1 bg-primary text-on-primary rounded-full font-label-caps text-label-caps uppercase">Edition 04</span>
+<h2 class="font-h1 text-h1 text-on-background uppercase leading-tight">Urban<br/>Tactical</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[80%]">Engineered for the concrete jungle. High-visibility meets zero-resistance.</p>
+<button class="self-start mt-2 px-6 py-3 bg-primary text-on-primary rounded-full font-label-caps text-label-caps uppercase hover:bg-primary-fixed transition-colors">
+                        Shop Collection
+                    </button>
+</div>
+</div>
+</section>
+<!-- Product Carousel -->
+<section class="w-full flex flex-col gap-4 pt-8">
+<div class="px-gutter flex justify-between items-end">
+<h3 class="font-h3 text-h3 text-on-background uppercase">New Arrivals</h3>
+<a class="font-label-caps text-label-caps text-primary uppercase hover:underline" href="#">View All</a>
+</div>
+<div class="flex gap-4 overflow-x-auto px-gutter pb-4 no-scrollbar">
+<!-- Product Card 1 -->
+<div class="min-w-[240px] flex flex-col gap-3 group">
+<div class="w-full aspect-[3/4] bg-surface-container-high rounded-[0px] overflow-hidden relative">
+<img alt="Product Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A high-end product shot of a sleek, black urban sneaker on a dark minimalist surface. Dramatic lighting highlighting the textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBL1_DJ_OIimZDF6oyJIflyU0mavd0a4tjZa1iA1U4sLJE36oHzy96WmhUDO46wtokkNJYNYYxPOMvOMnmLPtj8ncjU5Wj-GMSK2Z8N6TG654U1xZ3inDME_7nGYwNPO0RwM6_rfoQ-J9kFHwtIYpLkuA929f_Fgk0B8FB49OSYP0sePZNE9JwCf0zbr9_yzQVs4jLvTf1lOlDoL-Zcq0XJAB5JA7zvBZ9ilN7GdizDdURaWtzM-LH98C7aKafOBXmO7ZsyH4XrI-c0"/>
+<button class="absolute bottom-3 left-3 right-3 bg-surface/80 backdrop-blur-md text-on-surface border border-white/10 rounded-full py-2 font-label-caps text-label-caps uppercase opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span> Quick Add
+                         </button>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Footwear</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold truncate">KAOS Velocity Pro</span>
+<span class="font-body-md text-body-md text-primary">$185</span>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="min-w-[240px] flex flex-col gap-3 group">
+<div class="w-full aspect-[3/4] bg-surface-container-high rounded-[0px] overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A product shot of a sleek, black urban hoodie hanging against a raw concrete wall. The lighting is focused, casting sharp, structural shadows that highlight the technical fabric details. The overall mood is industrial, premium, and intensely dark." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTglLUQe-Oat7NQGDHSFZQUTDn-jGuVM7B4TTVq3_Y04aYo_YnLAVNwYvvaR7ZbP_c8nhb-LSBntg9hCYQlAo3XZNFo1zAUXFKivOBTSJMJfJ6ZEl7nLv90IFaiFZpsP3mSTOFPuHwzVfGmjRwO0lxMNj2q5qq_DKC5sTHqaM2SW1HZ-fIKcuIeSJ13O4uByMoY2FdDIDhvYhLKHZO4EUJKR0vk3zFCjrG4B4F-BeGUxr1E2JhqOJynsqVN_s3_zqAUklBVc7KxC6S"/>
+<button class="absolute bottom-3 left-3 right-3 bg-surface/80 backdrop-blur-md text-on-surface border border-white/10 rounded-full py-2 font-label-caps text-label-caps uppercase opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span> Quick Add
+                         </button>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Apparel</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold truncate">Stealth Hoodie V2</span>
+<span class="font-body-md text-body-md text-primary">$120</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Generated from JSON structure) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container/90 backdrop-blur-2xl rounded-t-xl shadow-lg border-t border-outline-variant/20 z-50">
+<!-- Active: Home -->
+<a class="flex flex-col items-center justify-center bg-primary text-on-primary rounded-full p-2 mb-1 active:scale-90 transition-transform duration-150 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="home" data-weight="fill" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-caps text-label-caps mt-1 text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary transition-transform active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-label-caps text-label-caps mt-1 text-[10px]">Shop</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary transition-transform active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
+<span class="font-label-caps text-label-caps mt-1 text-[10px]">Loyalty</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary transition-transform active:scale-90 duration-150 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps mt-1 text-[10px]">Profile</span>
+</a>
+</nav>
+</body></html>

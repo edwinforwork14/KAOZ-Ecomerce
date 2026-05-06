@@ -496,7 +496,7 @@ export default function FeaturedProducts({
 
     await addItem(
       {
-        id: product._id,
+        id: product.id || product._id,
         name: product.name,
         price: product.price,
         originalPrice:
@@ -1106,7 +1106,7 @@ export default function FeaturedProducts({
 
                     return (
                       <div
-                        key={product._id}
+                        key={product.id || product._id}
                         // Animación staggered (uno por uno)
                         className="group cursor-pointer animate-in fade-in zoom-in-95 duration-500 fill-mode-both"
                         style={{
@@ -1119,9 +1119,7 @@ export default function FeaturedProducts({
                         <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-2 md:mb-3 lg:mb-4 rounded-xl md:rounded-2xl shadow-sm md:shadow-md hover:shadow-lg md:hover:shadow-2xl transition-all duration-500">
                           <img
                             src={
-                              product.images?.[0]?.url
-                                ? `https://yenfit.shop${product.images[0].url}`
-                                : "/placeholder.svg"
+                              product.images?.[0]?.url || "/placeholder.svg"
                             }
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"

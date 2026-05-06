@@ -585,11 +585,11 @@ export default function ProductsPage() {
               >
                 <div className="relative aspect-square bg-gray-100 overflow-hidden">
                   {firstImage?.url ? (
-                    <img
-                      src={`https://yenfit.shop${firstImage.url}`}
-                      alt={firstImage?.alt || product?.name || "Producto"}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
+                      <img
+                        src={firstImage.url || "/placeholder.svg"}
+                        alt={firstImage?.alt || product?.name || "Producto"}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100">
                       <ImageIcon className="h-16 w-16 text-gray-300" />
@@ -642,7 +642,7 @@ export default function ProductsPage() {
                       <Edit className="h-4 w-4 mr-1" />
                       Editar
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product._id)}>
+                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id || product._id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -709,7 +709,7 @@ export default function ProductsPage() {
                     <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                       {firstImage?.url ? (
                         <img
-                          src={`https://yenfit.shop${firstImage.url}`}
+                          src={firstImage.url}
                           alt={firstImage?.alt || product?.name || "Producto"}
                           className="w-full h-full object-cover"
                         />
@@ -779,7 +779,7 @@ export default function ProductsPage() {
                             <Edit className="h-4 w-4 mr-1" />
                             Editar
                           </Button>
-                          <Button size="sm" variant="destructive" onClick={() => handleDelete(product._id)}>
+                          <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id || product._id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>

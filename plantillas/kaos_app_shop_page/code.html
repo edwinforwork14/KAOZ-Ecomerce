@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KAOS Urban Athletics - Tienda</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed": "#1b1c1b",
+                        "on-background": "#e5e2e1",
+                        "surface-container-highest": "#353534",
+                        "inverse-on-surface": "#313030",
+                        "error-container": "#93000a",
+                        "outline": "#8e9192",
+                        "on-tertiary-fixed-variant": "#4a4645",
+                        "surface-dim": "#131313",
+                        "surface-container-high": "#2a2a2a",
+                        "inverse-surface": "#e5e2e1",
+                        "on-tertiary-fixed": "#1e1b1a",
+                        "error": "#ffb4ab",
+                        "on-tertiary-container": "#686362",
+                        "secondary-fixed-dim": "#c8c6c4",
+                        "surface-bright": "#393939",
+                        "primary-fixed": "#e2e2e2",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-secondary": "#30302f",
+                        "on-secondary-fixed-variant": "#474745",
+                        "surface": "#131313",
+                        "background": "#131313",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "primary": "#ffffff",
+                        "tertiary": "#ffffff",
+                        "on-surface-variant": "#c4c7c8",
+                        "surface-tint": "#c6c6c6",
+                        "inverse-primary": "#5d5f5f",
+                        "on-secondary-container": "#b6b5b3",
+                        "on-error-container": "#ffdad6",
+                        "secondary": "#c8c6c4",
+                        "on-primary": "#2f3131",
+                        "on-tertiary": "#33302f",
+                        "tertiary-fixed": "#e8e1df",
+                        "tertiary-container": "#e8e1df",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#e4e2e0",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-primary-fixed-variant": "#454747",
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container": "#201f1f",
+                        "primary-container": "#e2e2e2",
+                        "secondary-container": "#474745",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-container": "#636565",
+                        "surface-variant": "#353534",
+                        "tertiary-fixed-dim": "#ccc5c4",
+                        "outline-variant": "#444748"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "md": "16px",
+                        "xs": "4px",
+                        "unit": "4px",
+                        "sm": "8px",
+                        "margin": "24px",
+                        "gutter": "16px",
+                        "xl": "48px",
+                        "lg": "24px",
+                        "xxl": "80px"
+                    },
+                    fontFamily: {
+                        "label-caps": ["Space Grotesk"],
+                        "body-lg": ["Space Grotesk"],
+                        "h2": ["Space Grotesk"],
+                        "mono-data": ["Space Grotesk"],
+                        "h3": ["Space Grotesk"],
+                        "h1": ["Space Grotesk"],
+                        "display": ["Space Grotesk"],
+                        "body-md": ["Space Grotesk"]
+                    },
+                    fontSize: {
+                        "label-caps": ["12px", { lineHeight: "1", letterSpacing: "0.15em", fontWeight: "700" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", letterSpacing: "0em", fontWeight: "400" }],
+                        "h2": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "mono-data": ["14px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "h3": ["24px", { lineHeight: "1.3", letterSpacing: "0em", fontWeight: "500" }],
+                        "h1": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "display": ["72px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "700" }],
+                        "body-md": ["16px", { lineHeight: "1.6", letterSpacing: "0em", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col pb-xxl">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-background w-full top-0 sticky border-b border-surface-container-highest z-50 flex justify-between items-center px-margin h-16">
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-h1 text-h1 tracking-tighter text-primary dark:text-primary">KAOS</h1>
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col md:hidden">
+<!-- Search & Filter Section -->
+<section class="px-margin py-lg flex flex-col gap-md">
+<div class="relative w-full border border-outline-variant bg-surface-container-low flex items-center px-md py-sm">
+<span class="material-symbols-outlined text-on-surface-variant mr-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none text-on-surface focus:ring-0 w-full font-label-caps text-label-caps placeholder:text-on-surface-variant" placeholder="BUSCAR EQUIPAMIENTO..." type="text"/>
+</div>
+<div class="flex gap-sm overflow-x-auto pb-sm snap-x">
+<button class="snap-start shrink-0 px-md py-xs bg-surface-variant border border-surface-container-highest text-on-surface font-label-caps text-label-caps whitespace-nowrap active:scale-95 transition-transform">TODO</button>
+<button class="snap-start shrink-0 px-md py-xs bg-transparent border border-outline-variant text-on-surface-variant font-label-caps text-label-caps whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-transform">PRENDAS EXTERIORES</button>
+<button class="snap-start shrink-0 px-md py-xs bg-transparent border border-outline-variant text-on-surface-variant font-label-caps text-label-caps whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-transform">PANTALONES</button>
+<button class="snap-start shrink-0 px-md py-xs bg-transparent border border-outline-variant text-on-surface-variant font-label-caps text-label-caps whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-transform">ACCESORIOS</button>
+</div>
+<div class="flex justify-between items-center border-t border-b border-surface-container-highest py-sm mt-xs">
+<span class="font-mono-data text-mono-data text-on-surface-variant">12 RESULTADOS</span>
+<button class="flex items-center gap-xs text-on-surface font-label-caps text-label-caps">
+                    FILTRAR <span class="material-symbols-outlined text-sm" data-icon="tune">tune</span>
+</button>
+</div>
+</section>
+<!-- Product Grid -->
+<section class="px-margin pb-xl grid grid-cols-2 gap-gutter">
+<!-- Product Card 1 -->
+<article class="bg-surface-container-low border border-surface-container-highest flex flex-col group">
+<div class="relative aspect-[4/5] bg-surface-container w-full overflow-hidden border-b border-surface-container-highest">
+<img alt="KAOS Urban Anorak" class="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" src="https://lh3.googleusercontent.com/aida/ADBb0uh-XHDCpKZkA7zkC5ji5aocFVMIJq7rPH7l4jyngIMTiduRulJ1lxlqpiNGILbCJrm0evCbndsVP8f0tw1Fs9XG1cwAg_9bPj1LkH-GaydfTNDx8tEEGwpTycWrwbjSLGjv_SRDBLYCIEMpuNJYfFJKGc0jpswzX4GGMiL92wKbcyPHqSo244CwyehbLuS5zVnQHF_6SP6K3sQKu-nuz7p7RtSI3XPN6nsPmknvHcKjyFdC3HTfbL5qhGz4WIhQj0-LCG6Y_cd0Efg"/>
+<div class="absolute top-sm right-sm bg-surface border border-outline-variant px-xs py-unit">
+<span class="font-label-caps text-label-caps text-on-surface">NUEVO</span>
+</div>
+</div>
+<div class="p-sm flex flex-col gap-xs flex-grow justify-between">
+<div>
+<h3 class="font-body-md text-body-md text-on-surface font-semibold uppercase">Anorak Urbano</h3>
+<p class="font-mono-data text-mono-data text-on-surface-variant">RESISTENCIA CLIMÁTICA</p>
+</div>
+<div class="flex justify-between items-end mt-sm">
+<span class="font-mono-data text-mono-data text-on-surface">€240</span>
+<button class="text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="bg-surface-container-low border border-surface-container-highest flex flex-col group">
+<div class="relative aspect-[4/5] bg-surface-container w-full overflow-hidden border-b border-surface-container-highest">
+<img alt="Reflect Joggers" class="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" src="https://lh3.googleusercontent.com/aida/ADBb0uiuxaqwt-Al9Y8TOwfa6Y5KJNgqpUm2UxubKnTmadCFlAvcauIY6NlPbDspiuLgg-qE69dqL0ZVJfSkz23ZO0GxvX3BX9Q39UTB5IAdnIWJLxXS2qAQ_bC6SnJvtuX0W46Y11g_pDBMVxfqIIOvtgvPVMSRLVFL0wqH-VtpD1_Nm0FeZIWEQjMH0XHCh71E9PM0EO_KrNiwQUZ4LNhuaOiSTBMhOt9r0yNWzJBU24MbwZ4Qv7dhuJwJqAkb15-6zgepaR8Hkc4a64U"/>
+</div>
+<div class="p-sm flex flex-col gap-xs flex-grow justify-between">
+<div>
+<h3 class="font-body-md text-body-md text-on-surface font-semibold uppercase">Joggers Reflectantes</h3>
+<p class="font-mono-data text-mono-data text-on-surface-variant">ALTA VISIBILIDAD</p>
+</div>
+<div class="flex justify-between items-end mt-sm">
+<span class="font-mono-data text-mono-data text-on-surface">€180</span>
+<button class="text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 3 -->
+<article class="bg-surface-container-low border border-surface-container-highest flex flex-col group">
+<div class="relative aspect-[4/5] bg-surface-container w-full overflow-hidden border-b border-surface-container-highest">
+<img alt="Tech Hoodie" class="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" src="https://lh3.googleusercontent.com/aida/ADBb0ug5BAeajkK4GeZ5gzDljk6DhCOsSQHL8DwdAWlY3RAoKFR2kgasAUiMoIn4SeLYrlF8Ynm_IV4yJ8AUe0nNFYIMO6hnvbjeBr7J6dDxI0hIIOMFjOI80XBnBZ2I9eaa4pYEGkN2Y817WRnwcdBgLP11RfBrEM2jciVBK9geoJGkaAvuely_hDU3VvY1IvnoNoO2yROV6YKBQMPXuSuJVfcLmPnJ1LJVKVIpSdSjclped_oBQ95UkFzJyDnaS3LjQadw2QPfvXGoTA"/>
+</div>
+<div class="p-sm flex flex-col gap-xs flex-grow justify-between">
+<div>
+<h3 class="font-body-md text-body-md text-on-surface font-semibold uppercase">Sudadera Técnica</h3>
+<p class="font-mono-data text-mono-data text-on-surface-variant">AISLAMIENTO TÉRMICO</p>
+</div>
+<div class="flex justify-between items-end mt-sm">
+<span class="font-mono-data text-mono-data text-on-surface">€150</span>
+<button class="text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 4 -->
+<article class="bg-surface-container-low border border-surface-container-highest flex flex-col group">
+<div class="relative aspect-[4/5] bg-surface-container w-full overflow-hidden border-b border-surface-container-highest">
+<img alt="Cargo Vest" class="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0" src="https://lh3.googleusercontent.com/aida/ADBb0ui9TC087Rf9jZdCTrQs8-yqrOH-jqjcdP9bQNJZoL2K05Gw5fMBmIyIPfI6F2J_RenYC2-6R7WGNmqUL0D2OZv5l4eN-sPnZPvfQYXNi25zTYbad0rOaEtFn7Pe0pfLl-l33p8mUgwMi1f-HqMEkHHAwDbYf6Sqfi1L0HY7CenbGVI0HbIGv7J6dmF87zLMcTdBDkORNprvl9tGQ0EYrWEN3d_maP4qesbR-cUQofK1IcfiOJ1857eByZczO9CttmnapA58l7JW3qM"/>
+</div>
+<div class="p-sm flex flex-col gap-xs flex-grow justify-between">
+<div>
+<h3 class="font-body-md text-body-md text-on-surface font-semibold uppercase">Chaleco Cargo</h3>
+<p class="font-mono-data text-mono-data text-on-surface-variant">MODULAR</p>
+</div>
+<div class="flex justify-between items-end mt-sm">
+<span class="font-mono-data text-mono-data text-on-surface">€210</span>
+<button class="text-on-surface hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</button>
+</div>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-background dark:bg-background fixed bottom-0 left-0 w-full flex justify-around items-center px-margin py-sm z-50 md:hidden border-t border-surface-container-highest">
+<a class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-2 active:scale-90 transition-transform duration-150 w-1/4" href="#">
+<span class="material-symbols-outlined mb-xs" data-icon="storefront" style="font-variation-settings: 'FILL' 1;">storefront</span>
+<span class="font-label-caps text-label-caps">SHOP</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 hover:text-primary transition-colors active:scale-90 transition-transform duration-150 w-1/4" href="#">
+<span class="material-symbols-outlined mb-xs" data-icon="search">search</span>
+<span class="font-label-caps text-label-caps">SEARCH</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 hover:text-primary transition-colors active:scale-90 transition-transform duration-150 w-1/4" href="#">
+<span class="material-symbols-outlined mb-xs" data-icon="bookmark">bookmark</span>
+<span class="font-label-caps text-label-caps">SAVED</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 hover:text-primary transition-colors active:scale-90 transition-transform duration-150 w-1/4" href="#">
+<span class="material-symbols-outlined mb-xs" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps">ACCOUNT</span>
+</a>
+</nav>
+<!-- Desktop Fallback Message (Hidden on Mobile) -->
+<div class="hidden md:flex h-screen w-full items-center justify-center bg-background text-on-background">
+<div class="text-center flex flex-col items-center gap-md">
+<h1 class="font-h1 text-h1 tracking-tighter">KAOS</h1>
+<p class="font-mono-data text-mono-data">VISTA MÓVIL REQUERIDA PARA ESTE PROTOTIPO</p>
+</div>
+</div>
+</body></html>

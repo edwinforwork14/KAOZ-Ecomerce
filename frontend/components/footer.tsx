@@ -1,116 +1,98 @@
 "use client"
 
-import Image from "next/image"
-import { Instagram, Mail, Phone } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { brandConfig } from "@/lib/config"
+import { Instagram, Facebook, Twitter, Youtube, Mail, Phone, MapPin, ExternalLink } from "lucide-react"
+import Link from "next/link"
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear()
+
+  // Helper para asegurar que el href sea válido
+  const getSocialHref = (key: keyof typeof brandConfig.social) => {
+    const username = brandConfig.social[key]
+    if (!username) return "#"
+    
+    switch (key) {
+      case 'instagram': return `https://instagram.com/${username}`
+      case 'facebook': return `https://facebook.com/${username}`
+      case 'twitter': return `https://twitter.com/${username}`
+      default: return "#"
+    }
+  }
+
   return (
-    <footer className="bg-gradient-to-br from-gray-900 to-black text-white">
-      {/* Main */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="max-w-4xl">
-          {/* Brand + Instagram (Izquierda) */}
-          <div className="space-y-6 mb-12">
-            <div className="relative w-[180px] h-[56px]">
-              <Image
-                src="/logo/3yj.png"
-                alt={brandConfig.name}
-                fill
-                priority
-                className="object-contain"
-              />
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-300 hover:text-white hover:bg-gray-900 p-2 rounded-xl"
-                onClick={() => window.open(brandConfig.social.instagram, "_blank")}
-                aria-label="Instagram"
-              >
-                <Instagram className="h-5 w-5" />
-              </Button>
-
-              <a
-                href={brandConfig.social.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-gray-400 hover:text-white transition-colors"
-              >
-                Síguenos en Instagram
-              </a>
+    <footer className="bg-primary text-primary-foreground">
+      <div className="container mx-auto px-4 md:px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          {/* Brand Identity */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold tracking-tighter">{brandConfig.name.toUpperCase()}</h3>
+            <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-xs">
+              {brandConfig.tagline}. {brandConfig.description}
+            </p>
+            <div className="flex items-center gap-4">
+              <Link href={getSocialHref('instagram')} target="_blank" className="hover:text-accent transition-colors"><Instagram className="w-5 h-5" /></Link>
+              <Link href={getSocialHref('facebook')} target="_blank" className="hover:text-accent transition-colors"><Facebook className="w-5 h-5" /></Link>
+              <Link href={getSocialHref('twitter')} target="_blank" className="hover:text-accent transition-colors"><Twitter className="w-5 h-5" /></Link>
             </div>
           </div>
 
-          {/* CONTACTO (Izquierda, max-width para que no se estire mucho) */}
-          <div className="space-y-4 max-w-2xl">
-            <h4 className="text-sm font-black uppercase tracking-wider text-white">
-              CONTACTO
-            </h4>
+          {/* Quick Links */}
+          <div className="space-y-6">
+            <h4 className="text-sm font-bold uppercase tracking-widest">Navegación</h4>
+            <ul className="space-y-4 text-sm text-primary-foreground/70">
+              <li><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-accent transition-colors">Inicio</button></li>
+              <li><Link href="/" className="hover:text-accent transition-colors">Catálogo</Link></li>
+              <li><Link href="/" className="hover:text-accent transition-colors">Sobre Nosotros</Link></li>
+              <li><Link href="/" className="hover:text-accent transition-colors">Contacto</Link></li>
+            </ul>
+          </div>
 
-            <div className="rounded-3xl border border-gray-700 bg-gradient-to-br from-gray-950/70 to-gray-900/40 p-6 shadow-2xl">
-              <div className="space-y-3">
-                <p className="text-sm flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-gray-300" />
-                  <span className="text-gray-300">Email:</span>
-                  <span className="text-gray-400">{brandConfig.contact.email}</span>
-                </p>
+          {/* Customer Support */}
+          <div className="space-y-6">
+            <h4 className="text-sm font-bold uppercase tracking-widest">Soporte</h4>
+            <ul className="space-y-4 text-sm text-primary-foreground/70">
+              <li><Link href="/" className="hover:text-accent transition-colors">Envíos y Entregas</Link></li>
+              <li><Link href="/" className="hover:text-accent transition-colors">Devoluciones</Link></li>
+              <li><Link href="/" className="hover:text-accent transition-colors">Privacidad</Link></li>
+              <li><Link href="/" className="hover:text-accent transition-colors">Términos</Link></li>
+            </ul>
+          </div>
 
-                <p className="text-sm flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-gray-300" />
-                  <span className="text-gray-300">Tel:</span>
-                  <span className="text-gray-400">{brandConfig.contact.phone}</span>
-                </p>
-              </div>
-
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Button
-                  className="w-full bg-white text-black hover:bg-gray-200 rounded-2xl h-12 font-bold uppercase tracking-wide shadow-lg hover:shadow-2xl transition-all hover:scale-[1.02]"
-                  onClick={() => window.open(`mailto:${brandConfig.contact.email}`, "_self")}
-                >
-                  Escríbenos
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full bg-white text-black hover:bg-gray-200 rounded-2xl h-12 font-bold uppercase tracking-wide shadow-lg hover:shadow-2xl transition-all hover:scale-[1.02]"
-                  onClick={() => window.open(brandConfig.social.instagram, "_blank")}
-                >
-                  Instagram
-                </Button>
-              </div>
-
-              <p className="text-xs text-gray-400 leading-relaxed mt-4">
-                Horario de atención: Lun–Vie (9:00am – 6:00pm). Respondemos lo antes posible.
-              </p>
-            </div>
+          {/* Contact Info */}
+          <div className="space-y-6">
+            <h4 className="text-sm font-bold uppercase tracking-widest">Contacto</h4>
+            <ul className="space-y-4 text-sm text-primary-foreground/70">
+              <li className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-accent shrink-0" />
+                <span>{brandConfig.contact.address}</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone className="w-5 h-5 text-accent shrink-0" />
+                <span>{brandConfig.contact.phone}</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Mail className="w-5 h-5 text-accent shrink-0" />
+                <span className="truncate">{brandConfig.contact.email}</span>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* Bottom Bar (TODO A LA IZQUIERDA) */}
-        <div className="border-t border-gray-800 pt-8 mt-12">
-          <div className="flex flex-col gap-4">
-            <div className="text-gray-400 text-sm font-medium">
-              © 2025 {brandConfig.name}. Todos los derechos reservados.
-            </div>
-
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-500">Hecho con</span>
-              <span className="text-2xl animate-pulse">💜</span>
-              <span className="text-gray-500">por</span>
-              <a 
-                href="https://untitledtechcompany.io/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 hover:text-white transition-colors font-semibold"
-              >
-                Untitled Tech Company
-              </a>
-            </div>
+        {/* Bottom Bar */}
+        <div className="mt-16 pt-8 border-t border-primary-foreground/10 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-xs text-primary-foreground/50">
+            © {currentYear} {brandConfig.name}. Valencia, España.
+          </p>
+          <div className="flex items-center gap-2 text-xs text-primary-foreground/50">
+            <span>Powered by</span>
+            <Link 
+              href="https://untitledtechcompany.io/" 
+              target="_blank"
+              className="font-bold text-primary-foreground/80 hover:text-accent flex items-center gap-1"
+            >
+              Untitled Tech Company <ExternalLink className="w-3 h-3" />
+            </Link>
           </div>
         </div>
       </div>

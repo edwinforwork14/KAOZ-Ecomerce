@@ -226,7 +226,7 @@ export default function AdminSidebar() {
               <Link href="/" className="flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-white/20">
                   <Image
-                    src="/logo/4yj.png"
+                    src="/Kaoz.jpg"
                     alt={brandConfig.name}
                     fill
                     className="object-contain"
@@ -397,7 +397,7 @@ export default function AdminSidebar() {
           >
             <div className="relative w-11 h-11 flex-shrink-0 rounded-xl overflow-hidden ring-2 ring-white/10 transition-transform hover:scale-105 duration-300">
               <Image
-                src="/logo/4yj.png"
+                src="/Kaoz.jpg"
                 alt={brandConfig.name}
                 fill
                 className="object-contain"

@@ -1,25 +1,36 @@
 export const brandConfig = {
-  name: process.env.NEXT_PUBLIC_BRAND_NAME || 'YF',
-  slogan: process.env.NEXT_PUBLIC_BRAND_SLOGAN || '¡𝐃𝐞𝐩𝐨𝐫𝐭𝐞 𝐜𝐨𝐧 𝐞𝐬𝐭𝐢𝐥𝐨 𝐞𝐧 𝐭𝐮 𝐝𝐞𝐬𝐭𝐢𝐧𝐨!',
-  colors: {
-    primary: process.env.NEXT_PUBLIC_BRAND_COLOR_PRIMARY || '#111827',
-    secondary: process.env.NEXT_PUBLIC_BRAND_COLOR_SECONDARY || '#383434ff',
-    accent: process.env.NEXT_PUBLIC_BRAND_COLOR_ACCENT || '#141414ff',
-  },
+  name: "KAOZ",
+  tagline: "Elegancia y calidad en cada detalle",
+  description: "KAOZ es la marca de ropa deportiva líder en Valencia. Diseño elegante, minimalista y sencillo, creado para ofrecer la máxima comodidad a hombres, mujeres y niños.",
+  url: "https://kaoz-sport.com", // URL sugerida
   contact: {
-    email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'corporacionyenfitca@gmail.com',
-    phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || '+584122234188',
-    address: process.env.NEXT_PUBLIC_CONTACT_ADDRESS || 'Valencia, Venezuela',
-    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '584122234188',
+    email: "info@kaoz-sport.com",
+    phone: "+34 600 000 000",
+    whatsapp: "34600000000",
+    address: "Valencia, España"
   },
-  social: {
-    instagram: process.env.NEXT_PUBLIC_INSTAGRAM || 'https://www.instagram.com/YF.vzla/',
-    facebook: process.env.NEXT_PUBLIC_FACEBOOK || 'https://facebook.com/YF',
-    twitter: process.env.NEXT_PUBLIC_TWITTER || 'https://twitter.com/YF',
-    youtube: process.env.NEXT_PUBLIC_YOUTUBE || 'https://youtube.com/YF',
+  colors: {
+    primary: "#000000",
+    secondary: "#1a1a1a",
+    accent: "#ffffff",
+    gray: {
+      50: "#f9f9f9",
+      100: "#f3f3f3",
+      200: "#eeeeee",
+      500: "#888888",
+      900: "#111111"
+    }
   },
   seo: {
-    description: process.env.NEXT_PUBLIC_META_DESCRIPTION || 'Ropa deportiva premium',
-    keywords: process.env.NEXT_PUBLIC_META_KEYWORDS || 'ropa deportiva, fitness',
+    title: "KAOZ | Ropa Deportiva Minimalista y Elegante en Valencia",
+    description: "Descubre KAOZ, la mejor marca de ropa deportiva en Valencia. Diseños minimalistas y cómodos para hombre, mujer y niños. Calidad premium para tu entrenamiento.",
+    keywords: "KAOZ, ropa deportiva Valencia, moda deportiva minimalista, ropa deportiva hombre, ropa deportiva mujer, ropa deportiva niños, leggings premium, camisetas entrenamiento Valencia",
+    ogImage: "/og-image.png",
+    twitterHandle: "@kaoz_sport"
   },
-};
+  social: {
+    instagram: "kaoz.sport",
+    facebook: "kaoz.sport",
+    twitter: "kaoz_sport"
+  }
+}

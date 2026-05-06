@@ -1,111 +1,88 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { api } from '@/lib/api';
-
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'user' | 'admin';
-}
+import React, { createContext, useContext, useEffect, useState } from "react"
+import { createClient } from "@/utils/supabase/client"
 
 interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  register: (data: any) => Promise<any>;
-  logout: () => void;
-  isAdmin: boolean;
+  user: any
+  session: any
+  loading: boolean
+  isAdmin: boolean
+  login: (email: string, password: string) => Promise<any>
+  register: (data: any) => Promise<any>
+  logout: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const supabase = createClient()
+  const [user, setUser] = useState<any>(null)
+  const [session, setSession] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Verificar si hay un usuario guardado
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    // 1. Obtener sesión actual
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      setIsAdmin(currentUser?.user_metadata?.role === 'admin' || currentUser?.email === 'admin@example.com')
+      setLoading(false)
+    })
 
-    // Escuchar evento de expiración de token
-    const handleAuthExpired = () => {
-      setUser(null);
-      localStorage.removeItem('sessionId');
-    };
+    // 2. Escuchar cambios de estado
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      setIsAdmin(currentUser?.user_metadata?.role === 'admin' || currentUser?.email === 'admin@example.com')
+      setLoading(false)
+    })
 
-    window.addEventListener('auth-expired', handleAuthExpired);
-    
-    return () => {
-      window.removeEventListener('auth-expired', handleAuthExpired);
-    };
-  }, []);
+    return () => subscription.unsubscribe()
+  }, [])
 
   const login = async (email: string, password: string) => {
-    const result = await api.login({ email, password });
-    if (result.success) {
-      setUser(result.user);
-      
-      // Sincronizar carrito después del login
-      try {
-        await api.syncCart();
-        window.dispatchEvent(new Event('cart-sync'));
-      } catch (error) {
-        console.error('Error al sincronizar carrito:', error);
-      }
-    }
-    return result;
-  };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    return data
+  }
 
-  const register = async (data: any) => {
-    const result = await api.register(data);
-    if (result.success) {
-      setUser(result.user);
-      
-      // Sincronizar carrito después del registro
-      try {
-        await api.syncCart();
-        window.dispatchEvent(new Event('cart-sync'));
-      } catch (error) {
-        console.error('Error al sincronizar carrito:', error);
+  const register = async (userData: any) => {
+    const { data, error } = await supabase.auth.signUp({
+      email: userData.email,
+      password: userData.password,
+      options: {
+        data: {
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          phone: userData.phone
+        }
       }
-    }
-    return result;
-  };
+    })
+    if (error) throw error
+    return data
+  }
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('sessionId');
-    setUser(null);
-    
-    window.dispatchEvent(new Event('cart-logout'));
-  };
+  const logout = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+    setSession(null)
+  }
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      login,
-      register,
-      logout,
-      isAdmin: user?.role === 'admin'
-    }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, login, register, logout }}>
       {children}
     </AuthContext.Provider>
-  );
+  )
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider")
   }
-  return context;
+  return context
 }
