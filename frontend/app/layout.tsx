@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Poppins } from "next/font/google"
+import { Space_Grotesk } from "next/font/google"
 import { CartProvider } from "@/contexts/cart-context"
 import { AuthProvider } from "@/contexts/auth-context"
 import { brandConfig } from "@/lib/config"
@@ -7,20 +7,19 @@ import MiniCartToast from "@/components/MiniCartToast"
 import DeploymentChecker from "@/components/DeploymentChecker"
 import "./globals.css"
 
-const poppins = Poppins({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["100","200","300","400","500","600","700","800","900"],
-  variable: "--font-poppins",
+  variable: "--font-space-grotesk",
   display: "swap",
 })
 
 export const metadata: Metadata = {
   title: {
-    default: `${brandConfig.name} | Premium E-commerce`,
-    template: `%s | ${brandConfig.name}`
+    default: `KAOS Urban Athletics | Premium E-commerce`,
+    template: `%s | KAOS Urban Athletics`
   },
-  description: brandConfig.seo.description,
-  keywords: brandConfig.seo.keywords,
+  description: "Technical sportswear strictly engineered for the urban grid.",
+  keywords: ["kaos", "athletics", "urban", "technical", "sportswear"],
   generator: "Next.js",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"),
 
@@ -31,8 +30,8 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: `${brandConfig.name} | Premium E-commerce`,
-    description: brandConfig.seo.description,
+    title: `KAOS Urban Athletics | Premium E-commerce`,
+    description: "Technical sportswear strictly engineered for the urban grid.",
     type: "website",
     locale: "es_ES",
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"
@@ -40,15 +39,18 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: `${brandConfig.name} | Premium E-commerce`,
-    description: brandConfig.seo.description,
+    title: `KAOS Urban Athletics | Premium E-commerce`,
+    description: "Technical sportswear strictly engineered for the urban grid.",
   }
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={poppins.variable} suppressHydrationWarning>
-      <body className={poppins.className} suppressHydrationWarning>
+    <html lang="es" className={`${spaceGrotesk.variable} dark`} suppressHydrationWarning>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+      </head>
+      <body className={`${spaceGrotesk.className} selection:bg-tertiary selection:text-on-tertiary`} suppressHydrationWarning>
         <DeploymentChecker>
           <AuthProvider>
             <CartProvider>
@@ -61,3 +63,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   )
 }
+

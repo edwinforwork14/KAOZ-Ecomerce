@@ -1,8 +1,6 @@
 "use client"
 
 import { brandConfig } from "@/lib/config"
-import { motion } from "framer-motion"
-import { ArrowRight } from "lucide-react"
 
 interface HeroProps {
   onExploreClick?: () => void
@@ -10,77 +8,92 @@ interface HeroProps {
 
 export default function Hero({ onExploreClick }: HeroProps) {
   return (
-    <section className="relative h-[90vh] w-full flex items-center justify-center overflow-hidden bg-black">
-      {/* Background with overlay */}
-      <div className="absolute inset-0 z-0">
+    <section className="relative h-[90vh] min-h-[700px] w-full flex items-end border-b border-outline-variant/30">
+      {/* Background Layer */}
+      <div className="absolute inset-0 w-full h-full z-0 bg-surface-container-lowest grid-pattern overflow-hidden">
+        {/* Hero Image — using Unsplash for reliability */}
         <img
-          src="/hero.PNG"
-          alt="KAOZ Sportswear Valencia"
-          className="w-full h-full object-cover opacity-70 scale-100"
+          alt="KAOS Urban Athletics — Industrial sportswear"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-50 mix-blend-luminosity"
+          src="https://images.unsplash.com/photo-1483721310020-03333e577078?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+
+        {/* Gradient fade to background at bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10" />
+
+        {/* Technical grid lines */}
+        <div className="absolute top-1/4 left-0 w-full h-px bg-outline-variant/20" />
+        <div className="absolute top-1/2 left-0 w-full h-px bg-outline-variant/20" />
+        <div className="absolute top-3/4 left-0 w-full h-px bg-outline-variant/20" />
+        <div className="absolute top-0 left-1/4 w-px h-full bg-outline-variant/20 hidden md:block" />
+        <div className="absolute top-0 left-1/2 w-px h-full bg-outline-variant/20 hidden md:block" />
+        <div className="absolute top-0 left-3/4 w-px h-full bg-outline-variant/20 hidden md:block" />
       </div>
 
-      {/* Content */}
-      <div className="container relative z-10 px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="max-w-4xl mx-auto"
-        >
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="inline-block px-6 py-2 mb-8 text-[10px] font-bold tracking-[0.3em] uppercase text-white border border-white/20 rounded-full bg-white/5 backdrop-blur-md"
-          >
-            {brandConfig.tagline}
-          </motion.span>
-          
-          <motion.h1 
-            className="text-6xl md:text-8xl lg:text-9xl font-black text-white mb-8 tracking-tighter leading-none"
-          >
-            KAOZ <br /> 
-            <span className="text-white/40 italic">Valencia</span>
-          </motion.h1>
-          
-          <motion.p 
-            className="text-lg md:text-xl text-white/60 mb-12 max-w-xl mx-auto font-light leading-relaxed"
-          >
-            {brandConfig.description}
-          </motion.p>
-          
-          <motion.div 
-            className="flex flex-col sm:flex-row items-center justify-center gap-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <button 
+      {/* Technical coordinate overlays */}
+      <div className="absolute top-24 left-gutter font-mono-data text-label-caps text-on-surface-variant hidden md:block z-10 opacity-70">
+        COORD: 45.5017° N, 73.5673° W<br />
+        SYS.VER: 2.4.1 // KAOS_CORE
+      </div>
+      <div className="absolute top-24 right-gutter flex flex-col items-end gap-1 font-mono-data text-label-caps text-on-surface-variant hidden md:block z-10 opacity-70">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 bg-tertiary animate-pulse inline-block" />
+          LIVE FEED
+        </div>
+        ENG: OPTIMAL
+      </div>
+
+      {/* Hero Content */}
+      <div className="relative w-full px-gutter md:px-margin pb-16 z-10 flex flex-col md:flex-row justify-between items-end gap-8">
+        <div className="w-full max-w-4xl border-l-2 border-tertiary pl-6 md:pl-12">
+          {/* Drop label */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="bg-tertiary text-on-tertiary font-mono-data text-label-caps uppercase px-2 py-1">
+              INIT: DROP_004
+            </div>
+            <span className="font-mono-data text-on-surface-variant text-sm uppercase">
+              // ENGINEERED CHAOS
+            </span>
+          </div>
+
+          {/* Main headline */}
+          <h1 className="font-display text-display text-on-background mb-6 uppercase leading-[0.9]">
+            SYSTEMATIC<br />
+            <span className="text-outline">DISRUPTION</span>
+          </h1>
+
+          {/* Subtext */}
+          <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl mb-10 border-l border-outline-variant/50 pl-4">
+            Technical sportswear strictly engineered for the urban grid.
+            Utilitarian design meets uncompromising performance.{" "}
+            <span className="text-tertiary">No excess. Just function.</span>
+          </p>
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <button
               onClick={onExploreClick}
-              className="group relative px-10 py-5 bg-white text-black font-bold rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+              className="bg-tertiary text-on-tertiary font-label-caps text-label-caps uppercase px-12 py-5 hover:bg-surface-container-highest hover:text-tertiary transition-all duration-300 border border-tertiary flex items-center justify-center gap-2 group w-full sm:w-auto"
             >
-              <span className="relative z-10 flex items-center gap-3 text-sm uppercase tracking-widest">
-                Nueva Colección <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+              EXECUTE: SHOP
+              <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
+                arrow_forward
               </span>
             </button>
-            
-            <button 
-              onClick={onExploreClick}
-              className="text-white/50 hover:text-white transition-colors text-sm uppercase tracking-widest font-medium border-b border-white/10 pb-1"
-            >
-              Ver Catálogo
+            <button className="bg-transparent border border-outline-variant text-on-background font-label-caps text-label-caps uppercase px-12 py-5 hover:bg-surface-container hover:border-outline transition-all duration-300 w-full sm:w-auto">
+              VIEW PROTOCOL
             </button>
-          </motion.div>
-        </motion.div>
-      </div>
+          </div>
+        </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute bottom-10 left-10 hidden lg:block">
-        <div className="flex items-center gap-6 text-white/20 text-[10px] tracking-[0.5em] uppercase vertical-text">
-          <span>Minimalist Performance</span>
-          <div className="w-px h-24 bg-white/10" />
+        {/* Scroll indicator */}
+        <div className="hidden lg:flex flex-col items-center gap-4 absolute bottom-16 right-gutter">
+          <span className="font-mono-data text-label-caps text-on-surface-variant rotate-90 origin-bottom translate-y-12 whitespace-nowrap uppercase tracking-widest">
+            SCROLL
+          </span>
+          <div className="w-px h-16 bg-outline-variant relative overflow-hidden">
+            <div className="w-full h-1/2 bg-tertiary absolute top-0 animate-shimmer" />
+          </div>
         </div>
       </div>
     </section>

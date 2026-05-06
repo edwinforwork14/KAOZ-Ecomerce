@@ -1,14 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ShoppingBag, Menu, X, User, LogOut, Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
 import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
 import { brandConfig } from "@/lib/config"
-import Image from "next/image"
-import { AnimatePresence, motion } from "framer-motion"
 
 interface HeaderProps {
   activeTab?: string
@@ -18,140 +14,105 @@ interface HeaderProps {
   onBackFromProduct?: () => void
 }
 
-export default function Header({ activeTab, setActiveTab, onSearch }: HeaderProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-
+export default function Header({ activeTab, setActiveTab }: HeaderProps) {
   const { setIsOpen, items } = useCart()
-  const { user, logout, isAdmin } = useAuth()
-
+  const { user } = useAuth()
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  const navigation = [
-    { name: "Inicio", key: "home" },
-    { name: "Catálogo", key: "products" },
-    { name: "Categorías", key: "categories" },
-    { name: "Ofertas", key: "sale", highlight: true },
-  ]
 
   const handleNavClick = (key: string) => {
     if (setActiveTab) {
       setActiveTab(key)
-      setIsMenuOpen(false)
     }
   }
 
   return (
     <>
-      {/* Banner */}
-      <div className="bg-primary text-primary-foreground text-center py-2 px-4 text-[10px] font-bold tracking-[0.2em] uppercase">
-        {brandConfig.slogan}
-      </div>
+      {/* TopNavBar (Web) */}
+      <header className="hidden md:flex bg-surface/90 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-outline-variant/30 h-16">
+        <div className="flex justify-between items-center px-gutter w-full">
+          <Link 
+            href="/" 
+            className="font-display text-h2 tracking-tighter text-tertiary uppercase flex items-center gap-2"
+            onClick={(e) => { e.preventDefault(); handleNavClick('home') }}
+          >
+            <span className="material-symbols-outlined">network_node</span>
+            {brandConfig.name}
+          </Link>
 
-      <header 
-        className={`sticky top-0 z-50 transition-all duration-500 ${
-          isScrolled ? "glass py-2" : "bg-white/80 backdrop-blur-md py-4"
-        }`}
-      >
-        <div className="container mx-auto px-6">
-          <div className="flex items-center justify-between">
-            {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X /> : <Menu />}
-            </Button>
-
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group" onClick={() => handleNavClick('home')}>
-              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-sm">
-                <Image src="/Kaoz.jpg" alt="KAOZ Logo" width={48} height={48} className="group-hover:scale-110 transition-transform object-contain" />
-              </div>
-              <span className="text-xl font-bold tracking-tighter uppercase">{brandConfig.name}</span>
-            </Link>
-
-            {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-10">
-              {navigation.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => handleNavClick(item.key)}
-                  className={`text-[11px] font-bold tracking-widest uppercase transition-all relative group ${
-                    activeTab === item.key ? "text-primary" : "text-muted-foreground hover:text-primary"
-                  } ${item.highlight ? "text-accent" : ""}`}
-                >
-                  {item.name}
-                  <span className={`absolute -bottom-1 left-0 h-0.5 bg-accent transition-all duration-300 ${
-                    activeTab === item.key ? "w-full" : "w-0 group-hover:w-full"
-                  }`} />
-                </button>
-              ))}
-            </nav>
-
-            {/* Icons */}
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="hidden md:flex">
-                <Search className="w-5 h-5" />
-              </Button>
-              
-              <div className="relative">
-                <Button variant="ghost" size="icon" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
-                  <User className="w-5 h-5" />
-                </Button>
-                {/* User Menu simplified for space */}
-              </div>
-
-              <Button 
-                variant="primary" 
-                size="icon" 
-                className="relative rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all"
-                onClick={() => setIsOpen(true)}
+          <nav className="flex items-center gap-8">
+            {[
+              { name: "Men", key: "men" },
+              { name: "Women", key: "women" },
+              { name: "Kids", key: "kids" },
+              { name: "Drops", key: "sale" }
+            ].map((item) => (
+              <button
+                key={item.key}
+                onClick={() => handleNavClick(item.key)}
+                className={`font-label-caps text-label-caps transition-colors duration-300 uppercase tracking-widest ${
+                  activeTab === item.key ? "text-tertiary" : "text-on-surface-variant hover:text-tertiary"
+                }`}
               >
-                <ShoppingBag className="w-5 h-5" />
-                {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
-                    {itemCount}
-                  </span>
-                )}
-              </Button>
+                {item.name}
+              </button>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-6 text-primary">
+            <div className="font-mono-data text-mono-data text-on-surface-variant hidden lg:block border-r border-outline-variant/30 pr-6 uppercase">
+              SYS.STS: <span className="text-tertiary">ONLINE</span>
             </div>
+            <button 
+              onClick={() => setIsOpen(true)}
+              className="hover:text-tertiary transition-colors duration-300 scale-95 active:opacity-80 transition-all flex items-center justify-center relative"
+            >
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>shopping_bag</span>
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-tertiary rounded-full"></span>
+              )}
+            </button>
+            <button className="hover:text-tertiary transition-colors duration-300 scale-95 active:opacity-80 transition-all flex items-center justify-center">
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>person</span>
+            </button>
           </div>
         </div>
-
-        {/* Mobile Menu Drawer */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="lg:hidden absolute top-full left-0 w-full bg-white border-b p-6 flex flex-col gap-4 shadow-2xl"
-            >
-              {navigation.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => handleNavClick(item.key)}
-                  className="text-left text-sm font-bold uppercase tracking-widest py-3 border-b border-secondary"
-                >
-                  {item.name}
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </header>
+
+      {/* BottomNavBar (Mobile) */}
+      <nav className="md:hidden bg-surface-container/90 backdrop-blur-2xl fixed bottom-0 w-full z-50 bg-surface border-t border-outline-variant/50 shadow-lg h-16">
+        <div className="flex justify-around items-center h-full px-4">
+          <button 
+            onClick={() => handleNavClick('home')}
+            className={`flex flex-col items-center justify-center p-2 transition-transform active:scale-90 duration-150 ${
+              activeTab === 'home' ? 'text-tertiary' : 'text-on-surface-variant'
+            }`}
+          >
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: `'FILL' ${activeTab === 'home' ? 1 : 0}` }}>home</span>
+            <span className="font-label-caps text-[10px] mt-1 tracking-widest uppercase">Home</span>
+          </button>
+          <button 
+            onClick={() => handleNavClick('products')}
+            className={`flex flex-col items-center justify-center p-2 transition-transform active:scale-90 duration-150 ${
+              activeTab === 'products' ? 'text-tertiary' : 'text-on-surface-variant'
+            }`}
+          >
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: `'FILL' ${activeTab === 'products' ? 1 : 0}` }}>grid_view</span>
+            <span className="font-label-caps text-[10px] mt-1 tracking-widest uppercase">Shop</span>
+          </button>
+          <button 
+            onClick={() => setIsOpen(true)}
+            className="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-tertiary transition-transform active:scale-90 duration-150"
+          >
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>shopping_cart</span>
+            <span className="font-label-caps text-[10px] mt-1 tracking-widest uppercase">Cart</span>
+          </button>
+          <button className="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-tertiary transition-transform active:scale-90 duration-150">
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>person</span>
+            <span className="font-label-caps text-[10px] mt-1 tracking-widest uppercase">Profile</span>
+          </button>
+        </div>
+      </nav>
     </>
   )
 }
+

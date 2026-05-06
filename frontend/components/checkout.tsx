@@ -1,9 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { ArrowLeft, CreditCard, Truck, Shield, MessageCircle, X, Plus, Minus, Lock, Search, CheckCircle2, AlertCircle, ShoppingBag, MapPin, Clock, Wallet, Banknote, Building, Store, Info } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CreditCard, Truck, MessageCircle, CheckCircle2, AlertCircle, MapPin, Clock, Wallet, Banknote, Building, Store, Info } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -70,7 +68,7 @@ interface ExchangeRate {
 }
 
 export default function Checkout() {
-  const { items, total, clearCart, updateQuantity, removeItem } = useCart()
+  const { items, total, clearCart } = useCart()
   const { user } = useAuth()
   const [settings, setSettings] = useState<PublicSettings | null>(null)
   const [exchangeRate, setExchangeRate] = useState<ExchangeRate | null>(null)
@@ -104,19 +102,11 @@ export default function Checkout() {
     phone: ""
   })
 
-  // ============================================================
-  // SCROLL AUTOMÁTICO AL INICIO cuando se carga la página
-  // ============================================================
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [])
-
-  // Cargar configuraciones públicas
-  useEffect(() => {
     loadSettings()
   }, [])
 
-  // Cargar datos del usuario
   useEffect(() => {
     if (user) {
       loadUserData()
@@ -129,21 +119,11 @@ export default function Checkout() {
       if (result.success) {
         setSettings(result.settings)
         setExchangeRate(result.exchangeRate)
-        
-        // Establecer método de envío por defecto
         if (result.settings.shippingMethods?.length > 0) {
-          setFormData(prev => ({
-            ...prev,
-            shippingMethod: result.settings.shippingMethods[0].id
-          }))
+          setFormData(prev => ({ ...prev, shippingMethod: result.settings.shippingMethods[0].id }))
         }
-        
-        // Establecer método de pago por defecto
         if (result.settings.paymentMethods?.length > 0) {
-          setFormData(prev => ({
-            ...prev,
-            paymentMethod: result.settings.paymentMethods[0].id
-          }))
+          setFormData(prev => ({ ...prev, paymentMethod: result.settings.paymentMethods[0].id }))
         }
       }
     } catch (error) {
@@ -159,15 +139,10 @@ export default function Checkout() {
         const profileResult = await api.getMe()
         if (profileResult.success && profileResult.user) {
           const userData = profileResult.user
-          
           let countryCode = "+58"
           let phoneNumber = ""
-          
           if (userData.phone) {
-            const matchedCountry = countryCodes.find(country => 
-              userData.phone.startsWith(country.code)
-            )
-            
+            const matchedCountry = countryCodes.find(country => userData.phone.startsWith(country.code))
             if (matchedCountry) {
               countryCode = matchedCountry.code
               phoneNumber = userData.phone.substring(matchedCountry.code.length).trim()
@@ -175,7 +150,6 @@ export default function Checkout() {
               phoneNumber = userData.phone
             }
           }
-          
           setFormData(prev => ({
             ...prev,
             firstName: userData.firstName || user.firstName || "",
@@ -195,7 +169,6 @@ export default function Checkout() {
     }
   }
 
-  // Filtrar códigos de país
   const filteredCountries = useMemo(() => {
     if (!countrySearch) return countryCodes
     return countryCodes.filter(country => 
@@ -204,47 +177,35 @@ export default function Checkout() {
     )
   }, [countrySearch])
 
-  // Obtener método de envío seleccionado
   const selectedShippingMethod = useMemo(() => {
     return settings?.shippingMethods.find(m => m.id === formData.shippingMethod)
   }, [settings, formData.shippingMethod])
 
-  // Obtener método de pago seleccionado
   const selectedPaymentMethod = useMemo(() => {
     return settings?.paymentMethods.find(m => m.id === formData.paymentMethod)
   }, [settings, formData.paymentMethod])
 
-  // Calcular descuento
   const discount = useMemo(() => {
     if (!selectedPaymentMethod?.hasDiscount) return 0
     return (total * (selectedPaymentMethod.discountPercentage || 0)) / 100
   }, [total, selectedPaymentMethod])
 
-  // Calcular costo de envío
   const shippingCost = useMemo(() => {
     if (!selectedShippingMethod) return 0
-    if (selectedShippingMethod.freeFrom > 0 && total >= selectedShippingMethod.freeFrom) {
-      return 0
-    }
+    if (selectedShippingMethod.freeFrom > 0 && total >= selectedShippingMethod.freeFrom) return 0
     return selectedShippingMethod.additionalCost || 0
   }, [total, selectedShippingMethod])
 
-  // Calcular total final
-  const finalTotal = useMemo(() => {
-    return total + shippingCost - discount
-  }, [total, shippingCost, discount])
+  const finalTotal = useMemo(() => total + shippingCost - discount, [total, shippingCost, discount])
 
-  // Calcular precio en bolívares
   const totalInBs = useMemo(() => {
     if (!exchangeRate || !settings) return null
     const rate = settings.currency.code === "EUR" ? exchangeRate.eur : exchangeRate.usd
     return finalTotal * rate
   }, [finalTotal, exchangeRate, settings])
 
-  // Símbolo de moneda
   const currencySymbol = settings?.currency?.symbol || "€"
 
-  // Validaciones
   const validateName = (name: string) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(name)
   const validateEmail = (email: string) => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
   const validatePhone = (phone: string) => /^[0-9\s()-]+$/.test(phone)
@@ -262,11 +223,7 @@ export default function Checkout() {
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value
     setFormData({ ...formData, email })
-    if (email.length > 0 && !validateEmail(email)) {
-      setValidationErrors({ ...validationErrors, email: "Email inválido" })
-    } else {
-      setValidationErrors({ ...validationErrors, email: "" })
-    }
+    setValidationErrors({ ...validationErrors, email: email.length > 0 && !validateEmail(email) ? "Email inválido" : "" })
   }
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -286,772 +243,269 @@ export default function Checkout() {
 
   const generateWhatsAppMessage = (orderNumber: string) => {
     const now = new Date()
-    const date = now.toLocaleDateString('es-ES')
-    const time = now.toLocaleTimeString('es-ES', { hour12: false })
-
     const productList = items.map((item, index) =>
-      `${index + 1}. ${item.name}\n` +
-      `   • Color: ${item.color}\n` +
-      `   • Talla: ${item.size}\n` +
-      `   • Cantidad: ${item.quantity}\n` +
-      `   • Precio: ${currencySymbol}${item.price.toFixed(2)}\n` +
-      `   • Subtotal: ${currencySymbol}${(item.price * item.quantity).toFixed(2)}`
+      `${index + 1}. ${item.name}\n   • Color: ${item.color}\n   • Talla: ${item.size}\n   • Cantidad: ${item.quantity}\n   • Precio: ${currencySymbol}${item.price.toFixed(2)}`
     ).join('\n\n')
 
-    let message = `*PEDIDO ${brandConfig.name.toUpperCase()}*\n\n` +
-      `📋 Número de Pedido: ${orderNumber}\n` +
-      `📅 Fecha: ${date}\n` +
-      `🕐 Hora: ${time}\n\n` +
-      `🛍️ *PRODUCTOS:*\n` +
-      `──────────────────────────────\n\n` +
-      `${productList}\n\n` +
-      `──────────────────────────────\n` +
-      `💰 Subtotal: ${currencySymbol}${total.toFixed(2)}\n`
-
-    if (shippingCost > 0) {
-      message += `🚚 Envío: ${currencySymbol}${shippingCost.toFixed(2)}\n`
-    }
-
-    if (discount > 0) {
-      message += `🏷️ Descuento (${selectedPaymentMethod?.name}): -${currencySymbol}${discount.toFixed(2)}\n`
-    }
-
+    let message = `*PEDIDO ${brandConfig.name.toUpperCase()}*\n\n📋 Número de Pedido: ${orderNumber}\n📅 Fecha: ${now.toLocaleDateString()}\n\n🛍️ *PRODUCTOS:*\n──────────────────────────────\n\n${productList}\n\n──────────────────────────────\n💰 Subtotal: ${currencySymbol}${total.toFixed(2)}\n`
+    if (shippingCost > 0) message += `🚚 Envío: ${currencySymbol}${shippingCost.toFixed(2)}\n`
+    if (discount > 0) message += `🏷️ Descuento: -${currencySymbol}${discount.toFixed(2)}\n`
     message += `\n💰 *TOTAL: ${currencySymbol}${finalTotal.toFixed(2)}*\n`
-
     if (totalInBs && settings?.currency.showBsPrice) {
       message += `💵 *En Bolívares: Bs. ${totalInBs.toLocaleString('es-VE', { minimumFractionDigits: 2 })}*\n`
-      message += `📊 Tasa del día: ${settings.currency.code === "EUR" ? exchangeRate?.eur : exchangeRate?.usd} Bs/${settings.currency.code}\n`
     }
-
-    message += `\n👤 *DATOS DEL CLIENTE:*\n` +
-      `Nombre: ${formData.firstName} ${formData.lastName}\n` +
-      `Email: ${formData.email}\n` +
-      `Teléfono: ${formData.countryCode} ${formData.phone}\n\n`
-
-    // Información de envío
-    message += `📦 *MÉTODO DE ENTREGA:* ${selectedShippingMethod?.name}\n`
-    
-    if (selectedShippingMethod?.requiresAddress) {
-      message += `📍 *DIRECCIÓN DE ENTREGA:*\n` +
-        `${formData.address}\n` +
-        `${formData.city}, ${formData.state} ${formData.zipCode}\n`
-      if (formData.reference) {
-        message += `Referencia: ${formData.reference}\n`
-      }
-    } else if (selectedShippingMethod?.type === 'pickup' && selectedShippingMethod?.pickupData) {
-      message += `🏪 *RETIRO EN:*\n` +
-        `${selectedShippingMethod.pickupData.address}\n` +
-        `Horario: ${selectedShippingMethod.pickupData.schedule}\n`
-    }
-
-    message += `\n💳 *MÉTODO DE PAGO:* ${selectedPaymentMethod?.name}\n`
-
-    // Mensaje personalizado del método de pago
-    if (selectedPaymentMethod?.whatsappMessage) {
-      message += `\n${selectedPaymentMethod.whatsappMessage}\n`
-    }
-
-    // Información de cuenta si aplica
-    if (selectedPaymentMethod?.accountData) {
-      const acc = selectedPaymentMethod.accountData
-      message += `\n📋 *DATOS DE PAGO:*\n`
-      if (acc.bankName) message += `Banco: ${acc.bankName}\n`
-      if (acc.accountNumber) message += `Cuenta: ${acc.accountNumber}\n`
-      if (acc.accountHolder) message += `Titular: ${acc.accountHolder}\n`
-      if (acc.identification) message += `CI/RIF: ${acc.identification}\n`
-      if (acc.phone) message += `Teléfono: ${acc.phone}\n`
-      if (acc.email) message += `Email: ${acc.email}\n`
-      if (acc.walletAddress) message += `Wallet: ${acc.walletAddress}\n`
-      if (acc.additionalInfo) message += `${acc.additionalInfo}\n`
-    }
-
-    if (formData.notes) {
-      message += `\n📝 *NOTAS:* ${formData.notes}\n`
-    }
-
-    message += `\n🙌 ¡Gracias por tu compra!\n` +
-      `📱 Instagram: ${brandConfig.social.instagram}`
-
+    message += `\n👤 *CLIENTE:*\n${formData.firstName} ${formData.lastName}\n${formData.email}\n${formData.countryCode} ${formData.phone}\n\n📦 *ENTREGA:* ${selectedShippingMethod?.name}\n💳 *PAGO:* ${selectedPaymentMethod?.name}\n`
+    if (formData.notes) message += `\n📝 *NOTAS:* ${formData.notes}\n`
     return message
   }
 
   const handleWhatsAppOrder = async () => {
     if (!isFormValid()) return
-
     setSubmitting(true)
-
-    // ============================================================
-    // SOLUCIÓN SAFARI: Abrir ventana INMEDIATAMENTE antes de async
-    // Safari solo permite window.open() en respuesta directa a click
-    // ============================================================
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    let whatsappWindow: Window | null = null
-    
-    if (!isSafari) {
-      // En navegadores normales, abrimos una ventana en blanco que actualizaremos después
-      whatsappWindow = window.open('', '_blank')
-    }
-
     try {
       const orderData = {
-        customerInfo: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: `${formData.countryCode} ${formData.phone}`
-        },
-        shippingAddress: selectedShippingMethod?.requiresAddress ? {
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
-          reference: formData.reference,
-        } : null,
+        customerInfo: { firstName: formData.firstName, lastName: formData.lastName, email: formData.email, phone: `${formData.countryCode} ${formData.phone}` },
+        shippingAddress: selectedShippingMethod?.requiresAddress ? { address: formData.address, city: formData.city, state: formData.state, zipCode: formData.zipCode, reference: formData.reference } : null,
         shippingMethod: formData.shippingMethod,
         paymentMethod: formData.paymentMethod,
         notes: formData.notes
       }
-
       const result = await api.createOrder(orderData)
-
       if (result.success) {
-        const orderNumber = result.order.orderNumber
-        const message = generateWhatsAppMessage(orderNumber)
+        const message = generateWhatsAppMessage(result.order.orderNumber)
         const phoneNumber = settings?.whatsapp?.number || brandConfig.contact.whatsapp
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
-
         await api.updateOrderWhatsApp(result.order._id)
-
-        // ============================================================
-        // SOLUCIÓN SCROLL: Subir al inicio de la página suavemente
-        // ============================================================
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-
         setShowOrderConfirmation(true)
+        window.open(whatsappUrl, "_blank")
         clearCart()
-
-        // ============================================================
-        // SOLUCIÓN SAFARI: Diferentes estrategias según el navegador
-        // ============================================================
-        if (isSafari) {
-          // En Safari, usamos location.href para navegar directamente
-          // Esperamos un momento para que el modal se muestre
-          setTimeout(() => {
-            window.location.href = whatsappUrl
-          }, 500)
-        } else {
-          // En otros navegadores, actualizamos la ventana que abrimos
-          if (whatsappWindow && !whatsappWindow.closed) {
-            whatsappWindow.location.href = whatsappUrl
-          } else {
-            // Fallback si la ventana fue bloqueada
-            window.open(whatsappUrl, '_blank')
-          }
-        }
       }
     } catch (error) {
       console.error('Error creating order:', error)
-      // Cerrar ventana si hubo error
-      if (whatsappWindow && !whatsappWindow.closed) {
-        whatsappWindow.close()
-      }
     } finally {
       setSubmitting(false)
     }
   }
 
   const isFormValid = () => {
-    const baseValid = formData.firstName && formData.lastName && formData.email &&
-      formData.phone && validateEmail(formData.email) &&
-      !validationErrors.firstName && !validationErrors.lastName &&
-      !validationErrors.email && !validationErrors.phone &&
-      formData.shippingMethod && formData.paymentMethod
-
-    if (selectedShippingMethod?.requiresAddress) {
-      return baseValid && formData.address && formData.city && formData.state && formData.zipCode
-    }
-
-    return baseValid
+    const baseValid = formData.firstName && formData.lastName && formData.email && formData.phone && validateEmail(formData.email) && !validationErrors.firstName && !validationErrors.lastName && !validationErrors.email && !validationErrors.phone && formData.shippingMethod && formData.paymentMethod
+    return selectedShippingMethod?.requiresAddress ? (baseValid && formData.address && formData.city && formData.state && formData.zipCode) : baseValid
   }
 
   const isEmailValid = formData.email.length > 0 && validateEmail(formData.email)
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-16 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-black"></div>
-      </div>
-    )
-  }
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+      <div className="w-12 h-12 border-2 border-tertiary border-t-transparent animate-spin mb-4"></div>
+      <span className="font-mono-data text-label-caps text-on-surface-variant uppercase tracking-widest">Initialising_Protocol...</span>
+    </div>
+  )
 
-  if (items.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-16">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
-            <div className="w-28 h-28 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-              <ShoppingBag className="h-14 w-14 text-gray-500" />
-            </div>
-            <h1 className="text-3xl font-black uppercase mb-4 text-gray-900">Tu carrito está vacío</h1>
-            <p className="text-gray-600 mb-8">Agrega productos antes de proceder al checkout</p>
-            <Button
-              onClick={() => window.location.href = '/'}
-              className="bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-800 hover:to-black rounded-2xl px-12 py-6 text-base font-bold uppercase shadow-2xl hover:shadow-3xl transition-all hover:scale-105"
-            >
-              Continuar Comprando
-            </Button>
-          </div>
-        </div>
+  if (items.length === 0) return (
+    <div className="min-h-screen bg-background border-t border-outline-variant/30 flex items-center justify-center p-gutter">
+      <div className="max-w-xl w-full border border-outline-variant/30 bg-surface-container-lowest p-12 text-center flex flex-col items-center">
+        <span className="material-symbols-outlined text-6xl text-outline mb-6">shopping_cart_off</span>
+        <h1 className="font-h2 text-h2 text-on-background uppercase tracking-tight mb-4">INVENTORY_EMPTY</h1>
+        <p className="font-body-lg text-on-surface-variant mb-10">Add assets to your protocol before proceeding to acquisition.</p>
+        <button onClick={() => window.location.href = '/'} className="bg-tertiary text-on-tertiary font-label-caps text-label-caps uppercase px-12 py-5 hover:bg-surface-container-highest hover:text-tertiary transition-all duration-300 border border-tertiary">RETURN_TO_GRID</button>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => window.history.back()}
-            className="flex items-center text-gray-600 hover:text-black mb-4 transition-colors group bg-white px-4 py-2 rounded-full shadow-md hover:shadow-lg"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-medium">Volver</span>
-          </button>
-          <h1 className="text-3xl md:text-4xl font-black uppercase mb-2 text-gray-900">
-            Finalizar Compra
-          </h1>
-          <p className="text-gray-600">
-            {user ? `¡Hola ${user.firstName}! Completa tu información para confirmar el pedido` : 'Completa tu información para confirmar el pedido'}
-          </p>
+    <div className="min-h-screen bg-background border-t border-outline-variant/30">
+      <div className="flex justify-between items-end p-gutter md:p-margin border-b border-outline-variant/30 bg-surface-container-lowest">
+        <div className="flex items-center gap-4">
+          <div className="bg-tertiary text-on-tertiary px-2 py-1 flex items-center"><span className="material-symbols-outlined text-sm">lock</span></div>
+          <h1 className="font-h2 text-h2 text-on-background uppercase tracking-tight">ORDER_PROTOCOL</h1>
         </div>
+        <div className="font-mono-data text-on-surface-variant hidden md:block uppercase text-xs">SECURE_ENCRYPTION: AES_256 // SESSION: {user ? user.firstName.toUpperCase() : 'GUEST'}</div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Forms */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Contact Information */}
-            <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-              <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-                <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-                  <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-                    <span className="text-white text-sm font-bold">1</span>
+      <div className="w-full flex flex-col lg:flex-row min-h-screen">
+        <div className="flex-1 lg:border-r border-outline-variant/30 p-gutter md:p-12 lg:p-16 space-y-16">
+          <div className="max-w-4xl mx-auto space-y-12">
+            <div className="border border-outline-variant/30 bg-surface-container-lowest">
+              <div className="border-b border-outline-variant/30 p-6 flex items-center gap-4 bg-surface-container">
+                <span className="font-mono-data text-tertiary">01_</span>
+                <h3 className="font-h3 text-h3 text-on-background uppercase tracking-tight">CONTACT_PROTOCOL</h3>
+              </div>
+              <div className="p-8 space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <Label className="font-mono-data text-[10px] text-on-surface-variant uppercase">Given_Name *</Label>
+                    <Input name="firstName" value={formData.firstName} onChange={(e) => handleNameChange(e, 'firstName')} className={`h-14 border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors ${validationErrors.firstName ? 'border-error' : ''}`} required />
                   </div>
-                  Información de Contacto
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-semibold text-gray-700 mb-2 block">Nombre *</Label>
-                    <Input
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={(e) => handleNameChange(e, 'firstName')}
-                      className={`rounded-2xl border-2 h-12 transition-all ${
-                        validationErrors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-black'
-                      }`}
-                      required
-                    />
-                    {validationErrors.firstName && (
-                      <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
-                        {validationErrors.firstName}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-gray-700 mb-2 block">Apellido *</Label>
-                    <Input
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={(e) => handleNameChange(e, 'lastName')}
-                      className={`rounded-2xl border-2 h-12 transition-all ${
-                        validationErrors.lastName ? 'border-red-500' : 'border-gray-200 focus:border-black'
-                      }`}
-                      required
-                    />
-                    {validationErrors.lastName && (
-                      <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
-                        {validationErrors.lastName}
-                      </p>
-                    )}
+                  <div className="space-y-2">
+                    <Label className="font-mono-data text-[10px] text-on-surface-variant uppercase">Family_Name *</Label>
+                    <Input name="lastName" value={formData.lastName} onChange={(e) => handleNameChange(e, 'lastName')} className={`h-14 border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors ${validationErrors.lastName ? 'border-error' : ''}`} required />
                   </div>
                 </div>
-                <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">Email *</Label>
-                  <div className="relative">
-                    <Input
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleEmailChange}
-                      className={`rounded-2xl border-2 h-12 pr-10 transition-all ${
-                        isEmailValid 
-                          ? 'border-green-500' 
-                          : validationErrors.email 
-                          ? 'border-red-500' 
-                          : 'border-gray-200 focus:border-black'
-                      }`}
-                      required
-                    />
-                    {isEmailValid && (
-                      <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-500" />
-                    )}
-                  </div>
-                  {validationErrors.email && (
-                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {validationErrors.email}
-                    </p>
-                  )}
+                <div className="space-y-2">
+                  <Label className="font-mono-data text-[10px] text-on-surface-variant uppercase">Electronic_Mail *</Label>
+                  <Input name="email" type="email" value={formData.email} onChange={handleEmailChange} className={`h-14 border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors ${isEmailValid ? 'border-tertiary' : validationErrors.email ? 'border-error' : ''}`} required />
                 </div>
-                <div>
-                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">Teléfono *</Label>
+                <div className="space-y-2">
+                  <Label className="font-mono-data text-[10px] text-on-surface-variant uppercase">Communication_Link *</Label>
                   <div className="flex gap-2">
-                    <div className="relative w-36">
-                      <button
-                        type="button"
-                        onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                        className="w-full h-12 px-3 border-2 border-gray-200 rounded-2xl flex items-center justify-between bg-white hover:border-gray-400 transition-colors shadow-sm hover:shadow-md"
-                      >
-                        <span className="text-sm font-medium">
-                          {countryCodes.find(c => c.code === formData.countryCode)?.flag} {formData.countryCode}
-                        </span>
-                        <Search className="h-4 w-4 text-gray-400" />
-                      </button>
-                      
+                    <div className="relative">
+                      <button type="button" onClick={() => setShowCountryDropdown(!showCountryDropdown)} className="h-14 px-4 border border-outline-variant/30 bg-background font-mono-data text-sm flex items-center gap-2 hover:border-tertiary transition-colors">{countryCodes.find(c => c.code === formData.countryCode)?.flag} {formData.countryCode} <span className="material-symbols-outlined text-xs">expand_more</span></button>
                       {showCountryDropdown && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 rounded-2xl shadow-2xl z-50 max-h-64 overflow-hidden">
-                          <div className="p-2 border-b sticky top-0 bg-white">
-                            <Input
-                              type="text"
-                              placeholder="Buscar país..."
-                              value={countrySearch}
-                              onChange={(e) => setCountrySearch(e.target.value)}
-                              className="h-10 text-sm rounded-xl"
-                              autoFocus
-                            />
-                          </div>
-                          <div className="overflow-y-auto max-h-52">
+                        <div className="absolute top-full left-0 mt-2 bg-surface-container-lowest border border-outline-variant/30 shadow-2xl z-50 w-64">
+                          <div className="p-2 border-b border-outline-variant/30"><input type="text" placeholder="SEARCH_ISO_CODE..." value={countrySearch} onChange={(e) => setCountrySearch(e.target.value)} className="w-full h-10 bg-background border border-outline-variant/30 px-3 font-mono-data text-[10px] uppercase focus:border-tertiary outline-none" autoFocus /></div>
+                          <div className="max-h-64 overflow-y-auto custom-scrollbar">
                             {filteredCountries.map((country) => (
-                              <button
-                                key={country.code}
-                                type="button"
-                                onClick={() => {
-                                  setFormData({ ...formData, countryCode: country.code })
-                                  setShowCountryDropdown(false)
-                                  setCountrySearch("")
-                                }}
-                                className="w-full px-3 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 text-sm rounded-xl mx-1"
-                              >
-                                <span>{country.flag}</span>
-                                <span className="font-medium">{country.code}</span>
-                                <span className="text-gray-600 truncate">{country.country}</span>
-                              </button>
+                              <button key={country.code} type="button" onClick={() => { setFormData({ ...formData, countryCode: country.code }); setShowCountryDropdown(false); setCountrySearch("") }} className="w-full px-4 py-3 text-left hover:bg-surface-container font-mono-data text-[10px] uppercase flex items-center gap-3 border-b border-outline-variant/10"><span>{country.flag}</span><span className="text-tertiary">{country.code}</span><span className="opacity-50 truncate">{country.country}</span></button>
                             ))}
                           </div>
                         </div>
                       )}
                     </div>
-
-                    <div className="flex-1">
-                      <Input
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={handlePhoneChange}
-                        placeholder="412 123 4567"
-                        className={`rounded-2xl border-2 h-12 transition-all ${
-                          validationErrors.phone ? 'border-red-500' : 'border-gray-200 focus:border-black'
-                        }`}
-                        required
-                      />
-                    </div>
+                    <Input name="phone" type="tel" value={formData.phone} onChange={handlePhoneChange} placeholder="NETWORK_ID_0000000" className={`h-14 flex-1 border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors ${validationErrors.phone ? 'border-error' : ''}`} required />
                   </div>
-                  {validationErrors.phone && (
-                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {validationErrors.phone}
-                    </p>
-                  )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            {/* Shipping Method */}
-            <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-              <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-                <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-                  <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-                    <span className="text-white text-sm font-bold">2</span>
-                  </div>
-                  Método de Entrega
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-3">
-                  {settings?.shippingMethods.map((method) => {
-                    const IconComponent = shippingIcons[method.type] || Truck
-                    const isSelected = formData.shippingMethod === method.id
-                    const isFree = method.freeFrom > 0 && total >= method.freeFrom
-                    
-                    return (
-                      <label
-                        key={method.id}
-                        className={`flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow-md ${
-                          isSelected ? 'border-black bg-gray-50 shadow-lg' : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="shippingMethod"
-                          value={method.id}
-                          checked={isSelected}
-                          onChange={handleInputChange}
-                          className="mt-1 mr-3"
-                          style={{ accentColor: 'black' }}
-                        />
-                        <IconComponent className="h-5 w-5 mr-3 mt-0.5 text-gray-600" />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold">{method.name}</span>
-                            {method.additionalCost > 0 ? (
-                              isFree ? (
-                                <span className="text-green-600 font-semibold">¡Gratis!</span>
-                              ) : (
-                                <span className="font-semibold">{currencySymbol}{method.additionalCost.toFixed(2)}</span>
-                              )
-                            ) : (
-                              <span className="text-green-600 font-semibold">A Consultar</span>
-                            )}
-                          </div>
-                          {method.description && (
-                            <p className="text-sm text-gray-500 mt-1">{method.description}</p>
-                          )}
-                          {method.estimatedTime && (
-                            <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {method.estimatedTime}
-                            </p>
-                          )}
-                          {method.freeFrom > 0 && !isFree && (
-                            <p className="text-xs text-blue-600 mt-1">
-                              Envío gratis en compras desde {currencySymbol}{method.freeFrom.toFixed(2)}
-                            </p>
-                          )}
-                          {method.type === 'pickup' && method.pickupData && (
-                            <div className="mt-2 p-2 bg-blue-50 rounded-lg text-xs text-blue-700">
-                              <p className="font-medium">{method.pickupData.address}</p>
-                              <p>{method.pickupData.schedule}</p>
-                            </div>
-                          )}
+            <div className="border border-outline-variant/30 bg-surface-container-lowest">
+              <div className="border-b border-outline-variant/30 p-6 flex items-center gap-4 bg-surface-container">
+                <span className="font-mono-data text-tertiary">02_</span>
+                <h3 className="font-h3 text-h3 text-on-background uppercase tracking-tight">LOGISTICS_SELECTION</h3>
+              </div>
+              <div className="p-8 space-y-4">
+                {settings?.shippingMethods.map((method) => {
+                  const isSelected = formData.shippingMethod === method.id
+                  const isFree = method.freeFrom > 0 && total >= method.freeFrom
+                  return (
+                    <label key={method.id} className={`flex items-start p-6 border transition-all cursor-pointer ${isSelected ? 'border-tertiary bg-surface-container' : 'border-outline-variant/30 hover:border-tertiary/50'}`}>
+                      <input type="radio" name="shippingMethod" value={method.id} checked={isSelected} onChange={handleInputChange} className="mt-1 mr-4 accent-tertiary" />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex justify-between items-baseline">
+                          <span className="font-mono-data text-sm font-bold uppercase">{method.name}</span>
+                          <span className="font-mono-data text-sm text-tertiary">{method.additionalCost > 0 ? (isFree ? "FREE_PROTOCOL" : `USD ${method.additionalCost.toFixed(2)}`) : "UPON_VERIFICATION"}</span>
                         </div>
-                      </label>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                        {method.description && <p className="font-body-sm text-xs text-on-surface-variant uppercase tracking-widest opacity-70 leading-relaxed">{method.description}</p>}
+                        {method.estimatedTime && <div className="flex items-center gap-2 font-mono-data text-[10px] text-on-surface-variant opacity-50 uppercase"><span className="material-symbols-outlined text-xs">schedule</span>ETA: {method.estimatedTime}</div>}
+                        {method.type === 'pickup' && method.pickupData && (
+                          <div className="mt-4 p-4 border border-outline-variant/20 bg-background/50 font-mono-data text-[10px] uppercase space-y-1"><div className="text-tertiary">POINT_OF_COLLECTION:</div><div>{method.pickupData.address}</div><div className="opacity-50">WINDOW: {method.pickupData.schedule}</div></div>
+                        )}
+                      </div>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
 
-            {/* Shipping Address - Solo si es requerido */}
             {selectedShippingMethod?.requiresAddress && (
-              <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-                <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-                  <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-                    <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-                      <MapPin className="h-5 w-5 text-white" />
-                    </div>
-                    Dirección de Envío
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-4">
-                  <div>
-                    <Label className="text-sm font-semibold text-gray-700 mb-2 block">Dirección *</Label>
-                    <Input
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-                      placeholder="Calle, número, apartamento"
-                      required
-                    />
+              <div className="border border-outline-variant/30 bg-surface-container-lowest">
+                <div className="border-b border-outline-variant/30 p-6 flex items-center gap-4 bg-surface-container"><span className="material-symbols-outlined text-tertiary">location_on</span><h3 className="font-h3 text-h3 text-on-background uppercase tracking-tight">LOGISTICS_ENDPOINT</h3></div>
+                <div className="p-8 space-y-8">
+                  <div className="space-y-2"><Label className="font-mono-data text-[10px] text-on-surface-variant uppercase">Full_Address_String *</Label><Input name="address" value={formData.address} onChange={handleInputChange} placeholder="STREET_NAME_NUMBER_APARTMENT_ID" className="h-14 border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors" required /></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2"><Label className="font-mono-data text-[10px] text-on-surface-variant uppercase">City_Node *</Label><Input name="city" value={formData.city} onChange={handleInputChange} className="h-14 border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors" required /></div>
+                    <div className="space-y-2"><Label className="font-mono-data text-[10px] text-on-surface-variant uppercase">Province_State *</Label><Input name="state" value={formData.state} onChange={handleInputChange} className="h-14 border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors" required /></div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-semibold text-gray-700 mb-2 block">Ciudad *</Label>
-                      <Input
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-semibold text-gray-700 mb-2 block">Estado *</Label>
-                      <Input
-                        name="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-                        required
-                      />
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2"><Label className="font-mono-data text-[10px] text-on-surface-variant uppercase">Postal_Code *</Label><Input name="zipCode" value={formData.zipCode} onChange={handleInputChange} className="h-14 border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors" required /></div>
+                    <div className="space-y-2"><Label className="font-mono-data text-[10px] text-on-surface-variant uppercase">Reference_Metadata</Label><Input name="reference" value={formData.reference} onChange={handleInputChange} placeholder="LANDMARK_NEAR_ID" className="h-14 border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors" /></div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-semibold text-gray-700 mb-2 block">Código Postal *</Label>
-                      <Input
-                        name="zipCode"
-                        value={formData.zipCode}
-                        onChange={handleInputChange}
-                        className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-semibold text-gray-700 mb-2 block">Punto de Referencia</Label>
-                      <Input
-                        name="reference"
-                        value={formData.reference}
-                        onChange={handleInputChange}
-                        className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-                        placeholder="Cerca de..."
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
-            {/* Payment Method */}
-            <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-              <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-                <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-                  <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-                    <span className="text-white text-sm font-bold">3</span>
-                  </div>
-                  Método de Pago
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-3">
-                  {settings?.paymentMethods.map((method) => {
-                    const IconComponent = paymentIcons[method.id] || CreditCard
-                    const isSelected = formData.paymentMethod === method.id
-                    
-                    return (
-                      <label
-                        key={method.id}
-                        className={`flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow-md ${
-                          isSelected ? 'border-black bg-gray-50 shadow-lg' : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value={method.id}
-                          checked={isSelected}
-                          onChange={handleInputChange}
-                          className="mt-1 mr-3"
-                          style={{ accentColor: 'black' }}
-                        />
-                        <IconComponent className="h-5 w-5 mr-3 mt-0.5 text-gray-600" />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold">{method.name}</span>
-                            {method.hasDiscount && (
-                              <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-semibold">
-                                -{method.discountPercentage}%
-                              </span>
-                            )}
-                          </div>
-                          {method.description && (
-                            <p className="text-sm text-gray-500 mt-1">{method.description}</p>
-                          )}
-                          {method.requiresProof && (
-                            <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                              <Info className="h-3 w-3" />
-                              Se requiere comprobante de pago
-                            </p>
-                          )}
-                          {isSelected && method.accountData && Object.keys(method.accountData).some(k => method.accountData[k]) && (
-                            <div className="mt-3 p-3 bg-blue-50 rounded-xl text-sm">
-                              <p className="font-semibold text-blue-900 mb-2">Datos de pago:</p>
-                              <div className="space-y-1 text-blue-800">
-                                {method.accountData.bankName && <p>Banco: {method.accountData.bankName}</p>}
-                                {method.accountData.accountNumber && <p>Cuenta: {method.accountData.accountNumber}</p>}
-                                {method.accountData.accountHolder && <p>Titular: {method.accountData.accountHolder}</p>}
-                                {method.accountData.identification && <p>CI/RIF: {method.accountData.identification}</p>}
-                                {method.accountData.phone && <p>Teléfono: {method.accountData.phone}</p>}
-                                {method.accountData.email && <p>Email: {method.accountData.email}</p>}
-                                {method.accountData.walletAddress && <p>Wallet: {method.accountData.walletAddress}</p>}
-                                {method.accountData.additionalInfo && <p className="mt-2 text-xs">{method.accountData.additionalInfo}</p>}
-                              </div>
+            <div className="border border-outline-variant/30 bg-surface-container-lowest">
+              <div className="border-b border-outline-variant/30 p-6 flex items-center gap-4 bg-surface-container"><span className="font-mono-data text-tertiary">03_</span><h3 className="font-h3 text-h3 text-on-background uppercase tracking-tight">TRANSACTION_PROTOCOL</h3></div>
+              <div className="p-8 space-y-4">
+                {settings?.paymentMethods.map((method) => {
+                  const isSelected = formData.paymentMethod === method.id
+                  return (
+                    <label key={method.id} className={`flex items-start p-6 border transition-all cursor-pointer ${isSelected ? 'border-tertiary bg-surface-container' : 'border-outline-variant/30 hover:border-tertiary/50'}`}>
+                      <input type="radio" name="paymentMethod" value={method.id} checked={isSelected} onChange={handleInputChange} className="mt-1 mr-4 accent-tertiary" />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono-data text-sm font-bold uppercase">{method.name}</span>
+                          {method.hasDiscount && <span className="bg-tertiary text-on-tertiary font-mono-data text-[9px] px-2 py-0.5 uppercase tracking-widest">PROMO: -{method.discountPercentage}%</span>}
+                        </div>
+                        {method.description && <p className="font-body-sm text-xs text-on-surface-variant uppercase tracking-widest opacity-70 leading-relaxed">{method.description}</p>}
+                        {isSelected && method.accountData && Object.values(method.accountData).some(v => v) && (
+                          <div className="mt-6 p-6 border border-tertiary/30 bg-background/50 space-y-4">
+                            <div className="font-mono-data text-[10px] text-tertiary uppercase tracking-widest flex items-center gap-2"><span className="material-symbols-outlined text-xs">account_balance_wallet</span>ACQUISITION_DETAILS:</div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono-data text-[10px] uppercase">
+                              {method.accountData.bankName && <div>BANK: {method.accountData.bankName}</div>}
+                              {method.accountData.accountNumber && <div>ID: {method.accountData.accountNumber}</div>}
+                              {method.accountData.accountHolder && <div>NAME: {method.accountData.accountHolder}</div>}
+                              {method.accountData.identification && <div>IDENT: {method.accountData.identification}</div>}
+                              {method.accountData.phone && <div>NET: {method.accountData.phone}</div>}
+                              {method.accountData.email && <div>MAIL: {method.accountData.email}</div>}
+                              {method.accountData.walletAddress && <div className="col-span-full break-all">ADDR: {method.accountData.walletAddress}</div>}
                             </div>
-                          )}
-                        </div>
-                      </label>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Notes */}
-            <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-              <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-                <CardTitle className="text-lg font-bold text-gray-900">
-                  Notas Adicionales (Opcional)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <Textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  placeholder="Instrucciones especiales para la entrega..."
-                  className="rounded-2xl border-2 border-gray-200 min-h-[100px] focus:border-black transition-all"
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Order Summary */}
-          <div>
-            <Card className="rounded-3xl border-0 shadow-2xl bg-white sticky top-8">
-              <CardHeader className="border-b bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-t-3xl">
-                <CardTitle className="text-lg font-bold">
-                  Resumen del Pedido
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-4">
-                {/* Items */}
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {items.map((item) => (
-                    <div key={`${item.id}-${item.size}-${item.color}`} className="flex gap-3 pb-4 border-b border-gray-100">
-                      <div className="w-20 h-20 bg-gray-100 flex-shrink-0 rounded-2xl overflow-hidden shadow-md">
-                        <img
-                          src={item.image ? `https://yenfit.shop${item.image}` : "/placeholder.svg"}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
+                            {method.accountData.additionalInfo && <p className="font-mono-data text-[9px] opacity-50 uppercase pt-4 border-t border-outline-variant/10">NOTES: {method.accountData.additionalInfo}</p>}
+                          </div>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm uppercase truncate mb-1">
-                          {item.name}
-                        </h4>
-                        <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-lg inline-block">{item.color} • {item.size}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs text-gray-600 font-medium">Cant: {item.quantity}</span>
-                          <span className="font-bold text-sm">{currencySymbol}{(item.price * item.quantity).toFixed(2)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
 
-                {/* Totals */}
-                <div className="space-y-3 pt-4 border-t">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-semibold">{currencySymbol}{total.toFixed(2)}</span>
-                  </div>
-                  
-                  {shippingCost > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Envío</span>
-                      <span className="font-semibold">{currencySymbol}{shippingCost.toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  {discount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span>Descuento ({selectedPaymentMethod?.name})</span>
-                      <span className="font-semibold">-{currencySymbol}{discount.toFixed(2)}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-baseline pt-3 border-t-2 border-gray-900">
-                    <span className="text-lg font-black uppercase">Total</span>
-                    <span className="text-3xl font-black">{currencySymbol}{finalTotal.toFixed(2)}</span>
-                  </div>
-
-                  {/* Precio en Bolívares */}
-                  {totalInBs && settings?.currency.showBsPrice && (
-                    <div className="bg-blue-50 rounded-2xl p-3 text-center">
-                      <p className="text-sm text-blue-700">
-                        <span className="font-semibold">En Bolívares:</span> Bs. {totalInBs.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
-                      </p>
-                      <p className="text-xs text-blue-500 mt-1">
-                        Tasa: {settings.currency.code === "EUR" ? exchangeRate?.eur : exchangeRate?.usd} Bs/{settings.currency.code}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Checkout Button */}
-                <Button
-                  className="w-full bg-gradient-to-r from-gray-900 to-black text-white hover:from-black hover:to-gray-900 rounded-2xl h-16 text-base font-bold uppercase tracking-wider disabled:opacity-50 shadow-2xl hover:shadow-3xl transition-all hover:scale-105 disabled:hover:scale-100"
-                  onClick={handleWhatsAppOrder}
-                  disabled={!isFormValid() || submitting}
-                >
-                  {submitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Procesando...
-                    </>
-                  ) : (
-                    <>
-                      <MessageCircle className="h-5 w-5 mr-2" />
-                      Confirmar Pedido
-                    </>
-                  )}
-                </Button>
-
-                {/* Security Info */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-4 shadow-lg">
-                  <div className="flex items-start gap-3">
-                    <Shield className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-blue-900 mb-1">
-                        Compra 100% Segura
-                      </p>
-                      <p className="text-xs text-blue-700">
-                        Tu pedido será confirmado vía WhatsApp antes de procesar el pago
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="border border-outline-variant/30 bg-surface-container-lowest">
+              <div className="border-b border-outline-variant/30 p-6 flex items-center gap-4 bg-surface-container"><span className="material-symbols-outlined text-tertiary">notes</span><h3 className="font-h3 text-h3 text-on-background uppercase tracking-tight">PROTOCOL_NOTES</h3></div>
+              <div className="p-8">
+                <Textarea name="notes" value={formData.notes} onChange={handleInputChange} placeholder="INPUT_SPECIAL_INSTRUCTIONS_HERE..." className="min-h-[120px] border border-outline-variant/30 bg-background font-mono-data uppercase focus:border-tertiary transition-colors resize-none" />
+              </div>
+            </div>
           </div>
         </div>
+
+        <aside className="lg:w-[450px] bg-surface-container-lowest lg:border-l border-outline-variant/30 relative">
+          <div className="sticky top-24 p-gutter md:p-12 space-y-12">
+            <div className="flex justify-between items-center border-b border-outline-variant/30 pb-6">
+              <h3 className="font-h3 text-h3 text-on-background uppercase tracking-tight">ORDER_SUMMARY</h3>
+              <span className="font-mono-data text-on-surface-variant text-[10px] uppercase">ENTRIES: {items.length.toString().padStart(2, '0')}</span>
+            </div>
+            <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-4 custom-scrollbar">
+              {items.map((item) => (
+                <div key={`${item.id}-${item.size}-${item.color}`} className="flex gap-6 group">
+                  <div className="w-24 aspect-square bg-surface-container border border-outline-variant/30 overflow-hidden flex-shrink-0">
+                    <img src={item.image ? (item.image.startsWith('http') ? item.image : `https://yenfit.shop${item.image}`) : "/placeholder.svg"} alt={item.name} className="w-full h-full object-cover mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-500" />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col justify-center space-y-1">
+                    <h4 className="font-mono-data text-sm text-on-background uppercase truncate tracking-tight">{item.name}</h4>
+                    <div className="flex flex-wrap items-center gap-3"><span className="font-mono-data text-[9px] text-on-surface-variant uppercase bg-surface-container px-2 border border-outline-variant/10">{item.color}</span><span className="font-mono-data text-[9px] text-on-surface-variant uppercase bg-surface-container px-2 border border-outline-variant/10">{item.size}</span></div>
+                    <div className="flex justify-between items-center mt-2"><span className="font-mono-data text-[9px] text-on-surface-variant uppercase">QTY: {item.quantity}</span><span className="font-mono-data text-xs text-tertiary font-bold">USD {(item.price * item.quantity).toFixed(2)}</span></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-4 pt-8 border-t border-outline-variant/30">
+              <div className="flex justify-between font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest"><span>Subtotal_Amount</span><span>USD {total.toFixed(2)}</span></div>
+              {shippingCost > 0 && <div className="flex justify-between font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest"><span>Logistics_Surcharge</span><span>USD {shippingCost.toFixed(2)}</span></div>}
+              {discount > 0 && <div className="flex justify-between font-mono-data text-[10px] text-error uppercase tracking-widest"><span>Protocol_Deduction</span><span>-USD {discount.toFixed(2)}</span></div>}
+              <div className="flex flex-col gap-4 pt-8 border-t-2 border-tertiary">
+                <div className="flex justify-between items-end"><div className="flex flex-col"><span className="font-mono-data text-[10px] text-on-surface-variant uppercase leading-none mb-1">FINAL_NET_TOTAL</span><span className="font-mono-data text-[8px] text-tertiary uppercase tracking-widest opacity-50 italic">PAYMENT_DUE_NOW</span></div><span className="font-display text-[42px] text-on-background leading-none tracking-tighter">{currencySymbol}{finalTotal.toFixed(2)}</span></div>
+                {totalInBs && settings?.currency.showBsPrice && (
+                  <div className="bg-surface-container p-4 border-l-2 border-tertiary space-y-1"><div className="flex justify-between items-center"><span className="font-mono-data text-[9px] text-on-surface-variant uppercase">BS_LOCAL_CONVERSION</span><span className="font-mono-data text-[9px] text-tertiary uppercase">RATE: {settings.currency.code === "EUR" ? exchangeRate?.eur : exchangeRate?.usd}</span></div><div className="font-mono-data text-lg text-on-background font-black flex justify-between items-center"><span className="opacity-30">BS.</span><span>{totalInBs.toLocaleString('es-VE', { minimumFractionDigits: 2 })}</span></div></div>
+                )}
+              </div>
+            </div>
+            <div className="space-y-6 pt-4">
+              <button onClick={handleWhatsAppOrder} disabled={!isFormValid() || submitting} className="w-full bg-tertiary text-on-tertiary font-label-caps text-label-caps uppercase py-6 hover:bg-on-surface hover:text-tertiary transition-all duration-500 border border-tertiary flex items-center justify-center gap-3 group disabled:opacity-30 disabled:cursor-not-allowed">{submitting ? <div className="w-5 h-5 border-2 border-on-tertiary border-t-transparent animate-spin"></div> : <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">bolt</span>}EXECUTE_ACQUISITION</button>
+              <div className="flex items-center gap-3 justify-center font-mono-data text-[9px] text-on-surface-variant uppercase opacity-40"><span className="material-symbols-outlined text-xs">verified_user</span>SECURE_ENCRYPTION_LAYER_4.2.1 // VALENCIA_NODE_AF</div>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      {/* Order Confirmation Modal */}
       {showOrderConfirmation && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl animate-scaleIn">
-            <div className="p-8">
-              <div className="text-center mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl">
-                  <CheckCircle2 className="h-12 w-12 text-white" />
-                </div>
-                <h3 className="text-2xl font-black uppercase mb-2 text-gray-900">¡Pedido Enviado!</h3>
-                <p className="text-gray-600">Tu pedido ha sido enviado por WhatsApp. Nos pondremos en contacto contigo pronto.</p>
-              </div>
-
-              <Button
-                onClick={() => {
-                  setShowOrderConfirmation(false)
-                  window.location.href = '/'
-                }}
-                className="w-full bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-800 hover:to-black rounded-2xl h-14 font-bold uppercase shadow-2xl hover:shadow-3xl transition-all hover:scale-105"
-              >
-                Volver a la Tienda
-              </Button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-background border border-outline-variant/30 p-12 max-w-lg w-full text-center shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div className="w-24 h-24 bg-surface-container border border-tertiary/30 rounded-full flex items-center justify-center mx-auto mb-8"><span className="material-symbols-outlined text-4xl text-tertiary">task_alt</span></div>
+            <h2 className="font-display text-h2 text-on-background uppercase tracking-tight mb-4">PROTOCOL_COMPLETE</h2>
+            <p className="font-body-lg text-on-surface-variant mb-10 uppercase tracking-widest text-xs">ASSET_ACQUISITION_LOGGED. REDIRECTING_TO_WHATSAPP_NETWORK_FOR_FINAL_CLEARANCE.</p>
+            <div className="flex flex-col gap-4">
+              <button onClick={() => window.location.href = '/'} className="w-full py-5 bg-tertiary text-on-tertiary font-label-caps text-label-caps uppercase hover:bg-surface-container-highest hover:text-tertiary border border-tertiary transition-all">RETURN_TO_SYSTEM</button>
+              <p className="font-mono-data text-[8px] text-on-surface-variant uppercase opacity-50">IF_NOT_REDIRECTED_AUTOMATICALLY_CHECK_BROWSER_POPUP_PERMISSIONS</p>
             </div>
           </div>
         </div>
@@ -1059,1744 +513,3 @@ export default function Checkout() {
     </div>
   )
 }
-
-// "use client"
-
-// import { useState, useEffect, useMemo } from "react"
-// import { ArrowLeft, CreditCard, Truck, Shield, MessageCircle, X, Plus, Minus, Lock, Search, CheckCircle2, AlertCircle, ShoppingBag, MapPin, Clock, Wallet, Banknote, Building, Store, Info } from "lucide-react"
-// import { Button } from "@/components/ui/button"
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-// import { Input } from "@/components/ui/input"
-// import { Label } from "@/components/ui/label"
-// import { Textarea } from "@/components/ui/textarea"
-// import { useCart } from "@/contexts/cart-context"
-// import { useAuth } from "@/contexts/auth-context"
-// import { api } from "@/lib/api"
-// import { brandConfig } from "@/lib/config"
-
-// const countryCodes = [
-//   { code: "+1", country: "Estados Unidos / Canadá", flag: "🇺🇸" },
-//   { code: "+52", country: "México", flag: "🇲🇽" },
-//   { code: "+53", country: "Cuba", flag: "🇨🇺" },
-//   { code: "+54", country: "Argentina", flag: "🇦🇷" },
-//   { code: "+55", country: "Brasil", flag: "🇧🇷" },
-//   { code: "+56", country: "Chile", flag: "🇨🇱" },
-//   { code: "+57", country: "Colombia", flag: "🇨🇴" },
-//   { code: "+58", country: "Venezuela", flag: "🇻🇪" },
-//   { code: "+591", country: "Bolivia", flag: "🇧🇴" },
-//   { code: "+593", country: "Ecuador", flag: "🇪🇨" },
-//   { code: "+595", country: "Paraguay", flag: "🇵🇾" },
-//   { code: "+598", country: "Uruguay", flag: "🇺🇾" },
-//   { code: "+34", country: "España", flag: "🇪🇸" },
-//   { code: "+351", country: "Portugal", flag: "🇵🇹" },
-// ]
-
-// const paymentIcons: { [key: string]: any } = {
-//   pago_movil: Building,
-//   zelle: Wallet,
-//   binance: Wallet,
-//   efectivo_divisas: Banknote,
-//   efectivo_bs: Banknote,
-//   transfer: Building,
-//   cash: Banknote,
-//   card: CreditCard,
-// }
-
-// const shippingIcons: { [key: string]: any } = {
-//   delivery: Truck,
-//   pickup: Store,
-//   standard: Truck,
-// }
-
-// interface PublicSettings {
-//   currency: {
-//     symbol: string;
-//     code: string;
-//     showBsPrice: boolean;
-//   };
-//   cashDiscount: {
-//     isActive: boolean;
-//     percentage: number;
-//     applicablePaymentMethods: string[];
-//   };
-//   paymentMethods: any[];
-//   shippingMethods: any[];
-//   business: any;
-//   whatsapp: { number: string };
-// }
-
-// interface ExchangeRate {
-//   date: string;
-//   usd: number;
-//   eur: number;
-// }
-
-// export default function Checkout() {
-//   const { items, total, clearCart, updateQuantity, removeItem } = useCart()
-//   const { user } = useAuth()
-//   const [settings, setSettings] = useState<PublicSettings | null>(null)
-//   const [exchangeRate, setExchangeRate] = useState<ExchangeRate | null>(null)
-//   const [loading, setLoading] = useState(true)
-//   const [submitting, setSubmitting] = useState(false)
-  
-//   const [formData, setFormData] = useState({
-//     firstName: "",
-//     lastName: "",
-//     email: "",
-//     countryCode: "+58",
-//     phone: "",
-//     address: "",
-//     city: "",
-//     state: "",
-//     zipCode: "",
-//     reference: "",
-//     shippingMethod: "",
-//     paymentMethod: "",
-//     notes: ""
-//   })
-  
-//   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false)
-//   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
-//   const [countrySearch, setCountrySearch] = useState("")
-  
-//   const [validationErrors, setValidationErrors] = useState({
-//     firstName: "",
-//     lastName: "",
-//     email: "",
-//     phone: ""
-//   })
-
-//   // Cargar configuraciones públicas
-//   useEffect(() => {
-//     loadSettings()
-//   }, [])
-
-//   // Cargar datos del usuario
-//   useEffect(() => {
-//     if (user) {
-//       loadUserData()
-//     }
-//   }, [user])
-
-//   const loadSettings = async () => {
-//     try {
-//       const result = await api.getPublicSettings()
-//       if (result.success) {
-//         setSettings(result.settings)
-//         setExchangeRate(result.exchangeRate)
-        
-//         // Establecer método de envío por defecto
-//         if (result.settings.shippingMethods?.length > 0) {
-//           setFormData(prev => ({
-//             ...prev,
-//             shippingMethod: result.settings.shippingMethods[0].id
-//           }))
-//         }
-        
-//         // Establecer método de pago por defecto
-//         if (result.settings.paymentMethods?.length > 0) {
-//           setFormData(prev => ({
-//             ...prev,
-//             paymentMethod: result.settings.paymentMethods[0].id
-//           }))
-//         }
-//       }
-//     } catch (error) {
-//       console.error('Error loading settings:', error)
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-
-//   const loadUserData = async () => {
-//     if (user) {
-//       try {
-//         const profileResult = await api.getMe()
-//         if (profileResult.success && profileResult.user) {
-//           const userData = profileResult.user
-          
-//           let countryCode = "+58"
-//           let phoneNumber = ""
-          
-//           if (userData.phone) {
-//             const matchedCountry = countryCodes.find(country => 
-//               userData.phone.startsWith(country.code)
-//             )
-            
-//             if (matchedCountry) {
-//               countryCode = matchedCountry.code
-//               phoneNumber = userData.phone.substring(matchedCountry.code.length).trim()
-//             } else {
-//               phoneNumber = userData.phone
-//             }
-//           }
-          
-//           setFormData(prev => ({
-//             ...prev,
-//             firstName: userData.firstName || user.firstName || "",
-//             lastName: userData.lastName || user.lastName || "",
-//             email: userData.email || user.email || "",
-//             countryCode: countryCode,
-//             phone: phoneNumber,
-//             address: userData.address || "",
-//             city: userData.city || "",
-//             state: userData.state || "",
-//             zipCode: userData.zipCode || "",
-//           }))
-//         }
-//       } catch (error) {
-//         console.error('Error loading user profile:', error)
-//       }
-//     }
-//   }
-
-//   // Filtrar códigos de país
-//   const filteredCountries = useMemo(() => {
-//     if (!countrySearch) return countryCodes
-//     return countryCodes.filter(country => 
-//       country.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
-//       country.code.includes(countrySearch)
-//     )
-//   }, [countrySearch])
-
-//   // Obtener método de envío seleccionado
-//   const selectedShippingMethod = useMemo(() => {
-//     return settings?.shippingMethods.find(m => m.id === formData.shippingMethod)
-//   }, [settings, formData.shippingMethod])
-
-//   // Obtener método de pago seleccionado
-//   const selectedPaymentMethod = useMemo(() => {
-//     return settings?.paymentMethods.find(m => m.id === formData.paymentMethod)
-//   }, [settings, formData.paymentMethod])
-
-//   // Calcular descuento
-//   const discount = useMemo(() => {
-//     if (!selectedPaymentMethod?.hasDiscount) return 0
-//     return (total * (selectedPaymentMethod.discountPercentage || 0)) / 100
-//   }, [total, selectedPaymentMethod])
-
-//   // Calcular costo de envío
-//   const shippingCost = useMemo(() => {
-//     if (!selectedShippingMethod) return 0
-//     if (selectedShippingMethod.freeFrom > 0 && total >= selectedShippingMethod.freeFrom) {
-//       return 0
-//     }
-//     return selectedShippingMethod.additionalCost || 0
-//   }, [total, selectedShippingMethod])
-
-//   // Calcular total final
-//   const finalTotal = useMemo(() => {
-//     return total + shippingCost - discount
-//   }, [total, shippingCost, discount])
-
-//   // Calcular precio en bolívares
-//   const totalInBs = useMemo(() => {
-//     if (!exchangeRate || !settings) return null
-//     const rate = settings.currency.code === "EUR" ? exchangeRate.eur : exchangeRate.usd
-//     return finalTotal * rate
-//   }, [finalTotal, exchangeRate, settings])
-
-//   // Símbolo de moneda
-//   const currencySymbol = settings?.currency?.symbol || "€"
-
-//   // Validaciones
-//   const validateName = (name: string) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(name)
-//   const validateEmail = (email: string) => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
-//   const validatePhone = (phone: string) => /^[0-9\s()-]+$/.test(phone)
-
-//   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'firstName' | 'lastName') => {
-//     const value = e.target.value
-//     if (value === '' || validateName(value)) {
-//       setFormData({ ...formData, [field]: value })
-//       setValidationErrors({ ...validationErrors, [field]: "" })
-//     } else {
-//       setValidationErrors({ ...validationErrors, [field]: "Solo se permiten letras" })
-//     }
-//   }
-
-//   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const email = e.target.value
-//     setFormData({ ...formData, email })
-//     if (email.length > 0 && !validateEmail(email)) {
-//       setValidationErrors({ ...validationErrors, email: "Email inválido" })
-//     } else {
-//       setValidationErrors({ ...validationErrors, email: "" })
-//     }
-//   }
-
-//   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const value = e.target.value
-//     if (value === '' || validatePhone(value)) {
-//       setFormData({ ...formData, phone: value })
-//       setValidationErrors({ ...validationErrors, phone: "" })
-//     } else {
-//       setValidationErrors({ ...validationErrors, phone: "Solo se permiten números" })
-//     }
-//   }
-
-//   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-//     const { name, value } = e.target
-//     setFormData(prev => ({ ...prev, [name]: value }))
-//   }
-
-//   const generateWhatsAppMessage = (orderNumber: string) => {
-//     const now = new Date()
-//     const date = now.toLocaleDateString('es-ES')
-//     const time = now.toLocaleTimeString('es-ES', { hour12: false })
-
-//     const productList = items.map((item, index) =>
-//       `${index + 1}. ${item.name}\n` +
-//       `   • Color: ${item.color}\n` +
-//       `   • Talla: ${item.size}\n` +
-//       `   • Cantidad: ${item.quantity}\n` +
-//       `   • Precio: ${currencySymbol}${item.price.toFixed(2)}\n` +
-//       `   • Subtotal: ${currencySymbol}${(item.price * item.quantity).toFixed(2)}`
-//     ).join('\n\n')
-
-//     let message = `*PEDIDO ${brandConfig.name.toUpperCase()}*\n\n` +
-//       `📋 Número de Pedido: ${orderNumber}\n` +
-//       `📅 Fecha: ${date}\n` +
-//       `🕐 Hora: ${time}\n\n` +
-//       `🛍️ *PRODUCTOS:*\n` +
-//       `──────────────────────────────\n\n` +
-//       `${productList}\n\n` +
-//       `──────────────────────────────\n` +
-//       `💰 Subtotal: ${currencySymbol}${total.toFixed(2)}\n`
-
-//     if (shippingCost > 0) {
-//       message += `🚚 Envío: ${currencySymbol}${shippingCost.toFixed(2)}\n`
-//     }
-
-//     if (discount > 0) {
-//       message += `🏷️ Descuento (${selectedPaymentMethod?.name}): -${currencySymbol}${discount.toFixed(2)}\n`
-//     }
-
-//     message += `\n💰 *TOTAL: ${currencySymbol}${finalTotal.toFixed(2)}*\n`
-
-//     if (totalInBs && settings?.currency.showBsPrice) {
-//       message += `💵 *En Bolívares: Bs. ${totalInBs.toLocaleString('es-VE', { minimumFractionDigits: 2 })}*\n`
-//       message += `📊 Tasa del día: ${settings.currency.code === "EUR" ? exchangeRate?.eur : exchangeRate?.usd} Bs/${settings.currency.code}\n`
-//     }
-
-//     message += `\n👤 *DATOS DEL CLIENTE:*\n` +
-//       `Nombre: ${formData.firstName} ${formData.lastName}\n` +
-//       `Email: ${formData.email}\n` +
-//       `Teléfono: ${formData.countryCode} ${formData.phone}\n\n`
-
-//     // Información de envío
-//     message += `📦 *MÉTODO DE ENTREGA:* ${selectedShippingMethod?.name}\n`
-    
-//     if (selectedShippingMethod?.requiresAddress) {
-//       message += `📍 *DIRECCIÓN DE ENTREGA:*\n` +
-//         `${formData.address}\n` +
-//         `${formData.city}, ${formData.state} ${formData.zipCode}\n`
-//       if (formData.reference) {
-//         message += `Referencia: ${formData.reference}\n`
-//       }
-//     } else if (selectedShippingMethod?.type === 'pickup' && selectedShippingMethod?.pickupData) {
-//       message += `🏪 *RETIRO EN:*\n` +
-//         `${selectedShippingMethod.pickupData.address}\n` +
-//         `Horario: ${selectedShippingMethod.pickupData.schedule}\n`
-//     }
-
-//     message += `\n💳 *MÉTODO DE PAGO:* ${selectedPaymentMethod?.name}\n`
-
-//     // Mensaje personalizado del método de pago
-//     if (selectedPaymentMethod?.whatsappMessage) {
-//       message += `\n${selectedPaymentMethod.whatsappMessage}\n`
-//     }
-
-//     // Información de cuenta si aplica
-//     if (selectedPaymentMethod?.accountData) {
-//       const acc = selectedPaymentMethod.accountData
-//       message += `\n📋 *DATOS DE PAGO:*\n`
-//       if (acc.bankName) message += `Banco: ${acc.bankName}\n`
-//       if (acc.accountNumber) message += `Cuenta: ${acc.accountNumber}\n`
-//       if (acc.accountHolder) message += `Titular: ${acc.accountHolder}\n`
-//       if (acc.identification) message += `CI/RIF: ${acc.identification}\n`
-//       if (acc.phone) message += `Teléfono: ${acc.phone}\n`
-//       if (acc.email) message += `Email: ${acc.email}\n`
-//       if (acc.walletAddress) message += `Wallet: ${acc.walletAddress}\n`
-//       if (acc.additionalInfo) message += `${acc.additionalInfo}\n`
-//     }
-
-//     if (formData.notes) {
-//       message += `\n📝 *NOTAS:* ${formData.notes}\n`
-//     }
-
-//     message += `\n🙌 ¡Gracias por tu compra!\n` +
-//       `📱 Instagram: ${brandConfig.social.instagram}`
-
-//     return message
-//   }
-
-//   const handleWhatsAppOrder = async () => {
-//     if (!isFormValid()) return
-
-//     setSubmitting(true)
-
-//     try {
-//       const orderData = {
-//         customerInfo: {
-//           firstName: formData.firstName,
-//           lastName: formData.lastName,
-//           email: formData.email,
-//           phone: `${formData.countryCode} ${formData.phone}`
-//         },
-//         shippingAddress: selectedShippingMethod?.requiresAddress ? {
-//           address: formData.address,
-//           city: formData.city,
-//           state: formData.state,
-//           zipCode: formData.zipCode,
-//           reference: formData.reference,
-//         } : null,
-//         shippingMethod: formData.shippingMethod,
-//         paymentMethod: formData.paymentMethod,
-//         notes: formData.notes
-//       }
-
-//       const result = await api.createOrder(orderData)
-
-//       if (result.success) {
-//         const orderNumber = result.order.orderNumber
-//         const message = generateWhatsAppMessage(orderNumber)
-//         const phoneNumber = settings?.whatsapp?.number || brandConfig.contact.whatsapp
-//         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
-
-//         await api.updateOrderWhatsApp(result.order._id)
-
-//         setShowOrderConfirmation(true)
-//         window.open(whatsappUrl, "_blank")
-//         clearCart()
-//       }
-//     } catch (error) {
-//       console.error('Error creating order:', error)
-//     } finally {
-//       setSubmitting(false)
-//     }
-//   }
-
-//   const isFormValid = () => {
-//     const baseValid = formData.firstName && formData.lastName && formData.email &&
-//       formData.phone && validateEmail(formData.email) &&
-//       !validationErrors.firstName && !validationErrors.lastName &&
-//       !validationErrors.email && !validationErrors.phone &&
-//       formData.shippingMethod && formData.paymentMethod
-
-//     if (selectedShippingMethod?.requiresAddress) {
-//       return baseValid && formData.address && formData.city && formData.state && formData.zipCode
-//     }
-
-//     return baseValid
-//   }
-
-//   const isEmailValid = formData.email.length > 0 && validateEmail(formData.email)
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-16 flex items-center justify-center">
-//         <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-black"></div>
-//       </div>
-//     )
-//   }
-
-//   if (items.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-16">
-//         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-//           <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
-//             <div className="w-28 h-28 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-//               <ShoppingBag className="h-14 w-14 text-gray-500" />
-//             </div>
-//             <h1 className="text-3xl font-black uppercase mb-4 text-gray-900">Tu carrito está vacío</h1>
-//             <p className="text-gray-600 mb-8">Agrega productos antes de proceder al checkout</p>
-//             <Button
-//               onClick={() => window.location.href = '/'}
-//               className="bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-800 hover:to-black rounded-2xl px-12 py-6 text-base font-bold uppercase shadow-2xl hover:shadow-3xl transition-all hover:scale-105"
-//             >
-//               Continuar Comprando
-//             </Button>
-//           </div>
-//         </div>
-//       </div>
-//     )
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-//       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-//         {/* Header */}
-//         <div className="mb-8">
-//           <button
-//             onClick={() => window.history.back()}
-//             className="flex items-center text-gray-600 hover:text-black mb-4 transition-colors group bg-white px-4 py-2 rounded-full shadow-md hover:shadow-lg"
-//           >
-//             <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-//             <span className="font-medium">Volver</span>
-//           </button>
-//           <h1 className="text-3xl md:text-4xl font-black uppercase mb-2 text-gray-900">
-//             Finalizar Compra
-//           </h1>
-//           <p className="text-gray-600">
-//             {user ? `¡Hola ${user.firstName}! Completa tu información para confirmar el pedido` : 'Completa tu información para confirmar el pedido'}
-//           </p>
-//         </div>
-
-//         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-//           {/* Forms */}
-//           <div className="lg:col-span-2 space-y-6">
-//             {/* Contact Information */}
-//             <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-//                 <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-//                   <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-//                     <span className="text-white text-sm font-bold">1</span>
-//                   </div>
-//                   Información de Contacto
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6 space-y-4">
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                   <div>
-//                     <Label className="text-sm font-semibold text-gray-700 mb-2 block">Nombre *</Label>
-//                     <Input
-//                       name="firstName"
-//                       value={formData.firstName}
-//                       onChange={(e) => handleNameChange(e, 'firstName')}
-//                       className={`rounded-2xl border-2 h-12 transition-all ${
-//                         validationErrors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-black'
-//                       }`}
-//                       required
-//                     />
-//                     {validationErrors.firstName && (
-//                       <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-//                         <AlertCircle className="h-3 w-3" />
-//                         {validationErrors.firstName}
-//                       </p>
-//                     )}
-//                   </div>
-//                   <div>
-//                     <Label className="text-sm font-semibold text-gray-700 mb-2 block">Apellido *</Label>
-//                     <Input
-//                       name="lastName"
-//                       value={formData.lastName}
-//                       onChange={(e) => handleNameChange(e, 'lastName')}
-//                       className={`rounded-2xl border-2 h-12 transition-all ${
-//                         validationErrors.lastName ? 'border-red-500' : 'border-gray-200 focus:border-black'
-//                       }`}
-//                       required
-//                     />
-//                     {validationErrors.lastName && (
-//                       <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-//                         <AlertCircle className="h-3 w-3" />
-//                         {validationErrors.lastName}
-//                       </p>
-//                     )}
-//                   </div>
-//                 </div>
-//                 <div>
-//                   <Label className="text-sm font-semibold text-gray-700 mb-2 block">Email *</Label>
-//                   <div className="relative">
-//                     <Input
-//                       name="email"
-//                       type="email"
-//                       value={formData.email}
-//                       onChange={handleEmailChange}
-//                       className={`rounded-2xl border-2 h-12 pr-10 transition-all ${
-//                         isEmailValid 
-//                           ? 'border-green-500' 
-//                           : validationErrors.email 
-//                           ? 'border-red-500' 
-//                           : 'border-gray-200 focus:border-black'
-//                       }`}
-//                       required
-//                     />
-//                     {isEmailValid && (
-//                       <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-500" />
-//                     )}
-//                   </div>
-//                   {validationErrors.email && (
-//                     <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-//                       <AlertCircle className="h-3 w-3" />
-//                       {validationErrors.email}
-//                     </p>
-//                   )}
-//                 </div>
-//                 <div>
-//                   <Label className="text-sm font-semibold text-gray-700 mb-2 block">Teléfono *</Label>
-//                   <div className="flex gap-2">
-//                     <div className="relative w-36">
-//                       <button
-//                         type="button"
-//                         onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-//                         className="w-full h-12 px-3 border-2 border-gray-200 rounded-2xl flex items-center justify-between bg-white hover:border-gray-400 transition-colors shadow-sm hover:shadow-md"
-//                       >
-//                         <span className="text-sm font-medium">
-//                           {countryCodes.find(c => c.code === formData.countryCode)?.flag} {formData.countryCode}
-//                         </span>
-//                         <Search className="h-4 w-4 text-gray-400" />
-//                       </button>
-                      
-//                       {showCountryDropdown && (
-//                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 rounded-2xl shadow-2xl z-50 max-h-64 overflow-hidden">
-//                           <div className="p-2 border-b sticky top-0 bg-white">
-//                             <Input
-//                               type="text"
-//                               placeholder="Buscar país..."
-//                               value={countrySearch}
-//                               onChange={(e) => setCountrySearch(e.target.value)}
-//                               className="h-10 text-sm rounded-xl"
-//                               autoFocus
-//                             />
-//                           </div>
-//                           <div className="overflow-y-auto max-h-52">
-//                             {filteredCountries.map((country) => (
-//                               <button
-//                                 key={country.code}
-//                                 type="button"
-//                                 onClick={() => {
-//                                   setFormData({ ...formData, countryCode: country.code })
-//                                   setShowCountryDropdown(false)
-//                                   setCountrySearch("")
-//                                 }}
-//                                 className="w-full px-3 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 text-sm rounded-xl mx-1"
-//                               >
-//                                 <span>{country.flag}</span>
-//                                 <span className="font-medium">{country.code}</span>
-//                                 <span className="text-gray-600 truncate">{country.country}</span>
-//                               </button>
-//                             ))}
-//                           </div>
-//                         </div>
-//                       )}
-//                     </div>
-
-//                     <div className="flex-1">
-//                       <Input
-//                         name="phone"
-//                         type="tel"
-//                         value={formData.phone}
-//                         onChange={handlePhoneChange}
-//                         placeholder="412 123 4567"
-//                         className={`rounded-2xl border-2 h-12 transition-all ${
-//                           validationErrors.phone ? 'border-red-500' : 'border-gray-200 focus:border-black'
-//                         }`}
-//                         required
-//                       />
-//                     </div>
-//                   </div>
-//                   {validationErrors.phone && (
-//                     <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-//                       <AlertCircle className="h-3 w-3" />
-//                       {validationErrors.phone}
-//                     </p>
-//                   )}
-//                 </div>
-//               </CardContent>
-//             </Card>
-
-//             {/* Shipping Method */}
-//             <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-//                 <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-//                   <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-//                     <span className="text-white text-sm font-bold">2</span>
-//                   </div>
-//                   Método de Entrega
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6">
-//                 <div className="space-y-3">
-//                   {settings?.shippingMethods.map((method) => {
-//                     const IconComponent = shippingIcons[method.type] || Truck
-//                     const isSelected = formData.shippingMethod === method.id
-//                     const isFree = method.freeFrom > 0 && total >= method.freeFrom
-                    
-//                     return (
-//                       <label
-//                         key={method.id}
-//                         className={`flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow-md ${
-//                           isSelected ? 'border-black bg-gray-50 shadow-lg' : 'border-gray-200 hover:border-gray-300'
-//                         }`}
-//                       >
-//                         <input
-//                           type="radio"
-//                           name="shippingMethod"
-//                           value={method.id}
-//                           checked={isSelected}
-//                           onChange={handleInputChange}
-//                           className="mt-1 mr-3"
-//                           style={{ accentColor: 'black' }}
-//                         />
-//                         <IconComponent className="h-5 w-5 mr-3 mt-0.5 text-gray-600" />
-//                         <div className="flex-1">
-//                           <div className="flex items-center justify-between">
-//                             <span className="font-semibold">{method.name}</span>
-//                             {method.additionalCost > 0 ? (
-//                               isFree ? (
-//                                 <span className="text-green-600 font-semibold">¡Gratis!</span>
-//                               ) : (
-//                                 <span className="font-semibold">{currencySymbol}{method.additionalCost.toFixed(2)}</span>
-//                               )
-//                             ) : (
-//                               <span className="text-green-600 font-semibold">A Consultar</span>
-//                             )}
-//                           </div>
-//                           {method.description && (
-//                             <p className="text-sm text-gray-500 mt-1">{method.description}</p>
-//                           )}
-//                           {method.estimatedTime && (
-//                             <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-//                               <Clock className="h-3 w-3" />
-//                               {method.estimatedTime}
-//                             </p>
-//                           )}
-//                           {method.freeFrom > 0 && !isFree && (
-//                             <p className="text-xs text-blue-600 mt-1">
-//                               Envío gratis en compras desde {currencySymbol}{method.freeFrom.toFixed(2)}
-//                             </p>
-//                           )}
-//                           {method.type === 'pickup' && method.pickupData && (
-//                             <div className="mt-2 p-2 bg-blue-50 rounded-lg text-xs text-blue-700">
-//                               <p className="font-medium">{method.pickupData.address}</p>
-//                               <p>{method.pickupData.schedule}</p>
-//                             </div>
-//                           )}
-//                         </div>
-//                       </label>
-//                     )
-//                   })}
-//                 </div>
-//               </CardContent>
-//             </Card>
-
-//             {/* Shipping Address - Solo si es requerido */}
-//             {selectedShippingMethod?.requiresAddress && (
-//               <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-//                 <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-//                   <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-//                     <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-//                       <MapPin className="h-5 w-5 text-white" />
-//                     </div>
-//                     Dirección de Envío
-//                   </CardTitle>
-//                 </CardHeader>
-//                 <CardContent className="pt-6 space-y-4">
-//                   <div>
-//                     <Label className="text-sm font-semibold text-gray-700 mb-2 block">Dirección *</Label>
-//                     <Input
-//                       name="address"
-//                       value={formData.address}
-//                       onChange={handleInputChange}
-//                       className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-//                       placeholder="Calle, número, apartamento"
-//                       required
-//                     />
-//                   </div>
-//                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                     <div>
-//                       <Label className="text-sm font-semibold text-gray-700 mb-2 block">Ciudad *</Label>
-//                       <Input
-//                         name="city"
-//                         value={formData.city}
-//                         onChange={handleInputChange}
-//                         className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-//                         required
-//                       />
-//                     </div>
-//                     <div>
-//                       <Label className="text-sm font-semibold text-gray-700 mb-2 block">Estado *</Label>
-//                       <Input
-//                         name="state"
-//                         value={formData.state}
-//                         onChange={handleInputChange}
-//                         className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-//                         required
-//                       />
-//                     </div>
-//                   </div>
-//                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                     <div>
-//                       <Label className="text-sm font-semibold text-gray-700 mb-2 block">Código Postal *</Label>
-//                       <Input
-//                         name="zipCode"
-//                         value={formData.zipCode}
-//                         onChange={handleInputChange}
-//                         className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-//                         required
-//                       />
-//                     </div>
-//                     <div>
-//                       <Label className="text-sm font-semibold text-gray-700 mb-2 block">Punto de Referencia</Label>
-//                       <Input
-//                         name="reference"
-//                         value={formData.reference}
-//                         onChange={handleInputChange}
-//                         className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-//                         placeholder="Cerca de..."
-//                       />
-//                     </div>
-//                   </div>
-//                 </CardContent>
-//               </Card>
-//             )}
-
-//             {/* Payment Method */}
-//             <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-//                 <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-//                   <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-//                     <span className="text-white text-sm font-bold">3</span>
-//                   </div>
-//                   Método de Pago
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6">
-//                 <div className="space-y-3">
-//                   {settings?.paymentMethods.map((method) => {
-//                     const IconComponent = paymentIcons[method.id] || CreditCard
-//                     const isSelected = formData.paymentMethod === method.id
-                    
-//                     return (
-//                       <label
-//                         key={method.id}
-//                         className={`flex items-start p-4 border-2 rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow-md ${
-//                           isSelected ? 'border-black bg-gray-50 shadow-lg' : 'border-gray-200 hover:border-gray-300'
-//                         }`}
-//                       >
-//                         <input
-//                           type="radio"
-//                           name="paymentMethod"
-//                           value={method.id}
-//                           checked={isSelected}
-//                           onChange={handleInputChange}
-//                           className="mt-1 mr-3"
-//                           style={{ accentColor: 'black' }}
-//                         />
-//                         <IconComponent className="h-5 w-5 mr-3 mt-0.5 text-gray-600" />
-//                         <div className="flex-1">
-//                           <div className="flex items-center gap-2">
-//                             <span className="font-semibold">{method.name}</span>
-//                             {method.hasDiscount && (
-//                               <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-semibold">
-//                                 -{method.discountPercentage}%
-//                               </span>
-//                             )}
-//                           </div>
-//                           {method.description && (
-//                             <p className="text-sm text-gray-500 mt-1">{method.description}</p>
-//                           )}
-//                           {method.requiresProof && (
-//                             <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-//                               <Info className="h-3 w-3" />
-//                               Se requiere comprobante de pago
-//                             </p>
-//                           )}
-//                           {isSelected && method.accountData && Object.keys(method.accountData).some(k => method.accountData[k]) && (
-//                             <div className="mt-3 p-3 bg-blue-50 rounded-xl text-sm">
-//                               <p className="font-semibold text-blue-900 mb-2">Datos de pago:</p>
-//                               <div className="space-y-1 text-blue-800">
-//                                 {method.accountData.bankName && <p>Banco: {method.accountData.bankName}</p>}
-//                                 {method.accountData.accountNumber && <p>Cuenta: {method.accountData.accountNumber}</p>}
-//                                 {method.accountData.accountHolder && <p>Titular: {method.accountData.accountHolder}</p>}
-//                                 {method.accountData.identification && <p>CI/RIF: {method.accountData.identification}</p>}
-//                                 {method.accountData.phone && <p>Teléfono: {method.accountData.phone}</p>}
-//                                 {method.accountData.email && <p>Email: {method.accountData.email}</p>}
-//                                 {method.accountData.walletAddress && <p>Wallet: {method.accountData.walletAddress}</p>}
-//                                 {method.accountData.additionalInfo && <p className="mt-2 text-xs">{method.accountData.additionalInfo}</p>}
-//                               </div>
-//                             </div>
-//                           )}
-//                         </div>
-//                       </label>
-//                     )
-//                   })}
-//                 </div>
-//               </CardContent>
-//             </Card>
-
-//             {/* Notes */}
-//             <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-//                 <CardTitle className="text-lg font-bold text-gray-900">
-//                   Notas Adicionales (Opcional)
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6">
-//                 <Textarea
-//                   name="notes"
-//                   value={formData.notes}
-//                   onChange={handleInputChange}
-//                   placeholder="Instrucciones especiales para la entrega..."
-//                   className="rounded-2xl border-2 border-gray-200 min-h-[100px] focus:border-black transition-all"
-//                 />
-//               </CardContent>
-//             </Card>
-//           </div>
-
-//           {/* Order Summary */}
-//           <div>
-//             <Card className="rounded-3xl border-0 shadow-2xl bg-white sticky top-8">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-t-3xl">
-//                 <CardTitle className="text-lg font-bold">
-//                   Resumen del Pedido
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6 space-y-4">
-//                 {/* Items */}
-//                 <div className="space-y-4 max-h-96 overflow-y-auto">
-//                   {items.map((item) => (
-//                     <div key={`${item.id}-${item.size}-${item.color}`} className="flex gap-3 pb-4 border-b border-gray-100">
-//                       <div className="w-20 h-20 bg-gray-100 flex-shrink-0 rounded-2xl overflow-hidden shadow-md">
-//                         <img
-//                           src={item.image ? `https://yenfit.shop${item.image}` : "/placeholder.svg"}
-//                           alt={item.name}
-//                           className="w-full h-full object-cover"
-//                         />
-//                       </div>
-//                       <div className="flex-1 min-w-0">
-//                         <h4 className="font-semibold text-sm uppercase truncate mb-1">
-//                           {item.name}
-//                         </h4>
-//                         <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-lg inline-block">{item.color} • {item.size}</p>
-//                         <div className="flex items-center justify-between mt-2">
-//                           <span className="text-xs text-gray-600 font-medium">Cant: {item.quantity}</span>
-//                           <span className="font-bold text-sm">{currencySymbol}{(item.price * item.quantity).toFixed(2)}</span>
-//                         </div>
-//                       </div>
-//                     </div>
-//                   ))}
-//                 </div>
-
-//                 {/* Totals */}
-//                 <div className="space-y-3 pt-4 border-t">
-//                   <div className="flex justify-between text-sm">
-//                     <span className="text-gray-600">Subtotal</span>
-//                     <span className="font-semibold">{currencySymbol}{total.toFixed(2)}</span>
-//                   </div>
-                  
-//                   {shippingCost > 0 && (
-//                     <div className="flex justify-between text-sm">
-//                       <span className="text-gray-600">Envío</span>
-//                       <span className="font-semibold">{currencySymbol}{shippingCost.toFixed(2)}</span>
-//                     </div>
-//                   )}
-                  
-//                   {discount > 0 && (
-//                     <div className="flex justify-between text-sm text-green-600">
-//                       <span>Descuento ({selectedPaymentMethod?.name})</span>
-//                       <span className="font-semibold">-{currencySymbol}{discount.toFixed(2)}</span>
-//                     </div>
-//                   )}
-
-//                   <div className="flex justify-between items-baseline pt-3 border-t-2 border-gray-900">
-//                     <span className="text-lg font-black uppercase">Total</span>
-//                     <span className="text-3xl font-black">{currencySymbol}{finalTotal.toFixed(2)}</span>
-//                   </div>
-
-//                   {/* Precio en Bolívares */}
-//                   {totalInBs && settings?.currency.showBsPrice && (
-//                     <div className="bg-blue-50 rounded-2xl p-3 text-center">
-//                       <p className="text-sm text-blue-700">
-//                         <span className="font-semibold">En Bolívares:</span> Bs. {totalInBs.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
-//                       </p>
-//                       <p className="text-xs text-blue-500 mt-1">
-//                         Tasa: {settings.currency.code === "EUR" ? exchangeRate?.eur : exchangeRate?.usd} Bs/{settings.currency.code}
-//                       </p>
-//                     </div>
-//                   )}
-//                 </div>
-
-//                 {/* Checkout Button */}
-//                 <Button
-//                   className="w-full bg-gradient-to-r from-gray-900 to-black text-white hover:from-black hover:to-gray-900 rounded-2xl h-16 text-base font-bold uppercase tracking-wider disabled:opacity-50 shadow-2xl hover:shadow-3xl transition-all hover:scale-105 disabled:hover:scale-100"
-//                   onClick={handleWhatsAppOrder}
-//                   disabled={!isFormValid() || submitting}
-//                 >
-//                   {submitting ? (
-//                     <>
-//                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-//                       Procesando...
-//                     </>
-//                   ) : (
-//                     <>
-//                       <MessageCircle className="h-5 w-5 mr-2" />
-//                       Confirmar Pedido
-//                     </>
-//                   )}
-//                 </Button>
-
-//                 {/* Security Info */}
-//                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-4 shadow-lg">
-//                   <div className="flex items-start gap-3">
-//                     <Shield className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-//                     <div>
-//                       <p className="text-sm font-semibold text-blue-900 mb-1">
-//                         Compra 100% Segura
-//                       </p>
-//                       <p className="text-xs text-blue-700">
-//                         Tu pedido será confirmado vía WhatsApp antes de procesar el pago
-//                       </p>
-//                     </div>
-//                   </div>
-//                 </div>
-//               </CardContent>
-//             </Card>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Order Confirmation Modal */}
-//       {showOrderConfirmation && (
-//         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-//           <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl animate-scaleIn">
-//             <div className="p-8">
-//               <div className="text-center mb-6">
-//                 <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl">
-//                   <CheckCircle2 className="h-12 w-12 text-white" />
-//                 </div>
-//                 <h3 className="text-2xl font-black uppercase mb-2 text-gray-900">¡Pedido Enviado!</h3>
-//                 <p className="text-gray-600">Tu pedido ha sido enviado por WhatsApp. Nos pondremos en contacto contigo pronto.</p>
-//               </div>
-
-//               <Button
-//                 onClick={() => {
-//                   setShowOrderConfirmation(false)
-//                   window.location.href = '/'
-//                 }}
-//                 className="w-full bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-800 hover:to-black rounded-2xl h-14 font-bold uppercase shadow-2xl hover:shadow-3xl transition-all hover:scale-105"
-//               >
-//                 Volver a la Tienda
-//               </Button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   )
-// }
-
-// "use client" 
-
-// import { useState, useEffect, useMemo } from "react"
-// import { ArrowLeft, CreditCard, Truck, Shield, MessageCircle, X, Plus, Minus, Lock, Search, CheckCircle2, AlertCircle, ShoppingBag } from "lucide-react"
-// import { Button } from "@/components/ui/button"
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-// import { Input } from "@/components/ui/input"
-// import { Label } from "@/components/ui/label"
-// import { Textarea } from "@/components/ui/textarea"
-// import { useCart } from "@/contexts/cart-context"
-// import { useAuth } from "@/contexts/auth-context"
-// import { api } from "@/lib/api"
-// import { brandConfig } from "@/lib/config"
-
-// // Lista de códigos de país
-// const countryCodes = [
-//   { code: "+1", country: "Estados Unidos / Canadá", flag: "🇺🇸" },
-//   { code: "+52", country: "México", flag: "🇲🇽" },
-//   { code: "+53", country: "Cuba", flag: "🇨🇺" },
-//   { code: "+54", country: "Argentina", flag: "🇦🇷" },
-//   { code: "+55", country: "Brasil", flag: "🇧🇷" },
-//   { code: "+56", country: "Chile", flag: "🇨🇱" },
-//   { code: "+57", country: "Colombia", flag: "🇨🇴" },
-//   { code: "+58", country: "Venezuela", flag: "🇻🇪" },
-//   { code: "+591", country: "Bolivia", flag: "🇧🇴" },
-//   { code: "+593", country: "Ecuador", flag: "🇪🇨" },
-//   { code: "+595", country: "Paraguay", flag: "🇵🇾" },
-//   { code: "+598", country: "Uruguay", flag: "🇺🇾" },
-//   { code: "+34", country: "España", flag: "🇪🇸" },
-//   { code: "+351", country: "Portugal", flag: "🇵🇹" },
-// ]
-
-// export default function Checkout() {
-//   const { items, total, clearCart, updateQuantity, removeItem } = useCart()
-//   const { user } = useAuth()
-//   const [formData, setFormData] = useState({
-//     firstName: "",
-//     lastName: "",
-//     email: "",
-//     countryCode: "+58",
-//     phone: "",
-//     address: "",
-//     city: "",
-//     state: "",
-//     zipCode: "",
-//     paymentMethod: "transfer",
-//     notes: ""
-//   })
-//   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false)
-//   const [orderDetails, setOrderDetails] = useState('')
-//   const [loading, setLoading] = useState(false)
-//   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
-//   const [countrySearch, setCountrySearch] = useState("")
-  
-//   // Errores de validación
-//   const [validationErrors, setValidationErrors] = useState({
-//     firstName: "",
-//     lastName: "",
-//     email: "",
-//     phone: ""
-//   })
-
-//   // Cargar datos del usuario logueado
-//   useEffect(() => {
-//     const loadUserData = async () => {
-//       if (user) {
-//         try {
-//           const profileResult = await api.getMe()
-          
-//           if (profileResult.success && profileResult.user) {
-//             const userData = profileResult.user
-            
-//             let countryCode = "+58"
-//             let phoneNumber = ""
-            
-//             if (userData.phone) {
-//               const matchedCountry = countryCodes.find(country => 
-//                 userData.phone.startsWith(country.code)
-//               )
-              
-//               if (matchedCountry) {
-//                 countryCode = matchedCountry.code
-//                 phoneNumber = userData.phone.substring(matchedCountry.code.length).trim()
-//               } else {
-//                 phoneNumber = userData.phone
-//               }
-//             }
-            
-//             setFormData({
-//               firstName: userData.firstName || user.firstName || "",
-//               lastName: userData.lastName || user.lastName || "",
-//               email: userData.email || user.email || "",
-//               countryCode: countryCode,
-//               phone: phoneNumber,
-//               address: userData.address || "",
-//               city: userData.city || "",
-//               state: userData.state || "",
-//               zipCode: userData.zipCode || "",
-//               paymentMethod: "transfer",
-//               notes: ""
-//             })
-//           } else {
-//             setFormData(prev => ({
-//               ...prev,
-//               firstName: user.firstName || "",
-//               lastName: user.lastName || "",
-//               email: user.email || "",
-//             }))
-//           }
-//         } catch (error) {
-//           console.error('Error loading user profile:', error)
-//           setFormData(prev => ({
-//             ...prev,
-//             firstName: user.firstName || "",
-//             lastName: user.lastName || "",
-//             email: user.email || "",
-//           }))
-//         }
-//       }
-//     }
-    
-//     loadUserData()
-//   }, [user])
-
-//   // Filtrar códigos de país
-//   const filteredCountries = useMemo(() => {
-//     if (!countrySearch) return countryCodes
-//     return countryCodes.filter(country => 
-//       country.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
-//       country.code.includes(countrySearch)
-//     )
-//   }, [countrySearch])
-
-//   // Validaciones
-//   const validateName = (name: string) => {
-//     const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/
-//     return nameRegex.test(name)
-//   }
-
-//   const validateEmail = (email: string) => {
-//     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-//     return emailRegex.test(email)
-//   }
-
-//   const validatePhone = (phone: string) => {
-//     const phoneRegex = /^[0-9\s()-]+$/
-//     return phoneRegex.test(phone)
-//   }
-
-//   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'firstName' | 'lastName') => {
-//     const value = e.target.value
-    
-//     if (value === '' || validateName(value)) {
-//       setFormData({ ...formData, [field]: value })
-//       setValidationErrors({ ...validationErrors, [field]: "" })
-//     } else {
-//       setValidationErrors({ 
-//         ...validationErrors, 
-//         [field]: "Solo se permiten letras" 
-//       })
-//     }
-//   }
-
-//   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const email = e.target.value
-//     setFormData({ ...formData, email })
-    
-//     if (email.length > 0 && !validateEmail(email)) {
-//       setValidationErrors({ ...validationErrors, email: "Email inválido" })
-//     } else {
-//       setValidationErrors({ ...validationErrors, email: "" })
-//     }
-//   }
-
-//   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const value = e.target.value
-    
-//     if (value === '' || validatePhone(value)) {
-//       setFormData({ ...formData, phone: value })
-//       setValidationErrors({ ...validationErrors, phone: "" })
-//     } else {
-//       setValidationErrors({ 
-//         ...validationErrors, 
-//         phone: "Solo se permiten números" 
-//       })
-//     }
-//   }
-
-//   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-//     const { name, value } = e.target
-//     setFormData(prev => ({ ...prev, [name]: value }))
-//   }
-
-//   const generateOrderNumber = () => {
-//     const timestamp = Date.now().toString().slice(-6)
-//     return `${brandConfig.name.toUpperCase()}-${timestamp}`
-//   }
-
-//   const getCurrentDateTime = () => {
-//     const now = new Date()
-//     const date = now.toLocaleDateString('es-ES')
-//     const time = now.toLocaleTimeString('es-ES', { hour12: false })
-//     return { date, time }
-//   }
-
-//   const generateWhatsAppMessage = (orderNumber: string) => {
-//     const { date, time } = getCurrentDateTime()
-
-//     const productList = items.map((item, index) =>
-//       `${index + 1}. ${item.name}\n` +
-//       `   • Color: ${item.color}\n` +
-//       `   • Talla: ${item.size}\n` +
-//       `   • Cantidad: ${item.quantity}\n` +
-//       `   • Precio unitario: $${item.price.toFixed(2)}\n` +
-//       `   • Subtotal: $${(item.price * item.quantity).toFixed(2)}`
-//     ).join('\n\n')
-
-//     return `*PEDIDO ${brandConfig.name.toUpperCase()}*\n\n` +
-//       `📋 Número de Pedido: ${orderNumber}\n` +
-//       `📅 Fecha: ${date}\n` +
-//       `🕐 Hora: ${time}\n\n` +
-//       `🛍️ *PRODUCTOS:*\n` +
-//       `──────────────────────────────\n\n` +
-//       `${productList}\n\n` +
-//       `──────────────────────────────\n` +
-//       `💰 *TOTAL: $${total.toFixed(2)}*\n\n` +
-//       `👤 *DATOS DEL CLIENTE:*\n` +
-//       `Nombre: ${formData.firstName} ${formData.lastName}\n` +
-//       `Email: ${formData.email}\n` +
-//       `Teléfono: ${formData.countryCode} ${formData.phone}\n\n` +
-//       `📍 *DIRECCIÓN DE ENTREGA:*\n` +
-//       `${formData.address}\n` +
-//       `${formData.city}, ${formData.state} ${formData.zipCode}\n\n` +
-//       `💳 *MÉTODO DE PAGO:* ${formData.paymentMethod === 'transfer' ? 'Transferencia' : formData.paymentMethod === 'cash' ? 'Efectivo' : 'Tarjeta'}\n\n` +
-//       `${formData.notes ? `📝 *NOTAS:* ${formData.notes}\n\n` : ''}` +
-//       `🙌 ¡Gracias por tu compra!\n` +
-//       `📱 Instagram: ${brandConfig.social.instagram}`
-//   }
-
-//   const handleWhatsAppOrder = async () => {
-//     if (!isFormValid()) return
-
-//     setLoading(true)
-
-//     try {
-//       const orderData = {
-//         customerInfo: {
-//           firstName: formData.firstName,
-//           lastName: formData.lastName,
-//           email: formData.email,
-//           phone: `${formData.countryCode} ${formData.phone}`
-//         },
-//         shippingAddress: {
-//           address: formData.address,
-//           city: formData.city,
-//           state: formData.state,
-//           zipCode: formData.zipCode
-//         },
-//         paymentMethod: formData.paymentMethod,
-//         notes: formData.notes
-//       }
-
-//       const result = await api.createOrder(orderData)
-
-//       if (result.success) {
-//         const orderNumber = result.order.orderNumber
-//         const message = generateWhatsAppMessage(orderNumber)
-//         const phoneNumber = brandConfig.contact.whatsapp
-//         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
-
-//         await api.updateOrderWhatsApp(result.order._id)
-
-//         setOrderDetails(message)
-//         setShowOrderConfirmation(true)
-
-//         window.open(whatsappUrl, "_blank")
-//         clearCart()
-//       }
-//     } catch (error) {
-//       console.error('Error creating order:', error)
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-
-//   const isFormValid = () => {
-//     return formData.firstName && formData.lastName && formData.email &&
-//       formData.phone && formData.address && formData.city &&
-//       formData.state && formData.zipCode && validateEmail(formData.email) &&
-//       !validationErrors.firstName && !validationErrors.lastName &&
-//       !validationErrors.email && !validationErrors.phone
-//   }
-
-//   const isEmailValid = formData.email.length > 0 && validateEmail(formData.email)
-
-//   if (items.length === 0) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-16">
-//         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-//           <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
-//             <div className="w-28 h-28 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-//               <ShoppingBag className="h-14 w-14 text-gray-500" />
-//             </div>
-//             <h1 className="text-3xl font-black uppercase mb-4 text-gray-900">Tu carrito está vacío</h1>
-//             <p className="text-gray-600 mb-8">Agrega productos antes de proceder al checkout</p>
-//             <Button
-//               onClick={() => window.location.href = '/'}
-//               className="bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-800 hover:to-black rounded-2xl px-12 py-6 text-base font-bold uppercase shadow-2xl hover:shadow-3xl transition-all hover:scale-105"
-//             >
-//               Continuar Comprando
-//             </Button>
-//           </div>
-//         </div>
-//       </div>
-//     )
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-//       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-//         {/* Header */}
-//         <div className="mb-8">
-//           <button
-//             onClick={() => window.history.back()}
-//             className="flex items-center text-gray-600 hover:text-black mb-4 transition-colors group bg-white px-4 py-2 rounded-full shadow-md hover:shadow-lg"
-//           >
-//             <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-//             <span className="font-medium">Volver</span>
-//           </button>
-//           <h1 className="text-3xl md:text-4xl font-black uppercase mb-2 text-gray-900">
-//             Finalizar Compra
-//           </h1>
-//           <p className="text-gray-600">
-//             {user ? `¡Hola ${user.firstName}! Completa tu información para confirmar el pedido` : 'Completa tu información para confirmar el pedido'}
-//           </p>
-//         </div>
-
-//         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-//           {/* Forms */}
-//           <div className="lg:col-span-2 space-y-6">
-//             {/* Contact Information */}
-//             <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-//                 <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-//                   <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-//                     <span className="text-white text-sm font-bold">1</span>
-//                   </div>
-//                   Información de Contacto
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6 space-y-4">
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                   <div>
-//                     <Label className="text-sm font-semibold text-gray-700 mb-2 block">Nombre *</Label>
-//                     <Input
-//                       name="firstName"
-//                       value={formData.firstName}
-//                       onChange={(e) => handleNameChange(e, 'firstName')}
-//                       className={`rounded-2xl border-2 h-12 transition-all ${
-//                         validationErrors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-black'
-//                       }`}
-//                       required
-//                     />
-//                     {validationErrors.firstName && (
-//                       <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-//                         <AlertCircle className="h-3 w-3" />
-//                         {validationErrors.firstName}
-//                       </p>
-//                     )}
-//                   </div>
-//                   <div>
-//                     <Label className="text-sm font-semibold text-gray-700 mb-2 block">Apellido *</Label>
-//                     <Input
-//                       name="lastName"
-//                       value={formData.lastName}
-//                       onChange={(e) => handleNameChange(e, 'lastName')}
-//                       className={`rounded-2xl border-2 h-12 transition-all ${
-//                         validationErrors.lastName ? 'border-red-500' : 'border-gray-200 focus:border-black'
-//                       }`}
-//                       required
-//                     />
-//                     {validationErrors.lastName && (
-//                       <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-//                         <AlertCircle className="h-3 w-3" />
-//                         {validationErrors.lastName}
-//                       </p>
-//                     )}
-//                   </div>
-//                 </div>
-//                 <div>
-//                   <Label className="text-sm font-semibold text-gray-700 mb-2 block">Email *</Label>
-//                   <div className="relative">
-//                     <Input
-//                       name="email"
-//                       type="email"
-//                       value={formData.email}
-//                       onChange={handleEmailChange}
-//                       className={`rounded-2xl border-2 h-12 pr-10 transition-all ${
-//                         isEmailValid 
-//                           ? 'border-green-500' 
-//                           : validationErrors.email 
-//                           ? 'border-red-500' 
-//                           : 'border-gray-200 focus:border-black'
-//                       }`}
-//                       required
-//                     />
-//                     {isEmailValid && (
-//                       <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-500" />
-//                     )}
-//                   </div>
-//                   {validationErrors.email && (
-//                     <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-//                       <AlertCircle className="h-3 w-3" />
-//                       {validationErrors.email}
-//                     </p>
-//                   )}
-//                 </div>
-//                 <div>
-//                   <Label className="text-sm font-semibold text-gray-700 mb-2 block">Teléfono *</Label>
-//                   <div className="flex gap-2">
-//                     {/* Country Code Selector */}
-//                     <div className="relative w-36">
-//                       <button
-//                         type="button"
-//                         onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-//                         className="w-full h-12 px-3 border-2 border-gray-200 rounded-2xl flex items-center justify-between bg-white hover:border-gray-400 transition-colors shadow-sm hover:shadow-md"
-//                       >
-//                         <span className="text-sm font-medium">
-//                           {countryCodes.find(c => c.code === formData.countryCode)?.flag} {formData.countryCode}
-//                         </span>
-//                         <Search className="h-4 w-4 text-gray-400" />
-//                       </button>
-                      
-//                       {showCountryDropdown && (
-//                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 rounded-2xl shadow-2xl z-50 max-h-64 overflow-hidden">
-//                           <div className="p-2 border-b sticky top-0 bg-white">
-//                             <Input
-//                               type="text"
-//                               placeholder="Buscar país..."
-//                               value={countrySearch}
-//                               onChange={(e) => setCountrySearch(e.target.value)}
-//                               className="h-10 text-sm rounded-xl"
-//                               autoFocus
-//                             />
-//                           </div>
-//                           <div className="overflow-y-auto max-h-52">
-//                             {filteredCountries.map((country) => (
-//                               <button
-//                                 key={country.code}
-//                                 type="button"
-//                                 onClick={() => {
-//                                   setFormData({ ...formData, countryCode: country.code })
-//                                   setShowCountryDropdown(false)
-//                                   setCountrySearch("")
-//                                 }}
-//                                 className="w-full px-3 py-2 text-left hover:bg-gray-100 transition-colors flex items-center gap-2 text-sm rounded-xl mx-1"
-//                               >
-//                                 <span>{country.flag}</span>
-//                                 <span className="font-medium">{country.code}</span>
-//                                 <span className="text-gray-600 truncate">{country.country}</span>
-//                               </button>
-//                             ))}
-//                           </div>
-//                         </div>
-//                       )}
-//                     </div>
-
-//                     {/* Phone Number */}
-//                     <div className="flex-1">
-//                       <Input
-//                         name="phone"
-//                         type="tel"
-//                         value={formData.phone}
-//                         onChange={handlePhoneChange}
-//                         placeholder="412 123 4567"
-//                         className={`rounded-2xl border-2 h-12 transition-all ${
-//                           validationErrors.phone ? 'border-red-500' : 'border-gray-200 focus:border-black'
-//                         }`}
-//                         required
-//                       />
-//                     </div>
-//                   </div>
-//                   {validationErrors.phone && (
-//                     <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-//                       <AlertCircle className="h-3 w-3" />
-//                       {validationErrors.phone}
-//                     </p>
-//                   )}
-//                 </div>
-//               </CardContent>
-//             </Card>
-
-//             {/* Shipping Address */}
-//             <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-//                 <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-//                   <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-//                     <span className="text-white text-sm font-bold">2</span>
-//                   </div>
-//                   Dirección de Envío
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6 space-y-4">
-//                 <div>
-//                   <Label className="text-sm font-semibold text-gray-700 mb-2 block">Dirección *</Label>
-//                   <Input
-//                     name="address"
-//                     value={formData.address}
-//                     onChange={handleInputChange}
-//                     className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-//                     placeholder="Calle, número, apartamento"
-//                     required
-//                   />
-//                 </div>
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                   <div>
-//                     <Label className="text-sm font-semibold text-gray-700 mb-2 block">Ciudad *</Label>
-//                     <Input
-//                       name="city"
-//                       value={formData.city}
-//                       onChange={handleInputChange}
-//                       className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-//                       required
-//                     />
-//                   </div>
-//                   <div>
-//                     <Label className="text-sm font-semibold text-gray-700 mb-2 block">Estado *</Label>
-//                     <Input
-//                       name="state"
-//                       value={formData.state}
-//                       onChange={handleInputChange}
-//                       className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-//                       required
-//                     />
-//                   </div>
-//                 </div>
-//                 <div>
-//                   <Label className="text-sm font-semibold text-gray-700 mb-2 block">Código Postal *</Label>
-//                   <Input
-//                     name="zipCode"
-//                     value={formData.zipCode}
-//                     onChange={handleInputChange}
-//                     className="rounded-2xl border-2 border-gray-200 h-12 focus:border-black transition-all"
-//                     required
-//                   />
-//                 </div>
-//               </CardContent>
-//             </Card>
-
-//             {/* Payment Method */}
-//             <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-//                 <CardTitle className="flex items-center text-lg font-bold text-gray-900">
-//                   <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-2xl flex items-center justify-center mr-3 shadow-lg">
-//                     <span className="text-white text-sm font-bold">3</span>
-//                   </div>
-//                   Método de Pago
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6">
-//                 <div className="space-y-3">
-//                   <label className={`flex items-center p-4 border-2 rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow-md ${
-//                     formData.paymentMethod === "transfer" ? 'border-black bg-gray-50 shadow-lg' : 'border-gray-200 hover:border-gray-300'
-//                   }`}>
-//                     <input
-//                       type="radio"
-//                       name="paymentMethod"
-//                       value="transfer"
-//                       checked={formData.paymentMethod === "transfer"}
-//                       onChange={handleInputChange}
-//                       className="mr-3"
-//                       style={{ accentColor: 'black' }}
-//                     />
-//                     <CreditCard className="h-5 w-5 mr-2" />
-//                     <span className="font-semibold">Transferencia Bancaria</span>
-//                   </label>
-//                   <label className={`flex items-center p-4 border-2 rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow-md ${
-//                     formData.paymentMethod === "cash" ? 'border-black bg-gray-50 shadow-lg' : 'border-gray-200 hover:border-gray-300'
-//                   }`}>
-//                     <input
-//                       type="radio"
-//                       name="paymentMethod"
-//                       value="cash"
-//                       checked={formData.paymentMethod === "cash"}
-//                       onChange={handleInputChange}
-//                       className="mr-3"
-//                       style={{ accentColor: 'black' }}
-//                     />
-//                     <span className="text-2xl mr-2">💵</span>
-//                     <span className="font-semibold">Efectivo (Contra entrega)</span>
-//                   </label>
-//                 </div>
-//               </CardContent>
-//             </Card>
-
-//             {/* Notes */}
-//             <Card className="rounded-3xl border-0 shadow-xl bg-white hover:shadow-2xl transition-shadow">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white rounded-t-3xl">
-//                 <CardTitle className="text-lg font-bold text-gray-900">
-//                   Notas Adicionales (Opcional)
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6">
-//                 <Textarea
-//                   name="notes"
-//                   value={formData.notes}
-//                   onChange={handleInputChange}
-//                   placeholder="Instrucciones especiales para la entrega..."
-//                   className="rounded-2xl border-2 border-gray-200 min-h-[100px] focus:border-black transition-all"
-//                 />
-//               </CardContent>
-//             </Card>
-//           </div>
-
-//           {/* Order Summary */}
-//           <div>
-//             <Card className="rounded-3xl border-0 shadow-2xl bg-white sticky top-8">
-//               <CardHeader className="border-b bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-t-3xl">
-//                 <CardTitle className="text-lg font-bold">
-//                   Resumen del Pedido
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="pt-6 space-y-4">
-//                 {/* Items */}
-//                 <div className="space-y-4 max-h-96 overflow-y-auto">
-//                   {items.map((item) => (
-//                     <div key={`${item.id}-${item.size}-${item.color}`} className="flex gap-3 pb-4 border-b border-gray-100">
-//                       <div className="w-20 h-20 bg-gray-100 flex-shrink-0 rounded-2xl overflow-hidden shadow-md">
-//                         <img
-//                           src={item.image ? `https://yenfit.shop${item.image}` : "/placeholder.svg"}
-//                           alt={item.name}
-//                           className="w-full h-full object-cover"
-//                         />
-//                       </div>
-//                       <div className="flex-1 min-w-0">
-//                         <h4 className="font-semibold text-sm uppercase truncate mb-1">
-//                           {item.name}
-//                         </h4>
-//                         <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-lg inline-block">{item.color} • {item.size}</p>
-//                         <div className="flex items-center justify-between mt-2">
-//                           <span className="text-xs text-gray-600 font-medium">Cant: {item.quantity}</span>
-//                           <span className="font-bold text-sm">${(item.price * item.quantity).toFixed(2)}</span>
-//                         </div>
-//                       </div>
-//                     </div>
-//                   ))}
-//                 </div>
-
-//                 {/* Total */}
-//                 <div className="space-y-3 pt-4 border-t-2 border-gray-900">
-//                   <div className="flex justify-between items-baseline">
-//                     <span className="text-lg font-black uppercase">Total</span>
-//                     <span className="text-3xl font-black">${total.toFixed(2)}</span>
-//                   </div>
-//                 </div>
-
-//                 {/* Checkout Button */}
-//                 <Button
-//                   className="w-full bg-gradient-to-r from-gray-900 to-black text-white hover:from-black hover:to-gray-900 rounded-2xl h-16 text-base font-bold uppercase tracking-wider disabled:opacity-50 shadow-2xl hover:shadow-3xl transition-all hover:scale-105 disabled:hover:scale-100"
-//                   onClick={handleWhatsAppOrder}
-//                   disabled={!isFormValid() || loading}
-//                 >
-//                   {loading ? (
-//                     <>
-//                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-//                       Procesando...
-//                     </>
-//                   ) : (
-//                     <>
-//                       <MessageCircle className="h-5 w-5 mr-2" />
-//                       Confirmar Pedido
-//                     </>
-//                   )}
-//                 </Button>
-
-//                 {/* Security Info */}
-//                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-4 shadow-lg">
-//                   <div className="flex items-start gap-3">
-//                     <Shield className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-//                     <div>
-//                       <p className="text-sm font-semibold text-blue-900 mb-1">
-//                         Compra 100% Segura
-//                       </p>
-//                       <p className="text-xs text-blue-700">
-//                         Tu pedido será confirmado vía WhatsApp antes de procesar el pago
-//                       </p>
-//                     </div>
-//                   </div>
-//                 </div>
-//               </CardContent>
-//             </Card>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Order Confirmation Modal */}
-//       {showOrderConfirmation && (
-//         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-//           <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl animate-scaleIn">
-//             <div className="p-8">
-//               <div className="text-center mb-6">
-//                 <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl">
-//                   <CheckCircle2 className="h-12 w-12 text-white" />
-//                 </div>
-//                 <h3 className="text-2xl font-black uppercase mb-2 text-gray-900">¡Pedido Enviado!</h3>
-//                 <p className="text-gray-600">Tu pedido ha sido enviado por WhatsApp. Nos pondremos en contacto contigo pronto.</p>
-//               </div>
-
-//               <Button
-//                 onClick={() => {
-//                   setShowOrderConfirmation(false)
-//                   window.location.href = '/'
-//                 }}
-//                 className="w-full bg-gradient-to-r from-black to-gray-800 text-white hover:from-gray-800 hover:to-black rounded-2xl h-14 font-bold uppercase shadow-2xl hover:shadow-3xl transition-all hover:scale-105"
-//               >
-//                 Volver a la Tienda
-//               </Button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   )
-// }

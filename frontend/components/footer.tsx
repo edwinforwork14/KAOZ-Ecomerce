@@ -1,13 +1,11 @@
 "use client"
 
 import { brandConfig } from "@/lib/config"
-import { Instagram, Facebook, Twitter, Youtube, Mail, Phone, MapPin, ExternalLink } from "lucide-react"
 import Link from "next/link"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
-  // Helper para asegurar que el href sea válido
   const getSocialHref = (key: keyof typeof brandConfig.social) => {
     const username = brandConfig.social[key]
     if (!username) return "#"
@@ -21,77 +19,98 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-primary text-primary-foreground">
-      <div className="container mx-auto px-4 md:px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+    <footer className="bg-surface-container-lowest border-t border-outline-variant/30 text-on-surface">
+      {/* Top Technical Bar */}
+      <div className="border-b border-outline-variant/30 py-4 px-gutter md:px-margin bg-surface-container flex flex-wrap justify-between items-center gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-2 h-2 bg-tertiary animate-pulse"></div>
+          <span className="font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest">
+            System_Status: <span className="text-tertiary">Nominal</span> // Uptime: 99.98%
+          </span>
+        </div>
+        <div className="font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest hidden sm:block">
+          Protocol: HTTPS_V2 // Port: 443 // Session_Active
+        </div>
+      </div>
+
+      <div className="container mx-auto px-gutter md:px-margin py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-24">
           {/* Brand Identity */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold tracking-tighter">{brandConfig.name.toUpperCase()}</h3>
-            <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-xs">
+          <div className="space-y-8">
+            <h3 className="font-display text-h2 text-on-background uppercase tracking-tight leading-none">
+              {brandConfig.name.toUpperCase()}
+            </h3>
+            <p className="font-body-sm text-body-sm text-on-surface-variant uppercase tracking-widest leading-relaxed max-w-xs opacity-70">
               {brandConfig.tagline}. {brandConfig.description}
             </p>
-            <div className="flex items-center gap-4">
-              <Link href={getSocialHref('instagram')} target="_blank" className="hover:text-accent transition-colors"><Instagram className="w-5 h-5" /></Link>
-              <Link href={getSocialHref('facebook')} target="_blank" className="hover:text-accent transition-colors"><Facebook className="w-5 h-5" /></Link>
-              <Link href={getSocialHref('twitter')} target="_blank" className="hover:text-accent transition-colors"><Twitter className="w-5 h-5" /></Link>
+            <div className="flex items-center gap-6">
+              <Link href={getSocialHref('instagram')} target="_blank" className="text-on-surface-variant hover:text-tertiary transition-colors">
+                <span className="material-symbols-outlined text-xl">camera_alt</span>
+              </Link>
+              <Link href={getSocialHref('facebook')} target="_blank" className="text-on-surface-variant hover:text-tertiary transition-colors">
+                <span className="material-symbols-outlined text-xl">facebook</span>
+              </Link>
+              <Link href={getSocialHref('twitter')} target="_blank" className="text-on-surface-variant hover:text-tertiary transition-colors">
+                <span className="material-symbols-outlined text-xl">alternate_email</span>
+              </Link>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-6">
-            <h4 className="text-sm font-bold uppercase tracking-widest">Navegación</h4>
-            <ul className="space-y-4 text-sm text-primary-foreground/70">
-              <li><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-accent transition-colors">Inicio</button></li>
-              <li><Link href="/" className="hover:text-accent transition-colors">Catálogo</Link></li>
-              <li><Link href="/" className="hover:text-accent transition-colors">Sobre Nosotros</Link></li>
-              <li><Link href="/" className="hover:text-accent transition-colors">Contacto</Link></li>
+          <div className="space-y-8">
+            <h4 className="font-mono-data text-label-caps text-on-background uppercase">Navigation_Tree</h4>
+            <ul className="space-y-4 font-body-sm text-xs text-on-surface-variant uppercase tracking-widest">
+              <li><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-tertiary transition-colors">Return_Home</button></li>
+              <li><Link href="/" className="hover:text-tertiary transition-colors">Asset_Grid</Link></li>
+              <li><Link href="/" className="hover:text-tertiary transition-colors">Protocol_About</Link></li>
+              <li><Link href="/" className="hover:text-tertiary transition-colors">Contact_Endpoint</Link></li>
             </ul>
           </div>
 
           {/* Customer Support */}
-          <div className="space-y-6">
-            <h4 className="text-sm font-bold uppercase tracking-widest">Soporte</h4>
-            <ul className="space-y-4 text-sm text-primary-foreground/70">
-              <li><Link href="/" className="hover:text-accent transition-colors">Envíos y Entregas</Link></li>
-              <li><Link href="/" className="hover:text-accent transition-colors">Devoluciones</Link></li>
-              <li><Link href="/" className="hover:text-accent transition-colors">Privacidad</Link></li>
-              <li><Link href="/" className="hover:text-accent transition-colors">Términos</Link></li>
+          <div className="space-y-8">
+            <h4 className="font-mono-data text-label-caps text-on-background uppercase">Support_Protocol</h4>
+            <ul className="space-y-4 font-body-sm text-xs text-on-surface-variant uppercase tracking-widest">
+              <li><Link href="/" className="hover:text-tertiary transition-colors">Logistics_Policy</Link></li>
+              <li><Link href="/" className="hover:text-tertiary transition-colors">Asset_Returns</Link></li>
+              <li><Link href="/" className="hover:text-tertiary transition-colors">Privacy_Layer</Link></li>
+              <li><Link href="/" className="hover:text-tertiary transition-colors">Terms_of_Service</Link></li>
             </ul>
           </div>
 
           {/* Contact Info */}
-          <div className="space-y-6">
-            <h4 className="text-sm font-bold uppercase tracking-widest">Contacto</h4>
-            <ul className="space-y-4 text-sm text-primary-foreground/70">
-              <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-accent shrink-0" />
-                <span>{brandConfig.contact.address}</span>
+          <div className="space-y-8">
+            <h4 className="font-mono-data text-label-caps text-on-background uppercase">Hardware_Node</h4>
+            <ul className="space-y-6 font-body-sm text-xs text-on-surface-variant uppercase tracking-widest">
+              <li className="flex items-start gap-4">
+                <span className="material-symbols-outlined text-tertiary text-lg">location_on</span>
+                <span className="leading-relaxed opacity-70">{brandConfig.contact.address}</span>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-accent shrink-0" />
-                <span>{brandConfig.contact.phone}</span>
+              <li className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-tertiary text-lg">call</span>
+                <span className="opacity-70">{brandConfig.contact.phone}</span>
               </li>
-              <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-accent shrink-0" />
-                <span className="truncate">{brandConfig.contact.email}</span>
+              <li className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-tertiary text-lg">mail</span>
+                <span className="truncate opacity-70">{brandConfig.contact.email}</span>
               </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-primary-foreground/10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-xs text-primary-foreground/50">
-            © {currentYear} {brandConfig.name}. Valencia, España.
+        <div className="mt-24 pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-8">
+          <p className="font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest opacity-50">
+            © {currentYear} {brandConfig.name}. KAOS_URBAN_ATHLETICS // VALENCIA_NODE_01
           </p>
-          <div className="flex items-center gap-2 text-xs text-primary-foreground/50">
-            <span>Powered by</span>
+          <div className="flex items-center gap-3 font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest">
+            <span className="opacity-50">System_Engineered_by:</span>
             <Link 
               href="https://untitledtechcompany.io/" 
               target="_blank"
-              className="font-bold text-primary-foreground/80 hover:text-accent flex items-center gap-1"
+              className="font-bold text-on-background hover:text-tertiary transition-colors"
             >
-              Untitled Tech Company <ExternalLink className="w-3 h-3" />
+              Untitled_Tech_Co.
             </Link>
           </div>
         </div>
@@ -99,3 +118,4 @@ export default function Footer() {
     </footer>
   )
 }
+
