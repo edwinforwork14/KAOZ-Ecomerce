@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+const { prisma } = require("../config/database");
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -11,7 +12,7 @@ exports.register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, phone } = req.body;
 
-    const userExists = await User.findOne({ email });
+    const userExists = await prisma.user.findUnique({ where: { email } });
     if (userExists) {
       return res.status(400).json({
         success: false,
@@ -19,22 +20,28 @@ exports.register = async (req, res) => {
       });
     }
 
-    const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      password,
-      phone,
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        phone,
+      },
     });
 
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
 
     res.status(201).json({
       success: true,
       message: "Usuario registrado exitosamente",
       token,
       user: {
-        id: user._id,
+        id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
@@ -61,9 +68,11 @@ exports.login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-    if (!user || !(await user.comparePassword(password))) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({
         success: false,
         message: "Credenciales inválidas",
@@ -77,17 +86,20 @@ exports.login = async (req, res) => {
       });
     }
 
-    user.lastLogin = Date.now();
-    await user.save();
+    // Update last login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
 
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
 
     res.json({
       success: true,
       message: "Inicio de sesión exitoso",
       token,
       user: {
-        id: user._id,
+        id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
@@ -105,11 +117,23 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuario no encontrado",
+      });
+    }
+
+    // No queremos devolver el password
+    const { password, ...userWithoutPassword } = user;
 
     res.json({
       success: true,
-      user,
+      user: userWithoutPassword,
     });
   } catch (error) {
     res.status(500).json({
@@ -124,16 +148,17 @@ exports.updateProfile = async (req, res) => {
   try {
     const { firstName, lastName, phone, address } = req.body;
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { firstName, lastName, phone, address },
-      { new: true, runValidators: true }
-    );
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { firstName, lastName, phone, address },
+    });
+
+    const { password, ...userWithoutPassword } = user;
 
     res.json({
       success: true,
       message: "Perfil actualizado exitosamente",
-      user,
+      user: userWithoutPassword,
     });
   } catch (error) {
     res.status(500).json({
@@ -148,17 +173,24 @@ exports.updatePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    const user = await User.findById(req.user.id).select("+password");
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
 
-    if (!(await user.comparePassword(currentPassword))) {
+    if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
       return res.status(401).json({
         success: false,
         message: "Contraseña actual incorrecta",
       });
     }
 
-    user.password = newPassword;
-    await user.save();
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { password: hashedNewPassword },
+    });
 
     res.json({
       success: true,

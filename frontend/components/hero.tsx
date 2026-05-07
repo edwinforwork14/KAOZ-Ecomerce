@@ -23,25 +23,29 @@ export default function Hero({ onExploreClick }: HeroProps) {
       {/* Hero Content */}
       <div className="relative z-20 h-full max-w-[1440px] mx-auto px-4 md:px-10 flex flex-col justify-center items-start">
         <div className="max-w-xl">
-          <p className="text-kaosNeon font-heavy italic text-2xl md:text-3xl mb-2 tracking-tight">
+          <p 
+            className="text-kaosNeon text-xl md:text-3xl mb-4 tracking-wider"
+            style={{ fontFamily: "'Permanent Marker', cursive" }}
+          >
             PLAYA. PÁDEL. MONTAÑA.
           </p>
-          <h1 className="text-6xl md:text-8xl font-heavy leading-none mb-6">
-            VIVE <span className="block">TU KAOS</span>
+          <h1 className="text-7xl md:text-9xl font-black leading-[0.8] mb-8 tracking-tighter italic">
+            <span className="block mb-2">VIVE <span className="font-light not-italic text-[0.8em]">TU</span></span>
+            <span className="block">KAOS</span>
           </h1>
-          <p className="text-sm md:text-lg text-gray-800 mb-8 max-w-sm leading-relaxed">
+          <p className="text-sm md:text-lg text-gray-800 mb-10 max-w-sm leading-relaxed font-medium">
             Ropa técnica, urbana y chic para moverte sin límites. Del club a la playa, de la ciudad a la montaña.
           </p>
           <div className="flex flex-wrap gap-4">
             <button 
               onClick={onExploreClick}
-              className="bg-kaosNeon text-black px-8 py-3 font-bold text-sm uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
+              className="bg-kaosNeon text-black px-10 py-4 font-black text-xs uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all rounded-full shadow-lg"
             >
               Comprar Nuevo Drop
             </button>
             <button 
               onClick={onExploreClick}
-              className="border-2 border-black text-black px-8 py-3 font-bold text-sm uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
+              className="bg-white/80 backdrop-blur-sm border-2 border-black text-black px-10 py-4 font-black text-xs uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all rounded-full"
             >
               Ver Colecciones
             </button>
@@ -50,10 +54,10 @@ export default function Hero({ onExploreClick }: HeroProps) {
       </div>
 
       {/* Badge Overlay */}
-      <div className="absolute top-10 right-10 z-30 w-32 h-32 md:w-40 md:h-40 bg-kaosNeon rounded-full flex items-center justify-center text-center p-4 badge-rotate shadow-xl border-4 border-white" data-purpose="feature-badge">
-        <div className="text-[10px] md:text-xs font-black uppercase leading-tight">
-          Diseñado en<br />
-          <span className="text-lg">VENEZUELA</span>
+      <div className="absolute top-10 right-10 z-30 w-32 h-32 md:w-48 md:h-48 bg-kaosNeon rounded-full flex items-center justify-center text-center p-4 badge-rotate shadow-2xl border-4 border-white" data-purpose="feature-badge">
+        <div className="text-[10px] md:text-xs font-black uppercase leading-tight text-black">
+          DISEÑADO EN<br />
+          <span className="text-2xl md:text-3xl block mt-1 tracking-tighter">VENEZUELA</span>
         </div>
       </div>
 

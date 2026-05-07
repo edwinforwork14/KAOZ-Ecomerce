@@ -50,9 +50,14 @@ export default function CategorySection({ onCategoryClick }: CategorySectionProp
   if (categories.length === 0) return null
 
   return (
-    <section className="max-w-[1440px] mx-auto px-4 md:px-10 py-16" data-purpose="collections-grid">
-      <div className="flex justify-between items-end mb-10">
-        <h2 className="text-2xl font-black uppercase tracking-wider">Explora nuestras colecciones</h2>
+    <section className="max-w-[1600px] mx-auto px-4 md:px-8 py-20" data-purpose="collections-grid">
+      <div className="flex justify-between items-end mb-12">
+        <h2 
+          className="text-black text-3xl md:text-5xl tracking-wider leading-none"
+          style={{ fontFamily: "'Permanent Marker', cursive" }}
+        >
+          Explora nuestras colecciones
+        </h2>
         <button 
           onClick={() => onCategoryClick?.('products')}
           className="text-xs font-bold uppercase underline tracking-widest"
@@ -65,7 +70,7 @@ export default function CategorySection({ onCategoryClick }: CategorySectionProp
           <div 
             key={category.id}
             onClick={() => onCategoryClick?.(category.slug)}
-            className="group relative rounded-2xl overflow-hidden aspect-card cursor-pointer"
+            className="group relative rounded-xl overflow-hidden aspect-card cursor-pointer"
           >
             <img 
               alt={category.name} 

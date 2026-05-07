@@ -898,25 +898,25 @@ export default function FeaturedProducts({
   }
 
   return (
-    <section className="w-full border-b border-outline-variant/30 bg-background">
-      <div className="flex flex-col sm:flex-row justify-between items-end p-gutter md:p-margin border-b border-outline-variant/30 bg-surface-container-lowest gap-4">
+    <section className="w-full border-b border-gray-100 bg-white">
+      <div className="flex flex-col sm:flex-row justify-between items-end p-gutter md:p-margin border-b border-gray-100 bg-gray-50/50 gap-4">
         <div className="flex items-center gap-4">
-          <div className="bg-tertiary text-on-tertiary px-2 py-1 flex items-center">
+          <div className="bg-black text-white px-2 py-1 flex items-center">
             <span className="material-symbols-outlined text-sm">bolt</span>
           </div>
-          <h2 className="font-h2 text-h2 text-on-background uppercase tracking-tight">{pageTitle}</h2>
+          <h2 className="text-3xl font-black text-black uppercase tracking-tight">{pageTitle}</h2>
         </div>
         
         {showAll && (
           <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
             {/* Search */}
             <div className="relative flex-1 sm:min-w-[300px]">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono-data text-on-surface-variant text-sm">&gt;_</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-gray-400 text-sm">&gt;_</span>
               <input
-                placeholder="SEARCH_INDEX..."
+                placeholder="BUSCAR PRODUCTOS..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-surface-container-lowest border border-outline-variant/50 text-on-background placeholder-on-surface-variant/50 focus:ring-0 focus:border-tertiary px-10 py-3 w-full font-mono-data text-sm uppercase transition-colors"
+                className="bg-white border border-gray-200 text-black placeholder-gray-400 focus:ring-1 focus:ring-black px-10 py-3 w-full font-mono text-sm uppercase transition-colors rounded-xl"
               />
             </div>
 
@@ -924,7 +924,7 @@ export default function FeaturedProducts({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-surface-container-lowest border border-outline-variant/50 text-on-background focus:ring-0 focus:border-tertiary px-4 py-3 font-mono-data text-xs uppercase transition-colors cursor-pointer"
+              className="bg-white border border-gray-200 text-black focus:ring-1 focus:ring-black px-4 py-3 font-mono text-xs uppercase transition-colors cursor-pointer rounded-xl"
             >
               <option value="featured">Featured</option>
               <option value="-createdAt">Most Recent</option>
@@ -952,16 +952,16 @@ export default function FeaturedProducts({
         )}
 
         {!showAll && (
-          <div className="font-mono-data text-on-surface-variant hidden md:block uppercase">
-            ITEMS: {products.length.toString().padStart(2, '0')} // SORT: RECENT
+          <div className="font-mono text-gray-500 hidden md:block uppercase">
+            ITEMS: {products.length.toString().padStart(2, '0')} // ORDEN: RECIENTE
           </div>
         )}
       </div>
 
       {/* Results count & Active Filters */}
       {showAll && (
-        <div className="flex flex-wrap items-center gap-2 px-gutter md:px-margin py-3 border-b border-outline-variant/30 bg-surface-container-lowest text-sm md:text-base">
-          <p className="text-xs md:text-sm text-on-surface-variant font-mono-data uppercase">
+        <div className="flex flex-wrap items-center gap-2 px-gutter md:px-margin py-3 border-b border-gray-100 bg-gray-50/30 text-sm md:text-base">
+          <p className="text-xs md:text-sm text-gray-500 font-mono uppercase">
             {loading ? (
               <span className="flex items-center gap-2">
                 <span className="w-3 h-3 border border-tertiary border-t-transparent animate-spin inline-block" />
@@ -1006,11 +1006,11 @@ export default function FeaturedProducts({
       <div className="w-full flex gap-0">
         {/* Desktop Sidebar Filters */}
         {showAll && (
-          <aside className="hidden lg:block w-72 flex-shrink-0 border-r border-outline-variant/30 bg-surface-container-lowest">
+          <aside className="hidden lg:block w-72 flex-shrink-0 border-r border-gray-100 bg-white">
             <div className="sticky top-24 p-8">
               {filtersLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="w-8 h-8 border-2 border-tertiary border-t-transparent animate-spin"></div>
+                  <div className="w-8 h-8 border-2 border-black border-t-transparent animate-spin"></div>
                 </div>
               ) : (
                 FiltersMarkup
@@ -1019,7 +1019,7 @@ export default function FeaturedProducts({
           </aside>
         )}
 
-        <div className="flex-1 bg-background">
+        <div className="flex-1 bg-white">
           {products.length === 0 && !loading ? (
             <div className="text-center py-32 px-4 flex flex-col items-center">
               <span className="material-symbols-outlined text-6xl text-outline mb-6">inventory_2</span>
@@ -1044,43 +1044,43 @@ export default function FeaturedProducts({
                     return (
                       <div
                         key={product.id || product._id}
-                        className="group flex flex-col border-b border-r border-outline-variant/30 bg-surface relative hover:bg-surface-container transition-colors cursor-pointer"
+                        className="group flex flex-col border-b border-r border-gray-100 bg-white relative hover:bg-gray-50 transition-colors cursor-pointer"
                         onClick={() => onProductClick?.(product)}
                       >
-                        <div className="p-3 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container-lowest">
-                          <span className="font-mono-data text-xs text-on-surface-variant uppercase">ID: {product.id?.slice(-6) || product._id?.slice(-6)}</span>
+                        <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-white">
+                          <span className="font-mono text-[10px] text-gray-400 uppercase tracking-widest">REF: {product.id?.slice(-6) || product._id?.slice(-6)}</span>
                           {product.isNew ? (
-                            <span className="font-mono-data text-xs text-tertiary border border-outline-variant/30 px-1 uppercase">NEW</span>
+                            <span className="font-mono text-[10px] bg-black text-white px-2 py-0.5 rounded-full uppercase">NEW</span>
                           ) : originalPrice ? (
-                            <span className="font-mono-data text-xs text-error border border-error/50 px-1 uppercase">SALE</span>
+                            <span className="font-mono text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full uppercase">SALE</span>
                           ) : null}
                         </div>
                         
-                        <div className="relative w-full aspect-[4/5] overflow-hidden bg-surface-container-lowest p-4">
+                        <div className="relative w-full aspect-[4/5] overflow-hidden bg-white p-4">
                           <img
                             src={product.images?.[0]?.url || "/placeholder.svg"}
                             alt={product.name}
-                            className="w-full h-full object-cover mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-500 border border-outline-variant/20"
+                            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
                             onError={(e) => { e.currentTarget.src = "/placeholder.svg" }}
                           />
                           
                           {/* Technical Action Overlay */}
-                          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 border border-tertiary/50 m-4">
+                          <div className="absolute inset-0 bg-black/5 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 m-4 rounded-xl">
                             <button 
-                              className="bg-tertiary text-on-tertiary font-mono-data text-label-caps uppercase px-6 py-3 hover:bg-surface-container hover:text-tertiary hover:border hover:border-tertiary transition-all flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 duration-300"
+                              className="bg-black text-white font-bold text-[10px] uppercase px-6 py-3 rounded-full hover:bg-kaosNeon hover:text-black transition-all flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 duration-300 shadow-xl"
                               onClick={(e) => { e.stopPropagation(); handleAddToCart(product, e) }}
                             >
-                              <span className="material-symbols-outlined text-sm">add</span> ACQUIRE
+                              <Plus className="w-3 h-3" /> AÑADIR
                             </button>
                           </div>
                         </div>
 
-                        <div className="p-4 border-t border-outline-variant/30">
-                          <h4 className="font-h3 text-body-lg text-on-background uppercase truncate mb-1">{product.name}</h4>
+                        <div className="p-4 border-t border-gray-100">
+                          <h4 className="font-bold text-sm text-black uppercase truncate mb-1">{product.name}</h4>
                           <div className="flex justify-between items-center mt-2">
-                            <p className="font-mono-data text-on-surface-variant text-xs uppercase">{product.category?.name || "COLLECTION"}</p>
-                            <span className="font-mono-data text-tertiary bg-surface-container px-2 py-1 border border-outline-variant/30">
-                              USD {product.price}
+                            <p className="font-mono text-gray-400 text-[10px] uppercase">{product.category?.name || "COLLECTION"}</p>
+                            <span className="font-bold text-black text-sm">
+                              ${product.price}
                             </span>
                           </div>
                         </div>

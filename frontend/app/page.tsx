@@ -99,27 +99,7 @@ export default function Home() {
           
           <CategorySection onCategoryClick={handleTabChange} />
           
-          <section className="bg-gray-50 py-20">
-            <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-              <div className="flex justify-between items-end mb-12">
-                <div>
-                  <h2 className="text-3xl font-black uppercase tracking-tight">Novedades</h2>
-                  <p className="text-gray-500 text-sm uppercase tracking-widest mt-2">Los favoritos del momento</p>
-                </div>
-                <button 
-                  onClick={() => handleTabChange("sale")}
-                  className="text-xs font-bold uppercase underline tracking-widest"
-                >
-                  Ver Todo
-                </button>
-              </div>
-              <FeaturedProducts 
-                onProductClick={handleProductClick}
-                setActiveTab={handleTabChange}
-                viewAllTab="sale"
-              />
-            </div>
-          </section>
+
 
           <LifestyleSection />
           
@@ -131,7 +111,7 @@ export default function Home() {
     }
 
     return (
-      <div className="max-w-[1440px] mx-auto px-4 md:px-10 py-10">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-10 py-10">
         <FeaturedProducts
           category={activeTab === "home" ? undefined : activeTab}
           onProductClick={handleProductClick}

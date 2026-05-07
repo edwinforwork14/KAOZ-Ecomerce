@@ -1,4 +1,4 @@
-const Deployment = require("../models/Deployment");
+const Deployment = require("../services/deploymentService");
 
 const checkDeploymentActive = async (req, res, next) => {
   try {

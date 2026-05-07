@@ -10,7 +10,10 @@ const { execSync } = require("child_process");
 
 const connectDB = require("./config/database");
 const errorHandler = require("./middleware/errorHandler");
-const Deployment = require("./models/Deployment");
+const Deployment = require("./services/deploymentService");
+const Product = require("./services/productService");
+const Settings = require("./services/settingsService");
+const ExchangeRate = require("./services/exchangeRateService");
 
 // Rutas
 const authRoutes = require("./routes/auth");
@@ -22,11 +25,6 @@ const analyticsRoutes = require("./routes/analytics");
 const publicRoutes = require("./routes/public");
 const settingsRoutes = require("./routes/settings");
 const deploymentRoutes = require("./routes/deployments");
-
-// Modelos para tareas programadas
-const Product = require("./models/Product");
-const Settings = require("./models/Settings");
-const ExchangeRate = require("./models/ExchangeRate");
 
 const app = express();
 

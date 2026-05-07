@@ -1,6 +1,4 @@
-const mongoose = require("mongoose");
-const Product = require("../models/Product");
-const Category = require("../models/Category");
+const { prisma } = require("../config/database");
 
 const escapeRegExp = (value = "") =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -9,127 +7,100 @@ const escapeRegExp = (value = "") =>
 /**
  * Obtiene las opciones de filtro disponibles para TODOS los productos
  * (o filtrado por categoría si se proporciona)
- * Esto permite que los filtros sean consistentes independientemente de la paginación
  */
 exports.getFilterOptions = async (req, res) => {
   try {
     const { category, search } = req.query;
 
-    // Query base - solo productos activos
-    const matchStage = { isActive: true };
+    const where = { isActive: true };
 
-    // Filtrar por categoría si se proporciona
     if (category) {
-      if (!mongoose.Types.ObjectId.isValid(category)) {
-        return res.json({
-          success: true,
-          filterOptions: {
-            brands: [],
-            colors: [],
-            priceRange: { min: 0, max: 1000 },
-            totalProducts: 0,
-          },
-        });
-      }
-      matchStage.category = new mongoose.Types.ObjectId(category);
+      where.categoryId = category;
     }
 
-    // Si hay búsqueda, aplicarla también
     if (search && search.trim()) {
-      const term = escapeRegExp(search.trim());
-      const regex = new RegExp(term, "i");
-      matchStage.$or = [
-        { name: regex },
-        { description: regex },
-        { brand: regex },
-        { tags: regex },
-        { "variants.color": regex },
+      const term = search.trim();
+      where.OR = [
+        { name: { contains: term, mode: "insensitive" } },
+        { description: { contains: term, mode: "insensitive" } },
+        { brand: { contains: term, mode: "insensitive" } },
       ];
     }
 
-    // Usar aggregation para obtener todos los valores únicos de una sola vez
-    const [aggregationResult] = await Product.aggregate([
-      { $match: matchStage },
-      {
-        $facet: {
-          // Obtener todas las marcas únicas
-          brands: [
-            { $match: { brand: { $exists: true, $ne: null, $ne: "" } } },
-            { $group: { _id: "$brand" } },
-            { $sort: { _id: 1 } },
-          ],
-          // Obtener todos los colores únicos con sus hex
-          colors: [
-            { $unwind: "$variants" },
-            {
-              $match: {
-                "variants.color": { $exists: true, $ne: null, $ne: "" },
-              },
-            },
-            {
-              $group: {
-                _id: "$variants.color",
-                colorHex: { $first: "$variants.colorHex" },
-              },
-            },
-            { $sort: { _id: 1 } },
-          ],
-          // Obtener precio mínimo y máximo
-          priceRange: [
-            {
-              $group: {
-                _id: null,
-                minPrice: { $min: "$price" },
-                maxPrice: { $max: "$price" },
-              },
-            },
-          ],
-          // Contar total de productos
-          totalCount: [{ $count: "count" }],
-          // Contar productos nuevos
-          newCount: [{ $match: { isNew: true } }, { $count: "count" }],
-          // Contar productos con descuento
-          discountCount: [
-            {
-              $match: {
-                originalPrice: { $exists: true },
-                $expr: { $gt: ["$originalPrice", "$price"] },
-              },
-            },
-            { $count: "count" },
-          ],
-          // Contar productos en stock
-          inStockCount: [
-            { $unwind: "$variants" },
-            { $unwind: "$variants.sizes" },
-            {
-              $group: {
-                _id: "$_id",
-                totalStock: { $sum: "$variants.sizes.stock" },
-              },
-            },
-            { $match: { totalStock: { $gt: 0 } } },
-            { $count: "count" },
-          ],
+    // Obtener marcas únicas
+    const brandsResult = await prisma.product.groupBy({
+      by: ["brand"],
+      where,
+      _count: {
+        brand: true,
+      },
+    });
+    const brands = brandsResult.map((b) => b.brand).filter(Boolean);
+
+    // Obtener colores únicos de las variantes
+    const productsWithVariants = await prisma.product.findMany({
+      where,
+      select: {
+        variants: {
+          select: {
+            color: true,
+            colorHex: true,
+          },
         },
       },
-    ]);
+    });
 
-    // Procesar resultados
-    const brands = aggregationResult.brands.map((b) => b._id);
-    const colors = aggregationResult.colors.map((c) => ({
-      name: c._id,
-      hex: c.colorHex || null,
+    const colorsMap = new Map();
+    productsWithVariants.forEach((p) => {
+      p.variants.forEach((v) => {
+        if (v.color && !colorsMap.has(v.color)) {
+          colorsMap.set(v.color, v.colorHex || null);
+        }
+      });
+    });
+    const colors = Array.from(colorsMap.entries()).map(([name, hex]) => ({
+      name,
+      hex,
     }));
 
-    const priceData = aggregationResult.priceRange[0] || {
-      minPrice: 0,
-      maxPrice: 1000,
-    };
-    const totalProducts = aggregationResult.totalCount[0]?.count || 0;
-    const newCount = aggregationResult.newCount[0]?.count || 0;
-    const discountCount = aggregationResult.discountCount[0]?.count || 0;
-    const inStockCount = aggregationResult.inStockCount[0]?.count || 0;
+    // Obtener precio mínimo y máximo
+    const aggregatePrice = await prisma.product.aggregate({
+      where,
+      _min: { price: true },
+      _max: { price: true },
+      _count: { id: true },
+    });
+
+    // Conteos adicionales
+    const newCount = await prisma.product.count({
+      where: { ...where, isNew: true },
+    });
+
+    const discountCount = await prisma.product.count({
+      where: {
+        ...where,
+        originalPrice: { not: null },
+        AND: [
+          { originalPrice: { gt: prisma.product.fields.price } }
+        ]
+      },
+    });
+
+    // Para el stock, necesitamos una consulta que verifique si hay algún size con stock > 0
+    const inStockCount = await prisma.product.count({
+      where: {
+        ...where,
+        variants: {
+          some: {
+            sizes: {
+              some: {
+                stock: { gt: 0 }
+              }
+            }
+          }
+        }
+      }
+    });
 
     res.json({
       success: true,
@@ -137,10 +108,10 @@ exports.getFilterOptions = async (req, res) => {
         brands,
         colors,
         priceRange: {
-          min: Math.floor(priceData.minPrice || 0),
-          max: Math.ceil(priceData.maxPrice || 1000),
+          min: Math.floor(aggregatePrice._min.price || 0),
+          max: Math.ceil(aggregatePrice._max.price || 1000),
         },
-        totalProducts,
+        totalProducts: aggregatePrice._count.id || 0,
         counts: {
           new: newCount,
           discount: discountCount,
@@ -167,11 +138,11 @@ exports.getProducts = async (req, res) => {
       search,
       minPrice,
       maxPrice,
-      brands, // NUEVO: filtro por marcas (comma-separated)
-      colors, // NUEVO: filtro por colores (comma-separated)
-      isNew, // NUEVO: filtro por nuevos
-      hasDiscount, // NUEVO: filtro por descuento
-      inStock, // NUEVO: filtro por stock
+      brands,
+      colors,
+      isNew,
+      hasDiscount,
+      inStock,
       sort = "-createdAt",
       page = 1,
       limit = 12,
@@ -181,184 +152,93 @@ exports.getProducts = async (req, res) => {
     const pageNum = Math.max(parseInt(page) || 1, 1);
     const limitNum = Math.min(Math.max(parseInt(limit) || 12, 1), 200);
 
-    const query = { isActive: true };
+    const where = { isActive: true };
 
-    // ===== CATEGORY =====
-    if (category) {
-      if (!mongoose.Types.ObjectId.isValid(category)) {
-        return res.json({
-          success: true,
-          count: 0,
-          total: 0,
-          totalPages: 0,
-          currentPage: pageNum,
-          products: [],
-        });
-      }
-      query.category = category;
-    }
+    if (category) where.categoryId = category;
+    if (subcategory) where.subcategoryId = subcategory;
+    if (featured === "true" || featured === "1") where.isFeatured = true;
 
-    // ===== SUBCATEGORY =====
-    if (subcategory) {
-      if (mongoose.Types.ObjectId.isValid(subcategory)) {
-        query.subcategory = subcategory;
-      }
-    }
-
-    // ===== FEATURED =====
-    if (featured === "true" || featured === "1") {
-      query.isFeatured = true;
-    }
-
-    // ===== PRICE =====
     if (minPrice || maxPrice) {
-      query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
+      where.price = {};
+      if (minPrice) where.price.gte = Number(minPrice);
+      if (maxPrice) where.price.lte = Number(maxPrice);
     }
 
-    // ===== BRANDS (NUEVO) =====
     if (brands) {
-      const brandList = brands
-        .split(",")
-        .map((b) => b.trim())
-        .filter(Boolean);
-      if (brandList.length > 0) {
-        query.brand = { $in: brandList };
-      }
+      const brandList = brands.split(",").map((b) => b.trim()).filter(Boolean);
+      if (brandList.length > 0) where.brand = { in: brandList };
     }
 
-    // ===== COLORS (NUEVO) =====
     if (colors) {
-      const colorList = colors
-        .split(",")
-        .map((c) => c.trim())
-        .filter(Boolean);
+      const colorList = colors.split(",").map((c) => c.trim()).filter(Boolean);
       if (colorList.length > 0) {
-        query["variants.color"] = { $in: colorList };
+        where.variants = {
+          some: {
+            color: { in: colorList }
+          }
+        };
       }
     }
 
-    // ===== IS NEW (NUEVO) =====
-    if (isNew === "true" || isNew === "1") {
-      query.isNew = true;
-    }
+    if (isNew === "true" || isNew === "1") where.isNew = true;
 
-    // ===== HAS DISCOUNT (NUEVO) =====
     if (hasDiscount === "true" || hasDiscount === "1") {
-      query.originalPrice = { $exists: true };
-      query.$expr = { $gt: ["$originalPrice", "$price"] };
+      where.originalPrice = { not: null, gt: prisma.product.fields.price };
     }
 
-    // ===== SEARCH =====
-    if (search && search.trim()) {
-      const term = escapeRegExp(search.trim());
-      const regex = new RegExp(term, "i");
+    if (inStock === "true" || inStock === "1") {
+      where.variants = {
+        some: {
+          sizes: {
+            some: {
+              stock: { gt: 0 }
+            }
+          }
+        }
+      };
+    }
 
-      query.$or = [
-        { name: regex },
-        { description: regex },
-        { brand: regex },
-        { tags: regex },
-        { "variants.color": regex },
+    if (search && search.trim()) {
+      const term = search.trim();
+      where.OR = [
+        { name: { contains: term, mode: "insensitive" } },
+        { description: { contains: term, mode: "insensitive" } },
+        { brand: { contains: term, mode: "insensitive" } },
       ];
     }
 
     // ===== SORT =====
-    let sortQuery = {};
-
+    let orderBy = {};
     switch (sort) {
-      case "featured":
-        sortQuery = { isFeatured: -1, createdAt: -1 };
-        break;
-      case "-createdAt":
-        sortQuery = { createdAt: -1 };
-        break;
-      case "createdAt":
-        sortQuery = { createdAt: 1 };
-        break;
-      case "price":
-        sortQuery = { price: 1 };
-        break;
-      case "-price":
-        sortQuery = { price: -1 };
-        break;
-      case "name":
-        sortQuery = { name: 1 };
-        break;
-      case "-name":
-        sortQuery = { name: -1 };
-        break;
-      default:
-        sortQuery = { createdAt: -1 };
+      case "featured": orderBy = { isFeatured: "desc", createdAt: "desc" }; break;
+      case "-createdAt": orderBy = { createdAt: "desc" }; break;
+      case "createdAt": orderBy = { createdAt: "asc" }; break;
+      case "price": orderBy = { price: "asc" }; break;
+      case "-price": orderBy = { price: "desc" }; break;
+      case "name": orderBy = { name: "asc" }; break;
+      case "-name": orderBy = { name: "desc" }; break;
+      default: orderBy = { createdAt: "desc" };
     }
 
-    let products, total;
-
-    // ===== IN STOCK (NUEVO) - Requiere aggregation =====
-    if (inStock === "true" || inStock === "1") {
-      // Usar aggregation para filtrar por stock
-      const pipeline = [
-        { $match: query },
-        {
-          $addFields: {
-            totalStock: {
-              $sum: {
-                $map: {
-                  input: "$variants",
-                  as: "variant",
-                  in: {
-                    $sum: {
-                      $map: {
-                        input: "$$variant.sizes",
-                        as: "size",
-                        in: "$$size.stock",
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+          images: true,
+          variants: {
+            include: {
+              sizes: true,
+              images: true
+            }
+          }
         },
-        { $match: { totalStock: { $gt: 0 } } },
-      ];
-
-      // Contar total
-      const countPipeline = [...pipeline, { $count: "total" }];
-      const countResult = await Product.aggregate(countPipeline);
-      total = countResult[0]?.total || 0;
-
-      // Obtener productos paginados
-      const productsPipeline = [
-        ...pipeline,
-        { $sort: sortQuery },
-        { $skip: (pageNum - 1) * limitNum },
-        { $limit: limitNum },
-        {
-          $lookup: {
-            from: "categories",
-            localField: "category",
-            foreignField: "_id",
-            as: "category",
-          },
-        },
-        { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
-      ];
-
-      products = await Product.aggregate(productsPipeline);
-    } else {
-      // Query normal sin filtro de stock
-      [products, total] = await Promise.all([
-        Product.find(query)
-          .populate("category")
-          .sort(sortQuery)
-          .skip((pageNum - 1) * limitNum)
-          .limit(limitNum)
-          .lean(),
-        Product.countDocuments(query),
-      ]);
-    }
+        orderBy,
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
+      }),
+      prisma.product.count({ where }),
+    ]);
 
     res.json({
       success: true,
@@ -383,17 +263,22 @@ exports.getProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({
-        success: false,
-        message: "ID de producto inválido",
-      });
-    }
-
-    const product = await Product.findOne({
-      _id: id,
-      isActive: true,
-    }).populate("category");
+    const product = await prisma.product.findFirst({
+      where: {
+        id,
+        isActive: true,
+      },
+      include: {
+        category: true,
+        images: true,
+        variants: {
+          include: {
+            sizes: true,
+            images: true
+          }
+        }
+      },
+    });
 
     if (!product) {
       return res.status(404).json({
@@ -403,8 +288,10 @@ exports.getProduct = async (req, res) => {
     }
 
     // Incrementar contador de vistas
-    product.viewCount += 1;
-    await product.save();
+    await prisma.product.update({
+      where: { id },
+      data: { viewCount: { increment: 1 } }
+    });
 
     res.json({ success: true, product });
   } catch (error) {
@@ -419,13 +306,18 @@ exports.getProduct = async (req, res) => {
 // ================= FEATURED =================
 exports.getFeaturedProducts = async (req, res) => {
   try {
-    const products = await Product.find({
-      isActive: true,
-      isFeatured: true,
-    })
-      .populate("category")
-      .sort("-createdAt")
-      .limit(8);
+    const products = await prisma.product.findMany({
+      where: {
+        isActive: true,
+        isFeatured: true,
+      },
+      include: {
+        category: true,
+        images: true
+      },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    });
 
     res.json({
       success: true,
@@ -444,13 +336,18 @@ exports.getFeaturedProducts = async (req, res) => {
 // ================= NEW PRODUCTS =================
 exports.getNewProducts = async (req, res) => {
   try {
-    const products = await Product.find({
-      isActive: true,
-      isNew: true,
-    })
-      .populate("category")
-      .sort("-createdAt")
-      .limit(8);
+    const products = await prisma.product.findMany({
+      where: {
+        isActive: true,
+        isNew: true,
+      },
+      include: {
+        category: true,
+        images: true
+      },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    });
 
     res.json({
       success: true,
@@ -469,28 +366,25 @@ exports.getNewProducts = async (req, res) => {
 // ================= CATEGORIES =================
 exports.getCategories = async (req, res) => {
   try {
-    const categories = await Category.find({ isActive: true }).sort({
-      name: 1,
+    const categories = await prisma.category.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      include: {
+        _count: {
+          select: { products: { where: { isActive: true } } }
+        }
+      }
     });
 
-    const withCount = await Promise.all(
-      categories.map(async (cat) => {
-        const count = await Product.countDocuments({
-          category: cat._id,
-          isActive: true,
-        });
-
-        return {
-          ...cat.toObject(),
-          productCount: count,
-        };
-      })
-    );
+    const categoriesWithCount = categories.map(cat => ({
+      ...cat,
+      productCount: cat._count.products
+    }));
 
     res.json({
       success: true,
-      count: withCount.length,
-      categories: withCount,
+      count: categoriesWithCount.length,
+      categories: categoriesWithCount,
     });
   } catch (error) {
     console.error("Error en getCategories:", error);
@@ -505,16 +399,16 @@ exports.getCategory = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({
-        success: false,
-        message: "ID de categoría inválido",
-      });
-    }
-
-    const category = await Category.findOne({
-      _id: id,
-      isActive: true,
+    const category = await prisma.category.findFirst({
+      where: {
+        id,
+        isActive: true,
+      },
+      include: {
+        _count: {
+          select: { products: { where: { isActive: true } } }
+        }
+      }
     });
 
     if (!category) {
@@ -524,16 +418,11 @@ exports.getCategory = async (req, res) => {
       });
     }
 
-    const productCount = await Product.countDocuments({
-      category: id,
-      isActive: true,
-    });
-
     res.json({
       success: true,
       category: {
-        ...category.toObject(),
-        productCount,
+        ...category,
+        productCount: category._count.products,
       },
     });
   } catch (error) {

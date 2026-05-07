@@ -11,12 +11,17 @@ export default function LifestyleSection() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Side Content */}
         <div className="lg:col-span-3">
-          <h2 className="text-4xl font-black uppercase leading-tight mb-2">La vibra<br />Venezolana</h2>
-          <p className="text-kaosNeon italic font-heavy text-2xl mb-6">CON FLOW Y HUMOR</p>
-          <p className="text-sm text-gray-600 mb-8 leading-relaxed">
+          <h2 className="text-5xl font-bold leading-tight mb-4 tracking-tight">La vibra<br />Venezolana</h2>
+          <p 
+            className="text-kaosNeon text-3xl mb-6 tracking-wide"
+            style={{ fontFamily: "'Permanent Marker', cursive" }}
+          >
+            CON FLOW Y HUMOR
+          </p>
+          <p className="text-sm text-gray-600 mb-8 leading-relaxed font-medium">
             Estampados acuarela, frases que nos representan y colores que transmiten nuestra energía.
           </p>
-          <button className="bg-black text-white px-8 py-3 rounded-md text-xs font-bold uppercase tracking-widest hover:bg-gray-800">
+          <button className="bg-black text-white px-10 py-4 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-all shadow-lg">
             Ver La Vibra
           </button>
         </div>
