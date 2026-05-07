@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +24,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { login, register } = useAuth()
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<"login" | "register">("login")
 
@@ -39,8 +41,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     e.preventDefault()
     setLoading(true)
     try {
-      await login(loginData.email, loginData.password)
+      const { user } = await login(loginData.email, loginData.password)
       toast.success("¡Bienvenido de nuevo!")
+      
+      // Si es admin, redirigir al dashboard
+      if (user?.user_metadata?.role === 'admin' || user?.email === 'admin@example.com') {
+        router.push('/admin/dashboard')
+      }
+      
       onClose()
     } catch (error: any) {
       toast.error("Error al iniciar sesión", { description: error.message })

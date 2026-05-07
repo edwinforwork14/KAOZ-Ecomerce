@@ -11,21 +11,19 @@ datasource db {
 
 model User {
   id        String    @id @default(uuid())
-  firstName String    @map("first_name")
-  lastName  String    @map("last_name")
+  firstName String
+  lastName  String
   email     String    @unique
   password  String
   phone     String?
   role      String    @default("user")
   address   Json?
-  isActive  Boolean   @default(true) @map("is_active")
-  lastLogin DateTime? @map("last_login")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   carts     Cart[]
   orders    Order[]
-
-  @@map("users")
 }
 
 model Category {
@@ -36,19 +34,18 @@ model Category {
   image       String?
   level       Int        @default(0)
   order       Int        @default(0)
-  isActive    Boolean    @default(true) @map("is_active")
+  isActive    Boolean    @default(true)
   seo         Json?
-  parentId    String?    @map("parent_id")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
-  isFeatured  Boolean    @default(false) @map("is_featured")
+  parentId    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  isFeatured  Boolean    @default(false)
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
   products    Product[]  @relation("MainCategory")
   subProducts Product[]  @relation("SubCategory")
 
   @@unique([slug, parentId])
-  @@map("categories")
 }
 
 model Product {
@@ -56,57 +53,51 @@ model Product {
   name            String
   description     String
   price           Float
-  originalPrice   Float?           @map("original_price")
-  priceConfig     Json?            @map("price_config")
+  originalPrice   Float?
+  priceConfig     Json?
   brand           String           @default("Genérico")
-  isNew           Boolean          @default(false) @map("is_new")
-  markedAsNewAt   DateTime?        @map("marked_as_new_at")
-  newDurationDays Int?             @map("new_duration_days")
-  isFeatured      Boolean          @default(false) @map("is_featured")
-  isActive        Boolean          @default(true) @map("is_active")
+  isNew           Boolean          @default(false)
+  markedAsNewAt   DateTime?
+  newDurationDays Int?
+  isFeatured      Boolean          @default(false)
+  isActive        Boolean          @default(true)
   rating          Float            @default(0)
-  reviewCount     Int              @default(0) @map("review_count")
-  viewCount       Int              @default(0) @map("view_count")
-  addToCartCount  Int              @default(0) @map("add_to_cart_count")
+  reviewCount     Int              @default(0)
+  viewCount       Int              @default(0)
+  addToCartCount  Int              @default(0)
   tags            Json?
   features        Json?
   seo             Json?
-  categoryId      String?          @map("category_id")
-  subcategoryId   String?          @map("subcategory_id")
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
+  categoryId      String?
+  subcategoryId   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   category        Category?        @relation("MainCategory", fields: [categoryId], references: [id])
   subcategory     Category?        @relation("SubCategory", fields: [subcategoryId], references: [id])
   images          ProductImage[]
   variants        ProductVariant[]
   views           ProductView[]
-
-  @@map("products")
 }
 
 model ProductImage {
   id        String          @id @default(uuid())
   url       String
   alt       String?
-  isMain    Boolean         @default(false) @map("is_main")
-  productId String          @map("product_id")
-  variantId String?         @map("variant_id")
+  isMain    Boolean         @default(false)
+  productId String
+  variantId String?
   product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
-
-  @@map("product_images")
 }
 
 model ProductVariant {
   id        String         @id @default(uuid())
   color     String         @default("N/A")
-  colorHex  String?        @map("color_hex")
-  productId String         @map("product_id")
+  colorHex  String?
+  productId String
   images    ProductImage[]
   sizes     ProductSize[]
   product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@map("product_variants")
 }
 
 model ProductSize {
@@ -114,45 +105,41 @@ model ProductSize {
   size      String
   stock     Int            @default(0)
   sku       String?        @unique
-  variantId String         @map("variant_id")
+  variantId String
   variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-
-  @@map("product_sizes")
 }
 
 model Order {
   id              String      @id @default(uuid())
-  orderNumber     String      @unique @map("order_number")
-  userId          String?     @map("user_id")
-  customerInfo    Json        @map("customer_info")
-  shippingMethod  Json?       @map("shipping_method")
-  shippingAddress Json?       @map("shipping_address")
-  pickupInfo      Json?       @map("pickup_info")
+  orderNumber     String      @unique
+  userId          String?
+  customerInfo    Json
+  shippingMethod  Json?
+  shippingAddress Json?
+  pickupInfo      Json?
   subtotal        Float
   shipping        Float       @default(0)
   total           Float
-  totalInBs       Float?      @map("total_in_bs")
-  paymentMethod   Json?       @map("payment_method")
-  paymentStatus   String      @default("pending") @map("payment_status")
-  orderStatus     String      @default("pending") @map("order_status")
+  totalInBs       Float?
+  paymentMethod   Json?
+  paymentStatus   String      @default("pending")
+  orderStatus     String      @default("pending")
   notes           String?
-  adminNotes      String?     @map("admin_notes")
-  statusHistory   Json?       @map("status_history")
-  isDeleted       Boolean     @default(false) @map("is_deleted")
-  deletedAt       DateTime?   @map("deleted_at")
-  deletedBy       String?     @map("deleted_by")
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
+  adminNotes      String?
+  statusHistory   Json?
+  isDeleted       Boolean     @default(false)
+  deletedAt       DateTime?
+  deletedBy       String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
   user            User?       @relation(fields: [userId], references: [id])
   items           OrderItem[]
-
-  @@map("orders")
 }
 
 model OrderItem {
   id        String  @id @default(uuid())
-  orderId   String  @map("order_id")
-  productId String  @map("product_id")
+  orderId   String
+  productId String
   name      String
   image     String?
   color     String?
@@ -161,26 +148,22 @@ model OrderItem {
   price     Float
   subtotal  Float
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  @@map("order_items")
 }
 
 model Cart {
   id        String     @id @default(uuid())
-  userId    String?    @map("user_id")
-  sessionId String?    @unique @map("session_id")
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
+  userId    String?
+  sessionId String?    @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   user      User?      @relation(fields: [userId], references: [id])
   items     CartItem[]
-
-  @@map("carts")
 }
 
 model CartItem {
   id        String  @id @default(uuid())
-  cartId    String  @map("cart_id")
-  productId String  @map("product_id")
+  cartId    String
+  productId String
   name      String
   image     String?
   color     String?
@@ -189,72 +172,60 @@ model CartItem {
   price     Float
   subtotal  Float
   cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-
-  @@map("cart_items")
 }
 
 model ExchangeRate {
   id        String   @id @default(uuid())
   usd       Float
   eur       Float
-  updatedAt DateTime @updatedAt @map("updated_at")
-  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
   date      String   @unique
-
-  @@map("exchange_rates")
 }
 
 model Settings {
   id                 String   @id @default("global")
   currency           Json?
-  shippingMethods    Json?    @map("shipping_methods")
-  paymentMethods     Json?    @map("payment_methods")
-  updatedAt          DateTime @updatedAt @map("updated_at")
-  newProductDuration Int      @default(30) @map("new_product_duration")
-
-  @@map("settings")
+  shippingMethods    Json?
+  paymentMethods     Json?
+  updatedAt          DateTime @updatedAt
+  newProductDuration Int      @default(30)
 }
+
 model CartHistory {
   id            String   @id @default(uuid())
-  userId        String?  @map("user_id")
-  sessionId     String?  @map("session_id")
-  productId     String   @map("product_id")
-  productName   String   @map("product_name")
+  userId        String?
+  sessionId     String?
+  productId     String
+  productName   String
   color         String?
   size          String?
   quantity      Int
   price         Float
-  originalPrice Float?   @map("original_price")
+  originalPrice Float?
   action        String   // "added", "updated", "removed"
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  @@map("cart_history")
+  createdAt     DateTime @default(now())
 }
 
 model ProductView {
   id        String   @id @default(uuid())
-  productId String   @map("product_id")
-  userId    String?  @map("user_id")
-  sessionId String?  @map("session_id")
+  productId String
+  userId    String?
+  sessionId String?
   ip        String?
-  userAgent String?  @map("user_agent")
-  createdAt DateTime @default(now()) @map("created_at")
+  userAgent String?
+  createdAt DateTime @default(now())
   product   Product  @relation(fields: [productId], references: [id])
-
-  @@map("product_views")
 }
 
 model Deployment {
   id          String   @id @default(uuid())
   version     String   @unique
-  isActive    Boolean  @default(true) @map("is_active")
-  deployedAt  DateTime @default(now()) @map("deployed_at")
+  isActive    Boolean  @default(true)
+  deployedAt  DateTime @default(now())
   environment String   @default("development")
   name        String?
   description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@map("deployments")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
-

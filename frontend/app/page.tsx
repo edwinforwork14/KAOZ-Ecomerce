@@ -59,8 +59,14 @@ export default function Home() {
     }, 50)
   }
 
+  const handleNavClick = (key: string) => {
+    console.log("Navigating to:", key)
+    handleTabChange(key)
+  }
+
   const handleTabChange = (tab: string) => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
+    console.log("page.tsx: Tab changing to:", tab)
+    window.scrollTo(0, 0)
     setActiveTab(tab)
     setSelectedProduct(null)
     setIsCheckout(false)
@@ -92,28 +98,21 @@ export default function Home() {
 
     if (activeTab === "home") {
       return (
-        <>
-          <Hero onExploreClick={() => handleTabChange("sale")} />
-          
+        <div className="animate-in fade-in duration-700">
+          <Hero onExploreClick={() => handleTabChange("shop")} />
           <BenefitsBar />
-          
           <CategorySection onCategoryClick={handleTabChange} />
-          
-
-
           <LifestyleSection />
-          
           <NewsletterSection />
-          
           <InstagramFeed />
-        </>
+        </div>
       )
     }
 
     return (
-      <div className="max-w-[1600px] mx-auto px-4 md:px-10 py-10">
+      <div className="max-w-full mx-auto px-4 md:px-10 py-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <FeaturedProducts
-          category={activeTab === "home" ? undefined : activeTab}
+          category={activeTab === "home" || activeTab === "shop" ? undefined : activeTab}
           onProductClick={handleProductClick}
           showAll={true}
           setActiveTab={handleTabChange}

@@ -7,10 +7,9 @@ export default function NewsletterSection() {
         {/* Family Photo Side */}
         <div className="md:w-1/2 relative">
           <img 
-            alt="KAOS Family" 
+            alt="KAOS Placeholder" 
             className="w-full h-full object-cover" 
-            src="https://lh3.googleusercontent.com/aida/ADBb0uj46qIOice25s0wgyOd-LWnDeeM714ClVTSkgFmiKINOqICN7ryrVzJXi2KnKtRTHVlW5O0MkHLfZhKcKbseqUF-wGctwnzRG9UdCxQ1zsGgHlTpyhKmVSpUm59_pY0tI0hB3fV03rfoM8-dI7r12Kfc4fDKJAMJTbh6sRJXS-GojAuprxcm2ab8PL3d0xbnenw4N5lZONHF3_7vha7rinJjOF0N5POrpaHCf5EOiY_jvlK3dkpRJZBIAWybkiOBl045I3DXqosiGg" 
-            style={{ objectPosition: "23% 84%" }}
+            src="/placeholder.svg" 
           />
           <div className="absolute inset-0 border-[16px] border-kaosNeon rounded-[40px] pointer-events-none opacity-20"></div>
         </div>
@@ -43,8 +42,7 @@ export default function NewsletterSection() {
             <img 
               alt="KAOS Watermark" 
               className="h-20 object-contain ml-auto" 
-              src="https://lh3.googleusercontent.com/aida/ADBb0uj46qIOice25s0wgyOd-LWnDeeM714ClVTSkgFmiKINOqICN7ryrVzJXi2KnKtRTHVlW5O0MkHLfZhKcKbseqUF-wGctwnzRG9UdCxQ1zsGgHlTpyhKmVSpUm59_pY0tI0hB3fV03rfoM8-dI7r12Kfc4fDKJAMJTbh6sRJXS-GojAuprxcm2ab8PL3d0xbnenw4N5lZONHF3_7vha7rinJjOF0N5POrpaHCf5EOiY_jvlK3dkpRJZBIAWybkiOBl045I3DXqosiGg" 
-              style={{ objectPosition: "85% 88%" }}
+              src="/placeholder.svg" 
             />
           </div>
         </div>

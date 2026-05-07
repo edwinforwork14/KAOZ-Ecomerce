@@ -53,13 +53,7 @@ export default function Hero({ onExploreClick }: HeroProps) {
         </div>
       </div>
 
-      {/* Badge Overlay */}
-      <div className="absolute top-10 right-10 z-30 w-32 h-32 md:w-48 md:h-48 bg-kaosNeon rounded-full flex items-center justify-center text-center p-4 badge-rotate shadow-2xl border-4 border-white" data-purpose="feature-badge">
-        <div className="text-[10px] md:text-xs font-black uppercase leading-tight text-black">
-          DISEÑADO EN<br />
-          <span className="text-2xl md:text-3xl block mt-1 tracking-tighter">VENEZUELA</span>
-        </div>
-      </div>
+
 
     </section>
   )

@@ -35,17 +35,27 @@ export async function getProducts(params?: any) {
     .from('Product')
     .select(`
       *,
-      category:Category(*),
+      category:Category!categoryId(*),
       images:ProductImage(*),
       variants:ProductVariant(*)
     `, { count: 'exact' })
 
   if (params?.category) query = query.eq('categoryId', params.category)
+  if (params?.subcategory) query = query.eq('subcategory', params.subcategory)
   if (params?.search) query = query.ilike('name', `%${params.search}%`)
   if (params?.isNew) query = query.eq('isNew', true)
+  if (params?.brand) query = query.eq('brand', params.brand)
+  
+  // Price Filtering
+  if (params?.minPrice !== undefined) query = query.gte('price', params.minPrice)
+  if (params?.maxPrice !== undefined) query = query.lte('price', params.maxPrice)
 
+  // Color & Size filtering would ideally be done via subquery or joins in a more complex setup
+  // For now, we'll fetch and filter in memory if these are small datasets, 
+  // or use Supabase filters if variants are included.
+  
   const page = params?.page || 1
-  const limit = params?.limit || 12
+  const limit = params?.limit || 20
   const from = (page - 1) * limit
   const to = from + limit - 1
 
@@ -53,18 +63,33 @@ export async function getProducts(params?: any) {
 
   if (error) return { success: false, error }
 
-  const mappedProducts = data.map((p: any) => ({
+  let mappedProducts = data.map((p: any) => ({
     ...p,
     _id: p.id,
     images: (p.images || []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) })),
     variants: p.variants || []
   }))
 
+  // Client-side filtering for complex nested relations (Colors/Sizes)
+  if (params?.colors) {
+    const selectedColors = params.colors.split(',').map((c: string) => c.toLowerCase())
+    mappedProducts = mappedProducts.filter((p: any) => 
+      p.variants.some((v: any) => v.color && selectedColors.includes(v.color.toLowerCase()))
+    )
+  }
+
+  if (params?.sizes) {
+    const selectedSizes = params.sizes.split(',')
+    mappedProducts = mappedProducts.filter((p: any) => 
+      p.variants.some((v: any) => v.size && selectedSizes.includes(v.size))
+    )
+  }
+
   return { 
     success: true, 
     products: mappedProducts, 
-    total: count,
-    totalPages: Math.ceil((count || 0) / limit)
+    total: count || mappedProducts.length,
+    totalPages: Math.ceil((count || mappedProducts.length) / limit)
   }
 }
 
@@ -145,6 +170,7 @@ export async function createProduct(formData: any) {
   const { data, error } = await supabase
     .from('Product')
     .insert([{
+      id: crypto.randomUUID(),
       name: rawData.name,
       description: rawData.description,
       price: rawData.price,
@@ -152,7 +178,14 @@ export async function createProduct(formData: any) {
       categoryId: rawData.category,
       brand: rawData.brand,
       isNew: rawData.isNew,
-      isFeatured: rawData.isFeatured
+      isFeatured: rawData.isFeatured,
+      isActive: true,
+      rating: 0,
+      reviewCount: 0,
+      viewCount: 0,
+      addToCartCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }])
     .select()
     .single()
@@ -373,18 +406,10 @@ export async function clearCart() {
 // === FILTER OPTIONS ===
 export async function getFilterOptions(params?: any) {
   const { data: products } = await supabase.from('Product').select('brand, price')
-  const { data: variants } = await supabase.from('ProductVariant').select('color, colorHex')
+  const { data: variants } = await supabase.from('ProductVariant').select('color')
   
   const brands = Array.from(new Set((products || []).map(p => p.brand).filter(Boolean)))
-  
-  const colorMap = new Map()
-  variants?.forEach(v => {
-    if (v.color && !colorMap.has(v.color)) {
-      colorMap.set(v.color, v.colorHex)
-    }
-  })
-  
-  const colors = Array.from(colorMap.entries()).map(([name, hex]) => ({ name, hex }))
+  const colors = Array.from(new Set((variants || []).map(v => v.color).filter(Boolean)))
   
   const prices = (products || []).map(p => p.price)
   const minPrice = prices.length ? Math.min(...prices) : 0
@@ -392,16 +417,9 @@ export async function getFilterOptions(params?: any) {
 
   return { 
     success: true, 
-    filterOptions: { 
-      brands, 
-      colors, 
-      priceRange: { min: minPrice, max: maxPrice }, 
-      counts: { 
-        new: (products || []).filter((p: any) => p.isNew).length, 
-        discount: (products || []).filter((p: any) => p.originalPrice && p.originalPrice > p.price).length, 
-        inStock: (products || []).length // Placeholder
-      } 
-    } 
+    brands, 
+    colors, 
+    priceRange: { min: minPrice, max: maxPrice }
   }
 }
 

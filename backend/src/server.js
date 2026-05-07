@@ -25,6 +25,7 @@ const analyticsRoutes = require("./routes/analytics");
 const publicRoutes = require("./routes/public");
 const settingsRoutes = require("./routes/settings");
 const deploymentRoutes = require("./routes/deployments");
+const checkDeploymentActive = require("./middleware/deploymentCheck");
 
 const app = express();
 
@@ -84,16 +85,10 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Rutas - Ordenadas por especificidad (más específicas primero)
 app.use("/api/deployments", deploymentRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/analytics", analyticsRoutes);
-app.use("/api/settings", settingsRoutes);
-app.use("/api/public", publicRoutes);
-app.use("/api", publicRoutes);
+app.use("/api/auth", authRoutes); // Permitir auth para que el admin pueda entrar a activar el sistema
 
+// Aplicar el "seguro" de implementación activa al resto de las rutas
+app.use("/api/products", checkDeploymentActive, productRoutes);
 // Ruta de prueba
 app.get("/api", (req, res) => {
   res.json({
@@ -105,7 +100,6 @@ app.get("/api", (req, res) => {
 
 // Ruta de diagnóstico
 app.get("/api/debug", (req, res) => {
-  console.log("🔧 Endpoint de diagnóstico llamado");
   res.json({
     success: true,
     message: "Diagnóstico",
@@ -113,6 +107,16 @@ app.get("/api/debug", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Aplicar el "seguro" de implementación activa al resto de las rutas
+app.use("/api/products", checkDeploymentActive, productRoutes);
+app.use("/api/cart", checkDeploymentActive, cartRoutes);
+app.use("/api/orders", checkDeploymentActive, orderRoutes);
+app.use("/api/admin", checkDeploymentActive, adminRoutes);
+app.use("/api/analytics", checkDeploymentActive, analyticsRoutes);
+app.use("/api/settings", checkDeploymentActive, settingsRoutes);
+app.use("/api/public", checkDeploymentActive, publicRoutes);
+app.use("/api", checkDeploymentActive, publicRoutes);
 
 // ===== TAREAS PROGRAMADAS =====
 

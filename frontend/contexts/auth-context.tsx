@@ -24,11 +24,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // 1. Obtener sesión actual
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.warn('Session error, signing out:', error.message)
+        supabase.auth.signOut()
+        setSession(null)
+        setUser(null)
+        setIsAdmin(false)
+        setLoading(false)
+        return
+      }
       setSession(session)
       const currentUser = session?.user ?? null
       setUser(currentUser)
       setIsAdmin(currentUser?.user_metadata?.role === 'admin' || currentUser?.email === 'admin@example.com')
+      setLoading(false)
+    }).catch(() => {
       setLoading(false)
     })
 
