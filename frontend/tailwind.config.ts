@@ -11,6 +11,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        kaosNeon: '#DFFF00',
+        kaosBlack: '#000000',
+        kaosGray: '#F3F4F6',
         "on-background": "#e5e2e1",
         "surface-container": "#201f1f",
         "surface-container-lowest": "#0e0e0e",
@@ -83,7 +86,8 @@ const config: Config = {
       },
       fontFamily: {
         // Base
-        sans: ["var(--font-space-grotesk)", "system-ui", "sans-serif"],
+        sans: ["Inter", "var(--font-space-grotesk)", "system-ui", "sans-serif"],
+        heavy: ["Inter", "sans-serif"], // Added for font-heavy
         mono: ["var(--font-space-grotesk)", "monospace"],
         // KAOS Design System — font-{name} utility classes
         display: ["var(--font-space-grotesk)", "sans-serif"],

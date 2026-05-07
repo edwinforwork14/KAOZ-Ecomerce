@@ -1,117 +1,87 @@
-"use client"
-
 import { brandConfig } from "@/lib/config"
-import Link from "next/link"
+import { Instagram, Facebook, Twitter, MessageCircle } from "lucide-react"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
-  const getSocialHref = (key: keyof typeof brandConfig.social) => {
-    const username = brandConfig.social[key]
-    if (!username) return "#"
-    
-    switch (key) {
-      case 'instagram': return `https://instagram.com/${username}`
-      case 'facebook': return `https://facebook.com/${username}`
-      case 'twitter': return `https://twitter.com/${username}`
-      default: return "#"
-    }
-  }
+  const socialLinks = [
+    { name: 'Instagram', icon: <Instagram className="w-5 h-5" />, href: `https://instagram.com/${brandConfig.social.instagram}` },
+    { name: 'TikTok', icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 448 512"><path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"></path></svg>, href: '#' },
+    { name: 'Facebook', icon: <Facebook className="w-5 h-5" />, href: `https://facebook.com/${brandConfig.social.facebook}` },
+    { name: 'WhatsApp', icon: <MessageCircle className="w-5 h-5" />, href: `https://wa.me/${brandConfig.contact.whatsapp}` },
+  ]
 
   return (
-    <footer className="bg-surface-container-lowest border-t border-outline-variant/30 text-on-surface">
-      {/* Top Technical Bar */}
-      <div className="border-b border-outline-variant/30 py-4 px-gutter md:px-margin bg-surface-container flex flex-wrap justify-between items-center gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-2 h-2 bg-tertiary animate-pulse"></div>
-          <span className="font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest">
-            System_Status: <span className="text-tertiary">Nominal</span> // Uptime: 99.98%
-          </span>
-        </div>
-        <div className="font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest hidden sm:block">
-          Protocol: HTTPS_V2 // Port: 443 // Session_Active
-        </div>
-      </div>
-
-      <div className="container mx-auto px-gutter md:px-margin py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-24">
-          {/* Brand Identity */}
-          <div className="space-y-8">
-            <h3 className="font-display text-h2 text-on-background uppercase tracking-tight leading-none">
-              {brandConfig.name.toUpperCase()}
-            </h3>
-            <p className="font-body-sm text-body-sm text-on-surface-variant uppercase tracking-widest leading-relaxed max-w-xs opacity-70">
-              {brandConfig.tagline}. {brandConfig.description}
+    <footer className="bg-kaosBlack text-white pt-20 pb-10" data-purpose="site-footer">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-20">
+          {/* Brand Info */}
+          <div className="md:col-span-2">
+            <img 
+              alt="KAOS Logo White" 
+              className="h-10 mb-8 filter invert brightness-200" 
+              src="https://lh3.googleusercontent.com/aida/ADBb0uj46qIOice25s0wgyOd-LWnDeeM714ClVTSkgFmiKINOqICN7ryrVzJXi2KnKtRTHVlW5O0MkHLfZhKcKbseqUF-wGctwnzRG9UdCxQ1zsGgHlTpyhKmVSpUm59_pY0tI0hB3fV03rfoM8-dI7r12Kfc4fDKJAMJTbh6sRJXS-GojAuprxcm2ab8PL3d0xbnenw4N5lZONHF3_7vha7rinJjOF0N5POrpaHCf5EOiY_jvlK3dkpRJZBIAWybkiOBl045I3DXqosiGg" 
+              style={{ objectPosition: "15% 91.5%" }}
+            />
+            <p className="text-xs text-gray-400 leading-relaxed mb-8 max-w-sm">
+              {brandConfig.description}
             </p>
-            <div className="flex items-center gap-6">
-              <Link href={getSocialHref('instagram')} target="_blank" className="text-on-surface-variant hover:text-tertiary transition-colors">
-                <span className="material-symbols-outlined text-xl">camera_alt</span>
-              </Link>
-              <Link href={getSocialHref('facebook')} target="_blank" className="text-on-surface-variant hover:text-tertiary transition-colors">
-                <span className="material-symbols-outlined text-xl">facebook</span>
-              </Link>
-              <Link href={getSocialHref('twitter')} target="_blank" className="text-on-surface-variant hover:text-tertiary transition-colors">
-                <span className="material-symbols-outlined text-xl">alternate_email</span>
-              </Link>
+            <div className="flex gap-6">
+              {socialLinks.map((link) => (
+                <a 
+                  key={link.name}
+                  href={link.href} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-kaosNeon transition-colors"
+                >
+                  {link.icon}
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-8">
-            <h4 className="font-mono-data text-label-caps text-on-background uppercase">Navigation_Tree</h4>
-            <ul className="space-y-4 font-body-sm text-xs text-on-surface-variant uppercase tracking-widest">
-              <li><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-tertiary transition-colors">Return_Home</button></li>
-              <li><Link href="/" className="hover:text-tertiary transition-colors">Asset_Grid</Link></li>
-              <li><Link href="/" className="hover:text-tertiary transition-colors">Protocol_About</Link></li>
-              <li><Link href="/" className="hover:text-tertiary transition-colors">Contact_Endpoint</Link></li>
+          {/* Links Columns */}
+          <div className="md:col-span-1">
+            <h4 className="font-bold text-sm uppercase mb-6">Comprar</h4>
+            <ul className="text-xs text-gray-400 space-y-4">
+              <li><button className="hover:text-white transition-colors">Hombre</button></li>
+              <li><button className="hover:text-white transition-colors">Mujer</button></li>
+              <li><button className="hover:text-white transition-colors">Kids</button></li>
+              <li><button className="hover:text-white transition-colors">Accesorios</button></li>
+              <li><button className="hover:text-white transition-colors">Nuevos Drops</button></li>
             </ul>
           </div>
 
-          {/* Customer Support */}
-          <div className="space-y-8">
-            <h4 className="font-mono-data text-label-caps text-on-background uppercase">Support_Protocol</h4>
-            <ul className="space-y-4 font-body-sm text-xs text-on-surface-variant uppercase tracking-widest">
-              <li><Link href="/" className="hover:text-tertiary transition-colors">Logistics_Policy</Link></li>
-              <li><Link href="/" className="hover:text-tertiary transition-colors">Asset_Returns</Link></li>
-              <li><Link href="/" className="hover:text-tertiary transition-colors">Privacy_Layer</Link></li>
-              <li><Link href="/" className="hover:text-tertiary transition-colors">Terms_of_Service</Link></li>
+          <div className="md:col-span-1">
+            <h4 className="font-bold text-sm uppercase mb-6">KAOS</h4>
+            <ul className="text-xs text-gray-400 space-y-4">
+              <li><button className="hover:text-white transition-colors">Nosotros</button></li>
+              <li><button className="hover:text-white transition-colors">Blog</button></li>
+              <li><button className="hover:text-white transition-colors">Atletas</button></li>
+              <li><button className="hover:text-white transition-colors">Eventos</button></li>
             </ul>
           </div>
 
-          {/* Contact Info */}
-          <div className="space-y-8">
-            <h4 className="font-mono-data text-label-caps text-on-background uppercase">Hardware_Node</h4>
-            <ul className="space-y-6 font-body-sm text-xs text-on-surface-variant uppercase tracking-widest">
-              <li className="flex items-start gap-4">
-                <span className="material-symbols-outlined text-tertiary text-lg">location_on</span>
-                <span className="leading-relaxed opacity-70">{brandConfig.contact.address}</span>
-              </li>
-              <li className="flex items-center gap-4">
-                <span className="material-symbols-outlined text-tertiary text-lg">call</span>
-                <span className="opacity-70">{brandConfig.contact.phone}</span>
-              </li>
-              <li className="flex items-center gap-4">
-                <span className="material-symbols-outlined text-tertiary text-lg">mail</span>
-                <span className="truncate opacity-70">{brandConfig.contact.email}</span>
-              </li>
+          <div className="md:col-span-1">
+            <h4 className="font-bold text-sm uppercase mb-6">Ayuda</h4>
+            <ul className="text-xs text-gray-400 space-y-4">
+              <li><button className="hover:text-white transition-colors">Contacto</button></li>
+              <li><button className="hover:text-white transition-colors">Envíos</button></li>
+              <li><button className="hover:text-white transition-colors">Devoluciones</button></li>
+              <li><button className="hover:text-white transition-colors">Preguntas Frecuentes</button></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-24 pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest opacity-50">
-            © {currentYear} {brandConfig.name}. KAOS_URBAN_ATHLETICS // VALENCIA_NODE_01
+        <div className="pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-[10px] text-gray-500 uppercase tracking-widest">
+            © {currentYear} {brandConfig.name}. DISEÑADO EN VENEZUELA.
           </p>
-          <div className="flex items-center gap-3 font-mono-data text-[10px] text-on-surface-variant uppercase tracking-widest">
-            <span className="opacity-50">System_Engineered_by:</span>
-            <Link 
-              href="https://untitledtechcompany.io/" 
-              target="_blank"
-              className="font-bold text-on-background hover:text-tertiary transition-colors"
-            >
-              Untitled_Tech_Co.
-            </Link>
+          <div className="flex gap-8 text-[10px] text-gray-500 uppercase tracking-widest">
+            <button className="hover:text-white transition-colors">Términos y Condiciones</button>
+            <button className="hover:text-white transition-colors">Privacidad</button>
           </div>
         </div>
       </div>

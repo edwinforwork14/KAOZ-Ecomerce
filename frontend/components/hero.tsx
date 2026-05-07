@@ -1,101 +1,62 @@
 "use client"
 
-import { brandConfig } from "@/lib/config"
-
 interface HeroProps {
   onExploreClick?: () => void
 }
 
 export default function Hero({ onExploreClick }: HeroProps) {
   return (
-    <section className="relative h-[90vh] min-h-[700px] w-full flex items-end border-b border-outline-variant/30">
-      {/* Background Layer */}
-      <div className="absolute inset-0 w-full h-full z-0 bg-surface-container-lowest grid-pattern overflow-hidden">
-        {/* Hero Image — using Unsplash for reliability */}
-        <img
-          alt="KAOS Urban Athletics — Industrial sportswear"
-          className="absolute inset-0 w-full h-full object-cover object-center opacity-50 mix-blend-luminosity"
-          src="https://images.unsplash.com/photo-1483721310020-03333e577078?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+    <section className="relative h-[80vh] overflow-hidden" data-purpose="hero-banner">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          alt="Hero Background" 
+          className="w-full h-full object-cover" 
+          src="/hero1.png"
+          style={{ objectPosition: "50% 12%" }}
         />
-
-        {/* Gradient fade to background at bottom */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/10" />
-
-        {/* Technical grid lines */}
-        <div className="absolute top-1/4 left-0 w-full h-px bg-outline-variant/20" />
-        <div className="absolute top-1/2 left-0 w-full h-px bg-outline-variant/20" />
-        <div className="absolute top-3/4 left-0 w-full h-px bg-outline-variant/20" />
-        <div className="absolute top-0 left-1/4 w-px h-full bg-outline-variant/20 hidden md:block" />
-        <div className="absolute top-0 left-1/2 w-px h-full bg-outline-variant/20 hidden md:block" />
-        <div className="absolute top-0 left-3/4 w-px h-full bg-outline-variant/20 hidden md:block" />
       </div>
 
-      {/* Technical coordinate overlays */}
-      <div className="absolute top-24 left-gutter font-mono-data text-label-caps text-on-surface-variant hidden md:block z-10 opacity-70">
-        COORD: 45.5017° N, 73.5673° W<br />
-        SYS.VER: 2.4.1 // KAOS_CORE
-      </div>
-      <div className="absolute top-24 right-gutter flex flex-col items-end gap-1 font-mono-data text-label-caps text-on-surface-variant hidden md:block z-10 opacity-70">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 bg-tertiary animate-pulse inline-block" />
-          LIVE FEED
-        </div>
-        ENG: OPTIMAL
-      </div>
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 z-10 hero-gradient"></div>
 
       {/* Hero Content */}
-      <div className="relative w-full px-gutter md:px-margin pb-16 z-10 flex flex-col md:flex-row justify-between items-end gap-8">
-        <div className="w-full max-w-4xl border-l-2 border-tertiary pl-6 md:pl-12">
-          {/* Drop label */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="bg-tertiary text-on-tertiary font-mono-data text-label-caps uppercase px-2 py-1">
-              INIT: DROP_004
-            </div>
-            <span className="font-mono-data text-on-surface-variant text-sm uppercase">
-              // ENGINEERED CHAOS
-            </span>
-          </div>
-
-          {/* Main headline */}
-          <h1 className="font-display text-display text-on-background mb-6 uppercase leading-[0.9]">
-            SYSTEMATIC<br />
-            <span className="text-outline">DISRUPTION</span>
-          </h1>
-
-          {/* Subtext */}
-          <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl mb-10 border-l border-outline-variant/50 pl-4">
-            Technical sportswear strictly engineered for the urban grid.
-            Utilitarian design meets uncompromising performance.{" "}
-            <span className="text-tertiary">No excess. Just function.</span>
+      <div className="relative z-20 h-full max-w-[1440px] mx-auto px-4 md:px-10 flex flex-col justify-center items-start">
+        <div className="max-w-xl">
+          <p className="text-kaosNeon font-heavy italic text-2xl md:text-3xl mb-2 tracking-tight">
+            PLAYA. PÁDEL. MONTAÑA.
           </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <button
+          <h1 className="text-6xl md:text-8xl font-heavy leading-none mb-6">
+            VIVE <span className="block">TU KAOS</span>
+          </h1>
+          <p className="text-sm md:text-lg text-gray-800 mb-8 max-w-sm leading-relaxed">
+            Ropa técnica, urbana y chic para moverte sin límites. Del club a la playa, de la ciudad a la montaña.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <button 
               onClick={onExploreClick}
-              className="bg-tertiary text-on-tertiary font-label-caps text-label-caps uppercase px-12 py-5 hover:bg-surface-container-highest hover:text-tertiary transition-all duration-300 border border-tertiary flex items-center justify-center gap-2 group w-full sm:w-auto"
+              className="bg-kaosNeon text-black px-8 py-3 font-bold text-sm uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
             >
-              EXECUTE: SHOP
-              <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">
-                arrow_forward
-              </span>
+              Comprar Nuevo Drop
             </button>
-            <button className="bg-transparent border border-outline-variant text-on-background font-label-caps text-label-caps uppercase px-12 py-5 hover:bg-surface-container hover:border-outline transition-all duration-300 w-full sm:w-auto">
-              VIEW PROTOCOL
+            <button 
+              onClick={onExploreClick}
+              className="border-2 border-black text-black px-8 py-3 font-bold text-sm uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
+            >
+              Ver Colecciones
             </button>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="hidden lg:flex flex-col items-center gap-4 absolute bottom-16 right-gutter">
-          <span className="font-mono-data text-label-caps text-on-surface-variant rotate-90 origin-bottom translate-y-12 whitespace-nowrap uppercase tracking-widest">
-            SCROLL
-          </span>
-          <div className="w-px h-16 bg-outline-variant relative overflow-hidden">
-            <div className="w-full h-1/2 bg-tertiary absolute top-0 animate-shimmer" />
           </div>
         </div>
       </div>
+
+      {/* Badge Overlay */}
+      <div className="absolute top-10 right-10 z-30 w-32 h-32 md:w-40 md:h-40 bg-kaosNeon rounded-full flex items-center justify-center text-center p-4 badge-rotate shadow-xl border-4 border-white" data-purpose="feature-badge">
+        <div className="text-[10px] md:text-xs font-black uppercase leading-tight">
+          Diseñado en<br />
+          <span className="text-lg">VENEZUELA</span>
+        </div>
+      </div>
+
     </section>
   )
 }

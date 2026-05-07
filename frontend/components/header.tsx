@@ -1,10 +1,7 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { useCart } from "@/contexts/cart-context"
 import { useAuth } from "@/contexts/auth-context"
 import Link from "next/link"
-import { brandConfig } from "@/lib/config"
+import { Search, User, ShoppingBag } from "lucide-react"
 
 interface HeaderProps {
   activeTab?: string
@@ -27,91 +24,92 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
 
   return (
     <>
-      {/* TopNavBar (Web) */}
-      <header className="hidden md:flex bg-surface/90 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-outline-variant/30 h-16">
-        <div className="flex justify-between items-center px-gutter w-full">
-          <Link 
-            href="/" 
-            className="font-display text-h2 tracking-tighter text-tertiary uppercase flex items-center gap-2"
-            onClick={(e) => { e.preventDefault(); handleNavClick('home') }}
-          >
-            <span className="material-symbols-outlined">network_node</span>
-            {brandConfig.name}
-          </Link>
+      {/* Top Banner */}
+      <div className="bg-kaosBlack text-white text-[10px] py-2 px-4 md:px-10 flex justify-between items-center uppercase tracking-widest z-[60] relative">
+        <div>ENVÍOS A TODO VENEZUELA</div>
+        <div className="flex gap-6">
+          <button className="hover:underline text-[10px] uppercase">¿NECESITAS AYUDA?</button>
+          <button className="flex items-center gap-1 hover:underline text-[10px] uppercase">
+            <User className="w-3 h-3" />
+            MI CUENTA
+          </button>
+        </div>
+      </div>
 
-          <nav className="flex items-center gap-8">
+      {/* Main Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
+        <nav className="max-w-[1440px] mx-auto px-4 md:px-10 h-20 flex justify-between items-center">
+          {/* Left Nav */}
+          <div className="hidden lg:flex gap-6 text-xs font-bold uppercase tracking-wider w-1/3">
             {[
-              { name: "Men", key: "men" },
-              { name: "Women", key: "women" },
+              { name: "Hombre", key: "men" },
+              { name: "Mujer", key: "women" },
               { name: "Kids", key: "kids" },
-              { name: "Drops", key: "sale" }
+              { name: "Accesorios", key: "accessories" },
             ].map((item) => (
               <button
                 key={item.key}
                 onClick={() => handleNavClick(item.key)}
-                className={`font-label-caps text-label-caps transition-colors duration-300 uppercase tracking-widest ${
-                  activeTab === item.key ? "text-tertiary" : "text-on-surface-variant hover:text-tertiary"
+                className={`hover:text-gray-600 transition-colors ${
+                  activeTab === item.key ? "text-kaosNeon" : "text-kaosBlack"
                 }`}
               >
                 {item.name}
               </button>
             ))}
-          </nav>
-
-          <div className="flex items-center gap-6 text-primary">
-            <div className="font-mono-data text-mono-data text-on-surface-variant hidden lg:block border-r border-outline-variant/30 pr-6 uppercase">
-              SYS.STS: <span className="text-tertiary">ONLINE</span>
-            </div>
-            <button 
-              onClick={() => setIsOpen(true)}
-              className="hover:text-tertiary transition-colors duration-300 scale-95 active:opacity-80 transition-all flex items-center justify-center relative"
-            >
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>shopping_bag</span>
-              {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-tertiary rounded-full"></span>
-              )}
-            </button>
-            <button className="hover:text-tertiary transition-colors duration-300 scale-95 active:opacity-80 transition-all flex items-center justify-center">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>person</span>
-            </button>
           </div>
-        </div>
+
+          {/* Center Logo */}
+          <div className="w-1/3 flex justify-center cursor-pointer" onClick={() => handleNavClick("home")}>
+            <img 
+              alt="KAOS Logo" 
+              className="h-10 object-contain" 
+              src="https://lh3.googleusercontent.com/aida/ADBb0uj46qIOice25s0wgyOd-LWnDeeM714ClVTSkgFmiKINOqICN7ryrVzJXi2KnKtRTHVlW5O0MkHLfZhKcKbseqUF-wGctwnzRG9UdCxQ1zsGgHlTpyhKmVSpUm59_pY0tI0hB3fV03rfoM8-dI7r12Kfc4fDKJAMJTbh6sRJXS-GojAuprxcm2ab8PL3d0xbnenw4N5lZONHF3_7vha7rinJjOF0N5POrpaHCf5EOiY_jvlK3dkpRJZBIAWybkiOBl045I3DXqosiGg" 
+              style={{ objectPosition: "50% 2.3%" }}
+            />
+          </div>
+
+          {/* Right Nav */}
+          <div className="flex items-center justify-end gap-6 w-1/3">
+            <div className="hidden lg:flex gap-6 text-xs font-bold uppercase tracking-wider mr-4">
+              <button onClick={() => handleNavClick("empresas")} className="hover:text-gray-600">Empresas</button>
+              <button onClick={() => handleNavClick("sale")} className="hover:text-gray-600">Nuevos</button>
+            </div>
+            <div className="flex gap-4">
+              <button><Search className="w-6 h-6" /></button>
+              <button><User className="w-6 h-6" /></button>
+              <button className="relative" onClick={() => setIsOpen(true)}>
+                <ShoppingBag className="w-6 h-6" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-black text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {itemCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+        </nav>
       </header>
 
-      {/* BottomNavBar (Mobile) */}
-      <nav className="md:hidden bg-surface-container/90 backdrop-blur-2xl fixed bottom-0 w-full z-50 bg-surface border-t border-outline-variant/50 shadow-lg h-16">
-        <div className="flex justify-around items-center h-full px-4">
-          <button 
-            onClick={() => handleNavClick('home')}
-            className={`flex flex-col items-center justify-center p-2 transition-transform active:scale-90 duration-150 ${
-              activeTab === 'home' ? 'text-tertiary' : 'text-on-surface-variant'
-            }`}
+      {/* Mobile Nav (Simplified for now, similar to template) */}
+      <div className="lg:hidden flex overflow-x-auto gap-6 px-4 py-3 bg-white border-b border-gray-100 text-[10px] font-bold uppercase tracking-wider no-scrollbar">
+        {[
+          { name: "Hombre", key: "men" },
+          { name: "Mujer", key: "women" },
+          { name: "Kids", key: "kids" },
+          { name: "Accesorios", key: "accessories" },
+          { name: "Empresas", key: "empresas" },
+          { name: "Nuevos", key: "sale" },
+        ].map((item) => (
+          <button
+            key={item.key}
+            onClick={() => handleNavClick(item.key)}
+            className="whitespace-nowrap hover:text-gray-600"
           >
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: `'FILL' ${activeTab === 'home' ? 1 : 0}` }}>home</span>
-            <span className="font-label-caps text-[10px] mt-1 tracking-widest uppercase">Home</span>
+            {item.name}
           </button>
-          <button 
-            onClick={() => handleNavClick('products')}
-            className={`flex flex-col items-center justify-center p-2 transition-transform active:scale-90 duration-150 ${
-              activeTab === 'products' ? 'text-tertiary' : 'text-on-surface-variant'
-            }`}
-          >
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: `'FILL' ${activeTab === 'products' ? 1 : 0}` }}>grid_view</span>
-            <span className="font-label-caps text-[10px] mt-1 tracking-widest uppercase">Shop</span>
-          </button>
-          <button 
-            onClick={() => setIsOpen(true)}
-            className="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-tertiary transition-transform active:scale-90 duration-150"
-          >
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>shopping_cart</span>
-            <span className="font-label-caps text-[10px] mt-1 tracking-widest uppercase">Cart</span>
-          </button>
-          <button className="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-tertiary transition-transform active:scale-90 duration-150">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>person</span>
-            <span className="font-label-caps text-[10px] mt-1 tracking-widest uppercase">Profile</span>
-          </button>
-        </div>
-      </nav>
+        ))}
+      </div>
     </>
   )
 }

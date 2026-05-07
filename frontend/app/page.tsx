@@ -1,4 +1,3 @@
-// app/page.tsx (o donde tengas este Home)
 "use client"
 
 import { useState, useRef } from "react"
@@ -6,6 +5,10 @@ import Header from "@/components/header"
 import Hero from "@/components/hero"
 import CategorySection from "@/components/category-section"
 import FeaturedProducts from "@/components/featured-products"
+import BenefitsBar from "@/components/benefits-bar"
+import LifestyleSection from "@/components/lifestyle-section"
+import NewsletterSection from "@/components/newsletter-section"
+import InstagramFeed from "@/components/instagram-feed"
 import Footer from "@/components/footer"
 import Cart from "@/components/cart"
 import ProductDetail from "@/components/product-detail"
@@ -17,31 +20,19 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("home")
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isCheckout, setIsCheckout] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
   const scrollPositionRef = useRef<number>(0)
-  const featuredProductsRef = useRef<any>(null)
 
   const handleProductClick = (product: any) => {
-    // PRIMERO guardamos la posición
     scrollPositionRef.current = window.scrollY
-
-    // SEGUNDO hacemos scroll al top INMEDIATAMENTE
     window.scrollTo(0, 0)
-
-    // TERCERO cambiamos el estado (esto causa re-render)
     setTimeout(() => {
       setSelectedProduct(product)
     }, 0)
   }
 
   const handleBackFromProduct = () => {
-    // Guardamos la posición que queremos restaurar
     const savedPosition = scrollPositionRef.current
-
-    // Cambiamos el estado
     setSelectedProduct(null)
-
-    // Restauramos el scroll DESPUÉS de que el DOM se actualice
     setTimeout(() => {
       window.scrollTo(0, savedPosition)
       scrollPositionRef.current = 0
@@ -68,39 +59,11 @@ export default function Home() {
     }, 50)
   }
 
-  const handleCategoryClick = (category: string) => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-    setActiveTab(category)
-    setSelectedProduct(null)
-    setIsCheckout(false)
-    scrollPositionRef.current = 0
-  }
-
-  const handleExploreClick = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-    setActiveTab("products")
-    setSelectedProduct(null)
-    setIsCheckout(false)
-    scrollPositionRef.current = 0
-  }
-
-  const handleSearch = (term: string) => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-    setSearchTerm(term)
-    setActiveTab("products")
-    setSelectedProduct(null)
-    setIsCheckout(false)
-    scrollPositionRef.current = 0
-  }
-
-  // ✅ IMPORTANTE: Esta es la que recibe el Header
-  // y también la que le pasamos a FeaturedProducts para "VER TODO"
   const handleTabChange = (tab: string) => {
     window.scrollTo({ top: 0, behavior: "smooth" })
     setActiveTab(tab)
     setSelectedProduct(null)
     setIsCheckout(false)
-    setSearchTerm("")
     scrollPositionRef.current = 0
   }
 
@@ -127,71 +90,63 @@ export default function Home() {
       )
     }
 
-    switch (activeTab) {
-      case "home":
-        return (
-          <>
-            <Hero onExploreClick={handleExploreClick} />
-            {/* <CategorySection onCategoryClick={handleCategoryClick} /> */}
-            <div ref={featuredProductsRef}>
-              <FeaturedProducts
+    if (activeTab === "home") {
+      return (
+        <>
+          <Hero onExploreClick={() => handleTabChange("sale")} />
+          
+          <BenefitsBar />
+          
+          <CategorySection onCategoryClick={handleTabChange} />
+          
+          <section className="bg-gray-50 py-20">
+            <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+              <div className="flex justify-between items-end mb-12">
+                <div>
+                  <h2 className="text-3xl font-black uppercase tracking-tight">Novedades</h2>
+                  <p className="text-gray-500 text-sm uppercase tracking-widest mt-2">Los favoritos del momento</p>
+                </div>
+                <button 
+                  onClick={() => handleTabChange("sale")}
+                  className="text-xs font-bold uppercase underline tracking-widest"
+                >
+                  Ver Todo
+                </button>
+              </div>
+              <FeaturedProducts 
                 onProductClick={handleProductClick}
-                // ✅ PARA QUE "VER TODO" FUNCIONE DESDE HOME
                 setActiveTab={handleTabChange}
-                // ✅ Si quieres que vaya a "TODOS" (Header key = sale)
-                // si prefieres que vaya a "products", cámbialo a "products"
                 viewAllTab="sale"
               />
             </div>
-          </>
-        )
+          </section>
 
-      case "products":
-        return (
-          <FeaturedProducts
-            onProductClick={handleProductClick}
-            showAll={true}
-            // ✅ opcional, pero no hace daño
-            setActiveTab={handleTabChange}
-          />
-        )
-
-      case "men":
-      case "women":
-      case "kids":
-      case "accessories":
-      case "sale":
-        return (
-          <FeaturedProducts
-            category={activeTab}
-            onProductClick={handleProductClick}
-            showAll={true}
-            // ✅ opcional, pero no hace daño
-            setActiveTab={handleTabChange}
-          />
-        )
-
-      default:
-        return (
-          <>
-            <Hero onExploreClick={handleExploreClick} />
-            <CategorySection onCategoryClick={handleCategoryClick} />
-            <FeaturedProducts
-              onProductClick={handleProductClick}
-              setActiveTab={handleTabChange}
-              viewAllTab="sale"
-            />
-          </>
-        )
+          <LifestyleSection />
+          
+          <NewsletterSection />
+          
+          <InstagramFeed />
+        </>
+      )
     }
+
+    return (
+      <div className="max-w-[1440px] mx-auto px-4 md:px-10 py-10">
+        <FeaturedProducts
+          category={activeTab === "home" ? undefined : activeTab}
+          onProductClick={handleProductClick}
+          showAll={true}
+          setActiveTab={handleTabChange}
+        />
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-background text-on-background">
+    <div className="min-h-screen bg-white text-black font-sans selection:bg-kaosNeon selection:text-black">
       <Header
         activeTab={activeTab}
         setActiveTab={handleTabChange}
-        onSearch={handleSearch}
         isProductDetail={!!selectedProduct}
         onBackFromProduct={handleBackFromProduct}
       />

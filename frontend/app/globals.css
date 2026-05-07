@@ -4,20 +4,20 @@
 
 @layer base {
   :root {
-    --background: 19 19 19; /* #131313 */
-    --foreground: 229 226 225; /* #e5e2e1 */
+    --background: 255 255 255; /* #FFFFFF */
+    --foreground: 0 0 0; /* #000000 */
     
-    --primary: 255 255 255; /* #ffffff */
-    --primary-foreground: 47 49 49; /* #2f3131 */
+    --primary: 0 0 0;
+    --primary-foreground: 255 255 255;
     
-    --secondary: 200 198 196; /* #c8c6c4 */
-    --secondary-foreground: 48 48 47; /* #30302f */
+    --secondary: 243 244 246; /* #F3F4F6 */
+    --secondary-foreground: 0 0 0;
     
-    --surface: 19 19 19;
-    --surface-container: 32 31 31;
+    --surface: 255 255 255;
+    --surface-container: 249 249 249;
     
-    --outline: 142 145 146;
-    --outline-variant: 68 71 72;
+    --outline: 209 213 219; /* Gray 300 */
+    --outline-variant: 229 231 235; /* Gray 200 */
     
     --radius: 0px;
   }
@@ -25,33 +25,33 @@
 
 @layer base {
   * {
-    @apply border-outline-variant/30;
+    @apply border-gray-100;
   }
   body {
-    @apply bg-background text-on-background font-sans antialiased overflow-x-hidden;
-    background-color: #131313;
+    @apply bg-white text-kaosBlack font-sans antialiased overflow-x-hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display uppercase tracking-tight;
+    @apply font-sans uppercase tracking-tight;
   }
 }
 
 @layer utilities {
-  .hero-overlay {
-    background: linear-gradient(180deg, rgba(19, 19, 19, 0.2) 0%, #131313 100%);
+  .font-heavy { font-weight: 900; }
+  .letter-spacing-tight { letter-spacing: -0.05em; }
+  
+  .hero-gradient {
+    background: linear-gradient(to right, rgba(255,255,255,0.9) 30%, rgba(255,255,255,0) 70%);
+  }
+  .badge-rotate {
+    transform: rotate(15deg);
+  }
+  .aspect-card {
+    aspect-ratio: 3 / 4;
   }
   
-  .grid-pattern {
-    background-size: 40px 40px;
-    background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  }
-
-  .text-outline {
-    -webkit-text-stroke: 1px #ffffff;
-    color: transparent;
+  .hero-overlay {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, #FFFFFF 100%);
   }
 }
 
