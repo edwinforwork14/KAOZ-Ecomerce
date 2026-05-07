@@ -5,14 +5,13 @@ const helmet = require("helmet");
 const compression = require("compression");
 const morgan = require("morgan");
 const path = require("path");
-const cron = require("node-cron");
-const { execSync } = require("child_process");
+
+// Notas: node-cron y execSync (git) no son compatibles con Vercel Serverless
+// Las tareas programadas deben configurarse en el panel de Vercel (Cron Jobs)
 
 const connectDB = require("./config/database");
 const errorHandler = require("./middleware/errorHandler");
 const Deployment = require("./services/deploymentService");
-const Product = require("./services/productService");
-const Settings = require("./services/settingsService");
 const ExchangeRate = require("./services/exchangeRateService");
 
 // Rutas
@@ -29,13 +28,13 @@ const checkDeploymentActive = require("./middleware/deploymentCheck");
 
 const app = express();
 
-// Conectar a la base de datos
+// Conectar a la base de datos (se maneja la conexión persistente en config/database)
 connectDB();
 
-// Registrar implementación actual
+// Registrar implementación actual (usando variables de entorno de Vercel si existen)
 (async () => {
   try {
-    const version = execSync("git rev-parse HEAD").toString().trim();
+    const version = process.env.VERCEL_GIT_COMMIT_SHA || "local-dev";
     const environment = process.env.NODE_ENV || "development";
     await Deployment.registerDeployment(version, environment);
   } catch (error) {
@@ -50,61 +49,35 @@ app.use(
   })
 );
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "https://yenfit.shop",
-  "https://www.yenfit.shop",
-  "http://yenfit.shop",
-  "http://www.yenfit.shop",
-];
-
 app.set("trust proxy", 1);
 
+// Configuración de CORS dinámica
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error(`CORS bloqueado para origin: ${origin}`));
-    },
+    origin: true, // En Vercel, permitimos que el middleware maneje el origen o usamos FRONTEND_URL
     credentials: true,
   })
 );
+
 app.use(compression());
 app.use(morgan("dev"));
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Servir archivos estáticos
+// Servir archivos estáticos (Nota: Vercel no persiste archivos en /uploads, usar Supabase Storage)
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// Rutas - Ordenadas por especificidad (más específicas primero)
+// Rutas
 app.use("/api/deployments", deploymentRoutes);
-app.use("/api/auth", authRoutes); // Permitir auth para que el admin pueda entrar a activar el sistema
+app.use("/api/auth", authRoutes);
 
-// Aplicar el "seguro" de implementación activa al resto de las rutas
-app.use("/api/products", checkDeploymentActive, productRoutes);
-// Ruta de prueba
+// Ruta de prueba/salud
 app.get("/api", (req, res) => {
   res.json({
     success: true,
-    message: "YF E-commerce API",
-    version: "2.0.0",
-  });
-});
-
-// Ruta de diagnóstico
-app.get("/api/debug", (req, res) => {
-  res.json({
-    success: true,
-    message: "Diagnóstico",
-    headers: req.headers,
-    timestamp: new Date().toISOString(),
+    message: "YF E-commerce API (Vercel Serverless)",
+    version: "2.1.0",
+    environment: process.env.NODE_ENV
   });
 });
 
@@ -118,46 +91,6 @@ app.use("/api/settings", checkDeploymentActive, settingsRoutes);
 app.use("/api/public", checkDeploymentActive, publicRoutes);
 app.use("/api", checkDeploymentActive, publicRoutes);
 
-// ===== TAREAS PROGRAMADAS =====
-
-// Actualizar tasa de cambio cada hora
-cron.schedule("0 * * * *", async () => {
-  console.log("⏰ Actualizando tasa de cambio...");
-  try {
-    const result = await ExchangeRate.updateFromAPI();
-    if (result.success) {
-      console.log("✅ Tasa de cambio actualizada:", result.current);
-    } else {
-      console.error("❌ Error al actualizar tasa:", result.message);
-    }
-  } catch (error) {
-    console.error("❌ Error en cron de tasa:", error.message);
-  }
-});
-
-// Actualizar estado "nuevo" de productos cada día a las 00:00
-cron.schedule("0 0 * * *", async () => {
-  console.log("⏰ Actualizando estado de productos nuevos...");
-  try {
-    const settings = await Settings.getSettings();
-    const result = await Product.updateNewStatus(settings.newProductDuration);
-    console.log(`✅ Productos actualizados: ${result.updated}`);
-  } catch (error) {
-    console.error("❌ Error en cron de productos:", error.message);
-  }
-});
-
-// Actualizar tasa de cambio al iniciar el servidor
-(async () => {
-  try {
-    console.log("🔄 Sincronizando tasa de cambio inicial...");
-    await ExchangeRate.updateFromAPI();
-    console.log("✅ Tasa de cambio sincronizada");
-  } catch (error) {
-    console.error("❌ Error al sincronizar tasa inicial:", error.message);
-  }
-})();
-
 // Manejo de errores
 app.use(errorHandler);
 
@@ -169,11 +102,13 @@ app.use("*", (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5010;
+// Solo iniciar el servidor si no estamos en Vercel
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5010;
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor local corriendo en puerto ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`📝 Modo: ${process.env.NODE_ENV || "development"}`);
-});
-
+// Exportar para Vercel
 module.exports = app;
