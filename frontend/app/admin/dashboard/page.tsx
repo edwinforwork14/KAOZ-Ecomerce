@@ -8,11 +8,13 @@ import {
   DollarSign, ShoppingCart, Users, Package, TrendingUp,
   RefreshCw, CreditCard, Truck, ArrowUpRight, Clock,
   Eye, CheckCircle, XCircle, AlertCircle, Percent, Target, Award,
-  ShoppingBag, UserCheck, BarChart3
+  ShoppingBag, UserCheck, BarChart3, ArrowRight,
+  TrendingDown, ShoppingBasket, Activity
 } from "lucide-react"
 import { api } from "@/lib/api"
 import { brandConfig } from "@/lib/config"
 import Link from "next/link"
+import { CategoryDistributionChart, PaymentMethodsChart, MiniTrendChart } from "@/components/admin/DashboardCharts"
 
 const translateOrderStatus = (status: string): string => {
   const translations: { [key: string]: string } = {
@@ -26,36 +28,10 @@ const translateOrderStatus = (status: string): string => {
   return translations[status] || status
 }
 
-const getStatusColor = (status: string): string => {
-  const colors: { [key: string]: string } = {
-    'pending': 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    'confirmed': 'bg-blue-100 text-blue-700 border-blue-200',
-    'processing': 'bg-indigo-100 text-indigo-700 border-indigo-200',
-    'shipped': 'bg-purple-100 text-purple-700 border-purple-200',
-    'delivered': 'bg-green-100 text-green-700 border-green-200',
-    'cancelled': 'bg-red-100 text-red-700 border-red-200'
-  }
-  return colors[status] || 'bg-gray-100 text-gray-700 border-gray-200'
-}
-
-const getStatusIcon = (status: string) => {
-  const icons: { [key: string]: any } = {
-    'pending': Clock,
-    'confirmed': CheckCircle,
-    'processing': RefreshCw,
-    'shipped': Truck,
-    'delivered': CheckCircle,
-    'cancelled': XCircle
-  }
-  return icons[status] || AlertCircle
-}
-
 export default function DashboardPage() {
   const [stats, setStats] = useState<any>(null)
   const [settings, setSettings] = useState<any>(null)
-  const [exchangeRate, setExchangeRate] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [updatingRate, setUpdatingRate] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -68,550 +44,264 @@ export default function DashboardPage() {
         api.getSettings()
       ])
       
-      if (statsResult.success) {
-        setStats(statsResult.stats)
-      }
-      
-      if (settingsResult.success) {
-        setSettings(settingsResult.settings)
-        setExchangeRate(settingsResult.settings.exchangeRate?.current)
-      }
+      if (statsResult.success) setStats(statsResult.stats)
+      if (settingsResult.success) setSettings(settingsResult.settings)
     } catch (error) {
-      console.error('Error loading data:', error)
+      console.error('Error loading dashboard data:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const updateExchangeRate = async () => {
-    setUpdatingRate(true)
-    try {
-      const result = await api.updateExchangeRate()
-      if (result.success) {
-        loadData()
-      }
-    } catch (error) {
-      console.error('Error updating rate:', error)
-    } finally {
-      setUpdatingRate(false)
-    }
-  }
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: brandConfig.colors.primary }}></div>
-          <p className="text-gray-500">Cargando dashboard...</p>
+      <div className="flex items-center justify-center h-screen bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-1 bg-black overflow-hidden">
+            <div className="w-full h-full bg-kaosNeon animate-progress-fast"></div>
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Sincronizando Inteligencia...</p>
         </div>
       </div>
     )
   }
 
-  const statCards = [
-    {
-      title: "Ingresos Totales",
-      value: `${settings?.currency?.symbol || '$'}${stats?.totalRevenue?.toFixed(2) || '0.00'}`,
-      icon: DollarSign,
-      bgColor: "from-green-500 to-emerald-600",
-    },
-    {
-      title: "Pedidos",
-      value: stats?.totalOrders || 0,
-      icon: ShoppingCart,
-      bgColor: "from-blue-500 to-indigo-600",
-    },
-    {
-      title: "Clientes",
-      value: stats?.totalCustomers || 0,
-      icon: Users,
-      bgColor: "from-purple-500 to-violet-600",
-    },
-    {
-      title: "Productos",
-      value: stats?.totalProducts || 0,
-      icon: Package,
-      bgColor: "from-orange-500 to-amber-600",
-    }
-  ]
-
-  const kpiCards = [
-    {
-      title: "Ticket Promedio",
-      value: `${settings?.currency?.symbol || '$'}${stats?.aov?.toFixed(2) || '0.00'}`,
-      subtitle: "Valor promedio de orden",
-      icon: Target,
-      bgColor: "from-cyan-50 to-blue-50",
-      iconColor: "text-cyan-600",
-      borderColor: "border-cyan-200"
-    },
-    {
-      title: "Tasa de Conversión",
-      value: `${stats?.conversionRate || 0}%`,
-      subtitle: "Visitas que compran",
-      icon: Percent,
-      bgColor: "from-green-50 to-emerald-50",
-      iconColor: "text-green-600",
-      borderColor: "border-green-200"
-    },
-    {
-      title: "Revenue por Cliente",
-      value: `${settings?.currency?.symbol || '$'}${stats?.revenuePerCustomer?.toFixed(2) || '0.00'}`,
-      subtitle: "Ingreso promedio",
-      icon: Award,
-      bgColor: "from-purple-50 to-violet-50",
-      iconColor: "text-purple-600",
-      borderColor: "border-purple-200"
-    },
-    {
-      title: "Tasa de Retención",
-      value: `${stats?.retentionRate || 0}%`,
-      subtitle: `${stats?.repeatCustomerCount || 0} clientes recurrentes`,
-      icon: UserCheck,
-      bgColor: "from-indigo-50 to-blue-50",
-      iconColor: "text-indigo-600",
-      borderColor: "border-indigo-200"
-    },
-    {
-      title: "Abandono de Carrito",
-      value: `${stats?.abandonmentRate || 0}%`,
-      subtitle: "Carritos no convertidos",
-      icon: ShoppingBag,
-      bgColor: "from-amber-50 to-yellow-50",
-      iconColor: "text-amber-600",
-      borderColor: "border-amber-200"
-    }
-  ]
+  const currencySymbol = settings?.currency?.symbol || '$'
 
   return (
-    <div className="p-6 md:p-8 space-y-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Dashboard
-          </h1>
-          <p className="text-gray-500 mt-1">Bienvenido al panel de control de {brandConfig.name}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Badge variant="outline" className="px-3 py-1.5">
-            <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-            Sistema Activo
-          </Badge>
-        </div>
-      </div>
-
-      {/* Exchange Rate Card */}
-      {settings?.currency?.showBsPrice && exchangeRate && (
-        <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-700 text-white overflow-hidden">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
-                  <DollarSign className="h-7 w-7" />
-                </div>
-                <div>
-                  <p className="text-white/80 text-sm font-medium">Tasa de Cambio del Día</p>
-                  <div className="flex items-baseline gap-4 mt-1">
-                    <div>
-                      <span className="text-3xl font-bold">Bs. {exchangeRate.usd?.toFixed(2)}</span>
-                      <span className="text-white/70 text-sm ml-2">/ USD</span>
-                    </div>
-                    <div className="text-white/80">
-                      <span className="text-xl font-semibold">Bs. {exchangeRate.eur?.toFixed(2)}</span>
-                      <span className="text-white/60 text-sm ml-2">/ EUR</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right text-white/70 text-sm">
-                  <p>Última actualización</p>
-                  <p className="font-medium text-white">
-                    {settings.exchangeRate?.lastUpdated 
-                      ? new Date(settings.exchangeRate.lastUpdated).toLocaleString('es-VE', { 
-                          hour: '2-digit', 
-                          minute: '2-digit',
-                          day: '2-digit',
-                          month: 'short'
-                        })
-                      : 'N/A'
-                    }
-                  </p>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={updateExchangeRate}
-                  disabled={updatingRate}
-                  className="bg-white/20 hover:bg-white/30 text-white border-0"
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${updatingRate ? 'animate-spin' : ''}`} />
-                  Actualizar
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statCards.map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <Card 
-              key={index} 
-              className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
-            >
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-500 mb-1">
-                      {stat.title}
-                    </p>
-                    <p className="text-3xl font-bold text-gray-900">
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.bgColor} flex items-center justify-center shadow-lg`}>
-                    <Icon className="h-7 w-7 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {/* KPIs Grid */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <BarChart3 className="h-5 w-5 text-gray-700" />
-          <h2 className="text-xl font-bold text-gray-800">KPIs de Rendimiento</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {kpiCards.map((kpi, index) => {
-            const Icon = kpi.icon
-            return (
-              <Card 
-                key={index} 
-                className={`border ${kpi.borderColor} shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br ${kpi.bgColor}`}
-              >
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className={`w-12 h-12 rounded-xl ${kpi.bgColor} flex items-center justify-center border ${kpi.borderColor}`}>
-                      <Icon className={`h-6 w-6 ${kpi.iconColor}`} />
-                    </div>
-                    <div className="text-right flex-1 ml-3">
-                      <p className="text-xs font-medium text-gray-600 mb-1">{kpi.title}</p>
-                      <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500">{kpi.subtitle}</p>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-green-50 to-emerald-50">
-          <CardContent className="p-4 text-center">
-            <CreditCard className="h-6 w-6 mx-auto mb-2 text-green-600" />
-            <p className="text-2xl font-bold text-green-700">
-              {settings?.paymentMethods?.filter((m: any) => m.isActive).length || 0}
-            </p>
-            <p className="text-xs text-green-600 font-medium">Métodos de Pago</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="p-4 text-center">
-            <Truck className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-            <p className="text-2xl font-bold text-blue-700">
-              {settings?.shippingMethods?.filter((m: any) => m.isActive).length || 0}
-            </p>
-            <p className="text-xs text-blue-600 font-medium">Métodos de Envío</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-amber-50 to-yellow-50">
-          <CardContent className="p-4 text-center">
-            <Package className="h-6 w-6 mx-auto mb-2 text-amber-600" />
-            <p className="text-2xl font-bold text-amber-700">
-              {stats?.lowStockCount || 0}
-            </p>
-            <p className="text-xs text-amber-600 font-medium">Bajo Stock</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-md bg-gradient-to-br from-red-50 to-rose-50">
-          <CardContent className="p-4 text-center">
-            <AlertCircle className="h-6 w-6 mx-auto mb-2 text-red-600" />
-            <p className="text-2xl font-bold text-red-700">
-              {stats?.pendingOrders || 0}
-            </p>
-            <p className="text-xs text-red-600 font-medium">Pedidos Pendientes</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Revenue Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              Mes Actual
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-500">Ingresos</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {settings?.currency?.symbol || '$'}{stats?.currentMonthRevenue?.toFixed(2) || '0.00'}
-                </p>
-              </div>
-              <div className="pt-3 border-t">
-                <p className="text-sm text-gray-500">Nuevos clientes</p>
-                <p className="text-xl font-bold text-gray-900">{stats?.newCustomersThisMonth || 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              Últimos 30 Días
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-500">Pedidos</p>
-                <p className="text-2xl font-bold text-gray-900">{stats?.ordersLast30Days || 0}</p>
-              </div>
-              <div className="pt-3 border-t">
-                <p className="text-sm text-gray-500">Ticket promedio</p>
-                <p className="text-xl font-bold text-gray-900">
-                  {settings?.currency?.symbol || '$'}{stats?.aovLast30Days?.toFixed(2) || '0.00'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
-              <Eye className="h-5 w-5 text-purple-600" />
-              Métricas de Inventario
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Stock bajo</p>
-                  <p className="text-2xl font-bold text-amber-600">{stats?.lowStockCount || 0}</p>
-                </div>
-                <Package className="h-8 w-8 text-amber-300" />
-              </div>
-              <div className="pt-3 border-t flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Sin stock</p>
-                  <p className="text-2xl font-bold text-red-600">{stats?.outOfStockCount || 0}</p>
-                </div>
-                <AlertCircle className="h-8 w-8 text-red-300" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Orders */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold text-gray-800">
-                Pedidos Recientes
-              </CardTitle>
-              <Link href="/admin/orders">
-                <Button variant="ghost" size="sm" className="text-sm">
-                  Ver todos
-                  <ArrowUpRight className="h-4 w-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {stats?.recentOrders?.length > 0 ? (
-                stats.recentOrders.slice(0, 5).map((order: any) => {
-                  const StatusIcon = getStatusIcon(order.orderStatus)
-                  return (
-                    <div 
-                      key={order._id} 
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getStatusColor(order.orderStatus)}`}>
-                          <StatusIcon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">{order.orderNumber}</p>
-                          <p className="text-sm text-gray-500">
-                            {order.customerInfo?.firstName} {order.customerInfo?.lastName}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-gray-900">
-                          {settings?.currency?.symbol || '$'}{order.total?.toFixed(2)}
-                        </p>
-                        <Badge className={`text-xs ${getStatusColor(order.orderStatus)}`}>
-                          {translateOrderStatus(order.orderStatus)}
-                        </Badge>
-                      </div>
-                    </div>
-                  )
-                })
-              ) : (
-                <div className="text-center py-8">
-                  <ShoppingCart className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">No hay pedidos recientes</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Top Products */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold text-gray-800">
-                Productos Más Vendidos
-              </CardTitle>
-              <Link href="/admin/products">
-                <Button variant="ghost" size="sm" className="text-sm">
-                  Ver todos
-                  <ArrowUpRight className="h-4 w-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {stats?.topProducts?.length > 0 ? (
-                stats.topProducts.slice(0, 5).map((product: any, index: number) => (
-                  <div 
-                    key={product._id} 
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-md"
-                        style={{ 
-                          background: index === 0 
-                            ? 'linear-gradient(135deg, #FFD700, #FFA500)' 
-                            : index === 1 
-                            ? 'linear-gradient(135deg, #C0C0C0, #A0A0A0)'
-                            : index === 2
-                            ? 'linear-gradient(135deg, #CD7F32, #8B4513)'
-                            : brandConfig.colors.primary
-                        }}
-                      >
-                        {index + 1}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900 line-clamp-1">{product.name}</p>
-                        <p className="text-sm text-gray-500">{product.totalQuantity} vendidos</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-600">
-                        {settings?.currency?.symbol || '$'}{product.totalRevenue?.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">No hay datos de ventas</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Top Categories */}
-      {stats?.topCategories?.length > 0 && (
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-gray-800">
-              Categorías Más Vendidas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {stats.topCategories.map((category: any, index: number) => (
-                <div 
-                  key={category._id || index} 
-                  className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl text-center hover:shadow-md transition-all"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                    <span className="text-white font-bold text-lg">{index + 1}</span>
-                  </div>
-                  <p className="font-semibold text-gray-900 mb-1 truncate">
-                    {category.categoryName || 'Sin categoría'}
-                  </p>
-                  <p className="text-sm text-gray-500 mb-2">{category.totalQuantity} unidades</p>
-                  <p className="text-lg font-bold text-green-600">
-                    {settings?.currency?.symbol || '$'}{category.totalRevenue?.toFixed(2)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Order Status Distribution */}
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-gray-800">
-            Distribución de Estados de Pedidos
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {stats?.ordersByStatus?.map((item: any) => {
-              const StatusIcon = getStatusIcon(item._id)
-              return (
-                <div 
-                  key={item._id} 
-                  className={`p-4 rounded-xl text-center transition-all hover:shadow-md ${getStatusColor(item._id)}`}
-                >
-                  <StatusIcon className="h-6 w-6 mx-auto mb-2" />
-                  <p className="text-3xl font-bold mb-1">
-                    {item.count}
-                  </p>
-                  <p className="text-sm font-medium">
-                    {translateOrderStatus(item._id)}
-                  </p>
-                </div>
-              )
-            })}
+    <div className="p-4 md:p-8 space-y-6 bg-transparent min-h-screen">
+      {/* Upper Header: Real-time Status */}
+      <div className="flex items-center justify-between border-b border-black/10 pb-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-2 w-2 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-kaosNeon opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-kaosNeon"></span>
           </div>
-        </CardContent>
-      </Card>
+          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Sistema Activo • Tiempo Real</span>
+        </div>
+        <div className="text-[10px] font-black uppercase tracking-widest flex items-center gap-4">
+          <span className="text-black/60">Última Refresca: {new Date().toLocaleTimeString()}</span>
+          <button onClick={loadData} className="hover:text-kaosNeon transition-colors flex items-center gap-1">
+            <RefreshCw className="h-3 w-3" />
+            <span>Actualizar</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Quick Stats (Moved to top) */}
+      <div className="flex gap-8 pb-2">
+         <div>
+           <p className="text-[9px] font-black uppercase text-black/60 tracking-widest">Total Productos</p>
+           <p className="text-xl font-black">{stats?.totalProducts}</p>
+         </div>
+         <div>
+           <p className="text-[9px] font-black uppercase text-black/60 tracking-widest">Total Clientes</p>
+           <p className="text-xl font-black">{stats?.totalCustomers}</p>
+         </div>
+         <div>
+           <p className="text-[9px] font-black uppercase text-black/60 tracking-widest">Pedidos Hoy</p>
+           <p className="text-xl font-black text-kaosNeon bg-black px-2">{stats?.ordersLast30Days / 30 > 0 ? (stats?.ordersLast30Days / 30).toFixed(1) : 0}</p>
+         </div>
+      </div>
+
+      {/* Main Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* KPI: Revenue */}
+        <div className="bg-black text-white p-6 relative overflow-hidden group">
+          <div className="relative z-10">
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Ingresos Totales</span>
+              <DollarSign className="h-4 w-4 text-kaosNeon" />
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm font-black text-kaosNeon">{currencySymbol}</span>
+              <h2 className="text-4xl font-black tracking-tighter">{(stats?.totalRevenue || 0).toLocaleString()}</h2>
+            </div>
+            <div className="mt-4 flex items-center gap-2">
+              <span className="text-[10px] font-black text-green-400">+12.5%</span>
+              <div className="h-1 flex-1 bg-white/10">
+                <div className="h-full bg-kaosNeon w-[70%]"></div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+            <TrendingUp className="h-32 w-32 -mr-16 -mt-8" />
+          </div>
+        </div>
+
+        {/* KPI: Conversion */}
+        <div className="bg-white border border-black/10 p-6 hover:border-black transition-all group">
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/60 group-hover:text-black">Tasa Conversión</span>
+            <Activity className="h-4 w-4 text-black group-hover:text-kaosNeon" />
+          </div>
+          <div className="flex items-baseline gap-1">
+            <h2 className="text-4xl font-black tracking-tighter">{(stats?.conversionRate || 0).toFixed(2)}</h2>
+            <span className="text-sm font-black group-hover:text-kaosNeon">%</span>
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+             <span className="text-[10px] font-black uppercase tracking-widest">Global Shop</span>
+             <div className="h-[1px] flex-1 bg-black/10 group-hover:bg-black/20"></div>
+          </div>
+        </div>
+
+        {/* KPI: Active Carts */}
+        <div className="bg-kaosNeon text-black border border-black/10 p-6 hover:scale-[1.02] transition-transform cursor-pointer shadow-[0_10px_20px_rgba(217,255,0,0.1)]">
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Carritos Activos</span>
+            <ShoppingBasket className="h-4 w-4" />
+          </div>
+          <div className="flex items-baseline gap-1">
+            <h2 className="text-4xl font-black tracking-tighter">{stats?.activeCarts || 0}</h2>
+          </div>
+          <div className="mt-4 flex items-center gap-1">
+            {[1,2,3,4,5,6,7,8].map(i => (
+              <div key={i} className={`h-1 flex-1 bg-black ${i <= (stats?.activeCarts || 0) / 10 ? 'opacity-100' : 'opacity-10'}`}></div>
+            ))}
+          </div>
+        </div>
+
+        {/* KPI: AOV */}
+        <div className="bg-white border border-black/10 p-6 hover:border-black transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Ticket Promedio</span>
+            <Target className="h-4 w-4" />
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-sm font-black text-black/40">{currencySymbol}</span>
+            <h2 className="text-4xl font-black tracking-tighter">{(stats?.aov || 0).toFixed(0)}</h2>
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+            <TrendingUp className="h-3 w-3 text-green-500" />
+            <span className="text-[9px] font-black uppercase tracking-widest">Creciendo +2%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Intelligence Bento Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-12 gap-4">
+        
+        {/* Top Sellers (Trend Analysis) */}
+        <div className="lg:col-span-8 bg-white border border-black/10 p-6 space-y-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-black/5 pb-4">
+            <h3 className="text-sm font-black uppercase tracking-widest">Ranking de Ventas (Top 10)</h3>
+            <Link href="/admin/products" className="text-[9px] font-black uppercase tracking-widest underline decoration-2 decoration-kaosNeon underline-offset-4">Catálogo Completo</Link>
+          </div>
+          <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+            {(stats?.topProducts || []).map((p: any, idx: number) => (
+              <div key={p.id} className="flex items-center gap-4 group cursor-default">
+                <span className="text-xs font-black text-black/40 group-hover:text-kaosNeon transition-colors">{idx < 9 ? `0${idx + 1}` : idx + 1}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-black uppercase truncate">{p.name}</p>
+                  <p className="text-[9px] font-bold text-black/60 uppercase tracking-widest">{p.totalQuantity} Unidades Vendidas</p>
+                </div>
+                <div className="hidden md:block">
+                  <MiniTrendChart data={p.trend} color={idx === 0 ? "#D9FF00" : "#000"} />
+                </div>
+                <div className="text-right w-24">
+                  <p className="text-xs font-black">{currencySymbol}{p.totalRevenue?.toLocaleString()}</p>
+                </div>
+                <button className="p-2 border border-transparent hover:border-black transition-all">
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Low Stock Alerts (Quick Actions) */}
+        <div className="lg:col-span-4 bg-red-500 text-white p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 animate-pulse" />
+              <h3 className="text-sm font-black uppercase tracking-widest">Stock Crítico</h3>
+            </div>
+            <span className="bg-white text-red-600 px-1.5 py-0.5 text-[10px] font-black">{stats?.lowStockCount + stats?.outOfStockCount}</span>
+          </div>
+          <div className="space-y-4">
+            {(stats?.lowStockProducts || []).map((p: any) => (
+              <div key={p.id} className="p-3 bg-white/10 flex items-center justify-between border border-white/5">
+                <div>
+                  <p className="text-[10px] font-black uppercase truncate w-32">{p.name}</p>
+                  <p className="text-[9px] font-bold text-white/60 uppercase">Solo {p.stock} unidades</p>
+                </div>
+                <Link href={`/admin/products?id=${p.id}`} className="bg-white text-red-600 p-2 hover:bg-kaosNeon hover:text-black transition-colors">
+                  <RefreshCw className="h-3 w-3" />
+                </Link>
+              </div>
+            ))}
+            {(stats?.lowStockProducts || []).length === 0 && (
+              <div className="py-8 text-center border border-dashed border-white/20">
+                <CheckCircle className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                <p className="text-[10px] font-black uppercase opacity-60">Inventario Saludable</p>
+              </div>
+            )}
+          </div>
+          <Button variant="outline" className="w-full border-white text-white hover:bg-white hover:text-red-600 font-black uppercase tracking-widest h-12 text-[10px]">
+            Reponer Todo el Inventario
+          </Button>
+        </div>
+
+        {/* CRM VIP Panel */}
+        <div className="lg:col-span-4 bg-white border border-black/10 p-6 space-y-6 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-black/5 pb-4">
+             <UserCheck className="h-4 w-4 text-kaosNeon" />
+             <h3 className="text-sm font-black uppercase tracking-widest">Clientes VIP (CLV)</h3>
+          </div>
+          <div className="space-y-4">
+            {(stats?.vipCustomers || []).map((u: any) => (
+              <div key={u.id} className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-black text-white flex items-center justify-center text-[10px] font-black">
+                  {u.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-black uppercase truncate">{u.name}</p>
+                  <div className="flex items-center gap-2 text-[8px] font-bold text-black/60 uppercase tracking-tighter">
+                    <span>{u.orderCount} Pedidos</span>
+                    <span>•</span>
+                    <span>T.A {currencySymbol}{u.avgTicket.toFixed(0)}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-black text-kaosNeon bg-black px-2 py-1">{currencySymbol}{u.totalSpent.toLocaleString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Distributions (Category & Payment) */}
+        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+           {/* Categories */}
+           <div className="bg-white border border-black/10 p-6 shadow-sm">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center justify-between">
+                Ventas por Categoría
+                <BarChart3 className="h-3 w-3" />
+              </h3>
+              <CategoryDistributionChart data={stats?.categoryDistribution || []} />
+           </div>
+           
+           {/* Payment Methods */}
+           <div className="bg-white border border-black/10 p-6 shadow-sm">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center justify-between">
+                Métodos de Pago
+                <CreditCard className="h-3 w-3" />
+              </h3>
+              <PaymentMethodsChart data={stats?.paymentMethods || []} />
+           </div>
+        </div>
+
+      </div>
+
+      {/* Footer Meta */}
+      <div className="pt-8 border-t border-black/5 flex flex-col md:flex-row justify-end gap-4">
+        <div className="flex items-center gap-4">
+           <Link href="/admin/orders" className="bg-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-kaosNeon hover:text-black transition-colors flex items-center gap-2">
+             Gestionar Todos los Pedidos
+             <ArrowRight className="h-3 w-3" />
+           </Link>
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,5 +1,7 @@
 "use client"
 
+import { motion } from "framer-motion"
+
 interface HeroProps {
   onExploreClick?: () => void
 }
@@ -22,21 +24,51 @@ export default function Hero({ onExploreClick }: HeroProps) {
 
       {/* Hero Content */}
       <div className="relative z-20 h-full max-w-[1440px] mx-auto px-4 md:px-10 flex flex-col justify-center items-start">
-        <div className="max-w-xl">
-          <p 
+        <div className="max-w-4xl">
+          <motion.p 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
             className="text-kaosNeon text-xl md:text-3xl mb-4 tracking-wider"
             style={{ fontFamily: "'Permanent Marker', cursive" }}
           >
             PLAYA. PÁDEL. MONTAÑA.
-          </p>
-          <h1 className="text-7xl md:text-9xl font-black leading-[0.8] mb-8 tracking-tighter italic">
-            <span className="block mb-2">VIVE <span className="font-light not-italic text-[0.8em]">TU</span></span>
-            <span className="block">KAOS</span>
+          </motion.p>
+          
+          <h1 className="text-7xl md:text-[8rem] font-black leading-[0.8] mb-8 tracking-tighter italic uppercase">
+            <motion.span 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="block mb-2"
+            >
+              siente <span className="font-normal not-italic text-[0.8em] lowercase">el</span>
+            </motion.span>
+            <motion.span 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="block"
+            >
+              KAOS
+            </motion.span>
           </h1>
-          <p className="text-sm md:text-lg text-gray-800 mb-10 max-w-sm leading-relaxed font-medium">
+
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-sm md:text-lg text-gray-800 mb-10 max-w-sm leading-relaxed font-medium"
+          >
             Ropa técnica, urbana y chic para moverte sin límites. Del club a la playa, de la ciudad a la montaña.
-          </p>
-          <div className="flex flex-wrap gap-4">
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="flex flex-wrap gap-4"
+          >
             <button 
               onClick={onExploreClick}
               className="bg-kaosNeon text-black px-10 py-4 font-black text-xs uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all rounded-full shadow-lg"
@@ -49,12 +81,9 @@ export default function Hero({ onExploreClick }: HeroProps) {
             >
               Ver Colecciones
             </button>
-          </div>
+          </motion.div>
         </div>
       </div>
-
-
-
     </section>
   )
 }

@@ -210,7 +210,7 @@ exports.getProducts = async (req, res) => {
     // ===== SORT =====
     let orderBy = {};
     switch (sort) {
-      case "featured": orderBy = { isFeatured: "desc", createdAt: "desc" }; break;
+      case "featured": orderBy = [{ isFeatured: "desc" }, { createdAt: "desc" }]; break;
       case "-createdAt": orderBy = { createdAt: "desc" }; break;
       case "createdAt": orderBy = { createdAt: "asc" }; break;
       case "price": orderBy = { price: "asc" }; break;

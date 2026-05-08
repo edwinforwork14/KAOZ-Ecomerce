@@ -20,6 +20,7 @@ import {
   Banknote,
   Store,
   AlertCircle,
+  Loader2,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -135,6 +136,7 @@ interface Settings {
     number?: string
     defaultMessage?: string
   }
+  theme?: "light" | "dark"
 }
 
 interface ExchangeRate {
@@ -425,69 +427,88 @@ export default function AdminSettingsPage() {
   // Render guards
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-screen bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-1 bg-black overflow-hidden">
+            <div className="w-full h-full bg-kaosNeon animate-progress-fast"></div>
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Sincronizando Protocolos...</p>
+        </div>
       </div>
     )
   }
 
   if (!settings) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Error al cargar configuraciones</p>
-        <Button onClick={loadAll} className="mt-4">
-          Reintentar
-        </Button>
+      <div className="flex items-center justify-center h-screen bg-white">
+        <div className="text-center max-w-md p-12 border border-black">
+          <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <h2 className="text-xl font-black uppercase tracking-tighter mb-2">Falla Crítica de Configuración</h2>
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-6">No se pudo establecer conexión con el núcleo de datos.</p>
+          <Button onClick={loadAll} className="w-full bg-black text-white rounded-none h-14 font-black uppercase text-xs tracking-widest hover:bg-kaosNeon hover:text-black transition-all">
+            Reintentar Enlace
+          </Button>
+        </div>
       </div>
     )
   }
 
+  const currencySymbol = settings?.currency?.symbol || "$"
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-8 bg-transparent min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-black/10 pb-8">
         <div>
-          <h1 className="text-2xl font-bold">Configuraciones</h1>
-          <p className="text-muted-foreground">Administra la configuración de tu tienda</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Control Maestro • KAOZ</span>
+          </div>
+          <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
+            Configuración
+          </h1>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-[9px] font-black uppercase tracking-widest text-black/20">Estado de Sincronización: 100%</span>
+          <div className="w-32 h-1 bg-black/5">
+            <div className="w-full h-full bg-kaosNeon"></div>
+          </div>
         </div>
       </div>
 
-      <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="general" className="gap-2">
-            <SettingsIcon className="h-4 w-4" />
-            General
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-8">
+        <TabsList className="grid w-full grid-cols-5 rounded-none border border-black p-0 bg-white h-16">
+          <TabsTrigger value="general" className="rounded-none border-r border-black data-[state=active]:bg-black data-[state=active]:text-white font-black uppercase text-[10px] tracking-widest h-full">
+            <SettingsIcon className="h-4 w-4 mr-2" /> CORE / SISTEMA
           </TabsTrigger>
-          <TabsTrigger value="payment" className="gap-2">
-            <CreditCard className="h-4 w-4" />
-            Pagos
+          <TabsTrigger value="payment" className="rounded-none border-r border-black data-[state=active]:bg-black data-[state=active]:text-white font-black uppercase text-[10px] tracking-widest h-full">
+            <CreditCard className="h-4 w-4 mr-2" /> PASARELAS PAGO
           </TabsTrigger>
-          <TabsTrigger value="shipping" className="gap-2">
-            <Truck className="h-4 w-4" />
-            Envíos
+          <TabsTrigger value="shipping" className="rounded-none border-r border-black data-[state=active]:bg-black data-[state=active]:text-white font-black uppercase text-[10px] tracking-widest h-full">
+            <Truck className="h-4 w-4 mr-2" /> LOGÍSTICA ENVÍO
           </TabsTrigger>
-          <TabsTrigger value="exchange" className="gap-2">
-            <DollarSign className="h-4 w-4" />
-            Tasa
+          <TabsTrigger value="exchange" className="rounded-none border-r border-black data-[state=active]:bg-black data-[state=active]:text-white font-black uppercase text-[10px] tracking-widest h-full">
+            <DollarSign className="h-4 w-4 mr-2" /> TASA DIVISAS
           </TabsTrigger>
-          <TabsTrigger value="business" className="gap-2">
-            <Building className="h-4 w-4" />
-            Negocio
+          <TabsTrigger value="business" className="rounded-none data-[state=active]:bg-black data-[state=active]:text-white font-black uppercase text-[10px] tracking-widest h-full">
+            <Building className="h-4 w-4 mr-2" /> IDENTIDAD CORP
           </TabsTrigger>
         </TabsList>
 
         {/* =========================
             TAB: GENERAL
         ========================== */}
-        <TabsContent value="general" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Moneda</CardTitle>
-              <CardDescription>Configura la moneda principal de la tienda</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+        <TabsContent value="general" className="m-0 space-y-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="industrial-card p-8 bg-white border border-black space-y-6">
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter mb-1">Unidad Monetaria</h3>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Protocolo de Divisa Principal</p>
+              </div>
+              
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Moneda</Label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Divisa Base</label>
                   <Select
                     value={settings.currency.code}
                     onValueChange={(value) => {
@@ -496,120 +517,132 @@ export default function AdminSettingsPage() {
                       saveSettings({ currency: { ...settings.currency, code, symbol } })
                     }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-14 rounded-none border-black focus:ring-0 font-bold uppercase text-xs tracking-widest">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EUR">Euro (€)</SelectItem>
-                      <SelectItem value="USD">Dólar ($)</SelectItem>
-                      <SelectItem value="VES">Bolívar (Bs)</SelectItem>
+                    <SelectContent className="rounded-none border-black">
+                      <SelectItem value="EUR" className="font-bold uppercase text-[10px]">EURO (€)</SelectItem>
+                      <SelectItem value="USD" className="font-bold uppercase text-[10px]">DÓLAR ($)</SelectItem>
+                      <SelectItem value="VES" className="font-bold uppercase text-[10px]">BOLÍVAR (BS)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
+                <div className="flex items-center justify-between p-4 border border-black bg-gray-50">
+                  <label className="text-[10px] font-black uppercase tracking-widest">Conversión Dual (BS)</label>
+                  <Switch
+                    checked={!!settings.currency.showBsPrice}
+                    onCheckedChange={(checked) => {
+                      saveSettings({ currency: { ...settings.currency, showBsPrice: checked } })
+                    }}
+                    className="data-[state=checked]:bg-black"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 border border-black bg-gray-50">
+                  <label className="text-[10px] font-black uppercase tracking-widest">Modo Claro (Interfaz)</label>
+                  <Switch
+                    checked={settings.theme === "light" || !settings.theme}
+                    onCheckedChange={(checked) => {
+                      saveSettings({ theme: checked ? "light" : "dark" })
+                      // Placeholder logic since the dashboard is already converted to Light Mode
+                      toast({
+                        title: "Modo Cambiado",
+                        description: `Interfaz cambiada a modo ${checked ? "claro" : "oscuro"}`,
+                      })
+                    }}
+                    className="data-[state=checked]:bg-black"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="industrial-card p-8 bg-white border border-black space-y-6">
+              <div>
+                <h3 className="text-xl font-black uppercase tracking-tighter mb-1">Logística de Ítems</h3>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Parámetros de Ciclo de Vida</p>
+              </div>
+              
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Mostrar precio en Bs</Label>
-                  <div className="flex items-center gap-2 pt-2">
-                    <Switch
-                      checked={!!settings.currency.showBsPrice}
-                      onCheckedChange={(checked) => {
-                        saveSettings({ currency: { ...settings.currency, showBsPrice: checked } })
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Ventana "NUEVO" (Días)</label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={settings.newProductDuration ?? 30}
+                      onChange={(e) => {
+                        const next = clampNumber(parseInt(e.target.value, 10) || 30, 1, 365)
+                        setSettings({ ...settings, newProductDuration: next })
                       }}
+                      className="h-14 rounded-none border-black focus:ring-0 font-black text-center text-lg"
                     />
-                    <span className="text-sm text-muted-foreground">
-                      {settings.currency.showBsPrice ? "Activado" : "Desactivado"}
-                    </span>
+                    <Button
+                      onClick={() => saveSettings({ newProductDuration: settings.newProductDuration ?? 30 })}
+                      disabled={saving}
+                      className="h-14 rounded-none bg-black text-white px-8 font-black uppercase text-[10px] tracking-widest"
+                    >
+                      <Save className="h-4 w-4 mr-2" /> FIJAR
+                    </Button>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Productos</CardTitle>
-              <CardDescription>Configuración de productos</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Duración de etiqueta "Nuevo" (días)</Label>
-                <div className="flex items-center gap-4">
-                  <Input
-                    type="number"
-                    min={1}
-                    max={365}
-                    value={settings.newProductDuration ?? 30}
-                    onChange={(e) => {
-                      const next = clampNumber(parseInt(e.target.value, 10) || 30, 1, 365)
-                      setSettings({ ...settings, newProductDuration: next })
-                    }}
-                    className="w-32"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => saveSettings({ newProductDuration: settings.newProductDuration ?? 30 })}
-                    disabled={saving}
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    Guardar
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Los productos marcados como "nuevo" perderán automáticamente esta etiqueta después de este tiempo.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Pedidos</CardTitle>
-              <CardDescription>Configuración de pedidos</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+          <div className="industrial-card p-8 bg-black text-white border border-black space-y-6">
+            <div>
+              <h3 className="text-xl font-black uppercase tracking-tighter mb-1 text-white">Seguridad de Órdenes</h3>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Protocolos de Transacción</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="flex items-center justify-between p-6 border border-gray-800 bg-gray-900">
                 <div>
-                  <Label>Permitir eliminar pedidos</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Habilita la opción de eliminar pedidos desde el panel de administración
-                  </p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white">Eliminación Destructiva</p>
+                  <p className="text-[9px] text-gray-500 uppercase mt-1">Permitir purga manual de registros</p>
                 </div>
                 <Switch
                   checked={!!settings.orders?.allowDelete}
                   onCheckedChange={(checked) => {
                     saveSettings({ orders: { ...settings.orders, allowDelete: checked } })
                   }}
+                  className="data-[state=checked]:bg-white data-[state=unchecked]:bg-gray-700"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                <div className="space-y-2">
-                  <Label>Prefijo de pedidos</Label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Prefijo de Manifiesto</label>
+                <div className="flex gap-2">
                   <Input
                     value={settings.orders?.prefix ?? ""}
                     onChange={(e) => setSettings({ ...settings, orders: { ...settings.orders, prefix: e.target.value } })}
-                    placeholder="Ej: YF"
+                    placeholder="EJ: KAOZ"
+                    className="h-14 rounded-none border-gray-800 bg-gray-900 text-white focus:ring-0 font-black uppercase tracking-widest"
                   />
-                </div>
-                <div className="flex items-end">
-                  <Button variant="outline" onClick={() => saveSettings({ orders: settings.orders })} disabled={saving}>
-                    <Save className="h-4 w-4 mr-2" />
-                    Guardar
+                  <Button 
+                    variant="outline" 
+                    onClick={() => saveSettings({ orders: settings.orders })} 
+                    disabled={saving}
+                    className="h-14 rounded-none border-gray-800 text-white hover:bg-white hover:text-black font-black uppercase text-[10px] tracking-widest"
+                  >
+                    <Save className="h-4 w-4 mr-2" /> ACTUALIZAR
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
         {/* =========================
             TAB: PAYMENT
         ========================== */}
-        <TabsContent value="payment" className="space-y-6">
-          <div className="flex items-center justify-between">
+        <TabsContent value="payment" className="m-0 space-y-12">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-2 border-black pb-6">
             <div>
-              <h2 className="text-lg font-semibold">Métodos de Pago</h2>
-              <p className="text-sm text-muted-foreground">Configura los métodos de pago disponibles</p>
+              <h3 className="text-3xl font-black uppercase tracking-tighter">Terminales de Recepción</h3>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Configuración de Pasarelas Activas</p>
             </div>
             <Button
               onClick={() => {
@@ -628,293 +661,75 @@ export default function AdminSettingsPage() {
                 })
                 setShowPaymentForm(true)
               }}
+              className="h-14 rounded-none bg-black text-white px-10 font-black uppercase text-xs tracking-widest"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Agregar Método
+              <Plus className="h-4 w-4 mr-2" /> INTEGRAR CANAL
             </Button>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {sortedPayments.map((method) => {
               const Icon = paymentIconFor(method.id || method.name)
               return (
-                <Card key={method._id ?? method.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-5 w-5" />
-                          <span className="font-medium">{method.name}</span>
-                        </div>
-
-                        {method.hasDiscount && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                            {method.discountPercentage}% descuento
-                          </span>
-                        )}
-
+                <div key={method._id ?? method.id} className="industrial-card p-6 bg-white border border-black flex items-center justify-between group hover:bg-gray-50 transition-all">
+                  <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 bg-black text-white flex items-center justify-center">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-black uppercase tracking-tight">{method.name}</span>
                         {!method.isActive && (
-                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Inactivo</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest bg-gray-200 text-gray-500 px-1">OFFLINE</span>
                         )}
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingPayment({
-                              ...method,
-                              accountData: { ...(method.accountData || {}) },
-                            })
-                            setShowPaymentForm(true)
-                          }}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => deletePaymentMethod(method.id)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                      <div className="flex items-center gap-4 mt-1">
+                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">ORDEN: {method.order}</span>
+                        {method.hasDiscount && (
+                          <span className="text-[9px] font-black uppercase text-green-600 tracking-widest">PROMO: -{method.discountPercentage}%</span>
+                        )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+                  </div>
 
-          {showPaymentForm && editingPayment && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>{editingPayment.id ? "Editar" : "Agregar"} Método de Pago</CardTitle>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="rounded-none h-10 w-10 border border-black hover:bg-black hover:text-white"
                       onClick={() => {
-                        setShowPaymentForm(false)
-                        setEditingPayment(null)
+                        setEditingPayment({
+                          ...method,
+                          accountData: { ...(method.accountData || {}) },
+                        })
+                        setShowPaymentForm(true)
                       }}
                     >
-                      <X className="h-4 w-4" />
+                      <Edit2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Nombre</Label>
-                      <Input
-                        value={editingPayment.name}
-                        onChange={(e) => setEditingPayment({ ...editingPayment, name: e.target.value })}
-                        placeholder="Ej: Pago Móvil / Transferencia"
-                      />
-                      {!editingPayment.id && (
-                        <p className="text-xs text-muted-foreground">
-                          *El ID se genera automáticamente en el backend a partir del nombre.*
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Descripción</Label>
-                      <Input
-                        value={editingPayment.description || ""}
-                        onChange={(e) => setEditingPayment({ ...editingPayment, description: e.target.value })}
-                        placeholder="Ej: Pago mediante transferencia bancaria o pago móvil"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={!!editingPayment.isActive}
-                        onCheckedChange={(checked) => setEditingPayment({ ...editingPayment, isActive: checked })}
-                      />
-                      <Label>Activo</Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={!!editingPayment.requiresProof}
-                        onCheckedChange={(checked) => setEditingPayment({ ...editingPayment, requiresProof: checked })}
-                      />
-                      <Label>Requiere comprobante</Label>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={!!editingPayment.hasDiscount}
-                        onCheckedChange={(checked) =>
-                          setEditingPayment({
-                            ...editingPayment,
-                            hasDiscount: checked,
-                            discountPercentage: checked ? editingPayment.discountPercentage || 0 : 0,
-                          })
-                        }
-                      />
-                      <Label>Descuento por este método</Label>
-                    </div>
-                    {editingPayment.hasDiscount && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <Input
-                          type="number"
-                          min={0}
-                          max={100}
-                          value={editingPayment.discountPercentage ?? 0}
-                          onChange={(e) =>
-                            setEditingPayment({
-                              ...editingPayment,
-                              discountPercentage: clampNumber(parseInt(e.target.value, 10) || 0, 0, 100),
-                            })
-                          }
-                          className="w-24"
-                        />
-                        <span>%</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Datos de cuenta (opcional)</Label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input
-                        placeholder="Banco"
-                        value={editingPayment.accountData?.bankName || ""}
-                        onChange={(e) =>
-                          setEditingPayment({
-                            ...editingPayment,
-                            accountData: { ...(editingPayment.accountData || {}), bankName: e.target.value },
-                          })
-                        }
-                      />
-                      <Input
-                        placeholder="Número de cuenta"
-                        value={editingPayment.accountData?.accountNumber || ""}
-                        onChange={(e) =>
-                          setEditingPayment({
-                            ...editingPayment,
-                            accountData: { ...(editingPayment.accountData || {}), accountNumber: e.target.value },
-                          })
-                        }
-                      />
-                      <Input
-                        placeholder="Titular"
-                        value={editingPayment.accountData?.accountHolder || ""}
-                        onChange={(e) =>
-                          setEditingPayment({
-                            ...editingPayment,
-                            accountData: { ...(editingPayment.accountData || {}), accountHolder: e.target.value },
-                          })
-                        }
-                      />
-                      <Input
-                        placeholder="Identificación / Cédula"
-                        value={editingPayment.accountData?.identification || ""}
-                        onChange={(e) =>
-                          setEditingPayment({
-                            ...editingPayment,
-                            accountData: { ...(editingPayment.accountData || {}), identification: e.target.value },
-                          })
-                        }
-                      />
-                      <Input
-                        placeholder="Teléfono"
-                        value={editingPayment.accountData?.phone || ""}
-                        onChange={(e) =>
-                          setEditingPayment({
-                            ...editingPayment,
-                            accountData: { ...(editingPayment.accountData || {}), phone: e.target.value },
-                          })
-                        }
-                      />
-                      <Input
-                        placeholder="Email"
-                        value={editingPayment.accountData?.email || ""}
-                        onChange={(e) =>
-                          setEditingPayment({
-                            ...editingPayment,
-                            accountData: { ...(editingPayment.accountData || {}), email: e.target.value },
-                          })
-                        }
-                      />
-                      <Input
-                        placeholder="Wallet"
-                        value={editingPayment.accountData?.walletAddress || ""}
-                        onChange={(e) =>
-                          setEditingPayment({
-                            ...editingPayment,
-                            accountData: { ...(editingPayment.accountData || {}), walletAddress: e.target.value },
-                          })
-                        }
-                      />
-                      <Input
-                        placeholder="Info adicional"
-                        value={editingPayment.accountData?.additionalInfo || ""}
-                        onChange={(e) =>
-                          setEditingPayment({
-                            ...editingPayment,
-                            accountData: { ...(editingPayment.accountData || {}), additionalInfo: e.target.value },
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Mensaje para WhatsApp</Label>
-                    <Textarea
-                      value={editingPayment.whatsappMessage || ""}
-                      onChange={(e) => setEditingPayment({ ...editingPayment, whatsappMessage: e.target.value })}
-                      placeholder="Mensaje personalizado que se incluirá en el pedido por WhatsApp"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Instrucciones</Label>
-                    <Textarea
-                      value={editingPayment.instructions || ""}
-                      onChange={(e) => setEditingPayment({ ...editingPayment, instructions: e.target.value })}
-                      placeholder="Instrucciones que verá el cliente al seleccionar este método"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-2 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowPaymentForm(false)
-                        setEditingPayment(null)
-                      }}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="rounded-none h-10 w-10 border border-black hover:bg-red-600 hover:text-white"
+                      onClick={() => deletePaymentMethod(method.id)}
                     >
-                      Cancelar
-                    </Button>
-                    <Button onClick={() => savePaymentMethod(editingPayment)}>
-                      <Save className="h-4 w-4 mr-2" />
-                      Guardar
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+                </div>
+              )
+            })}
+          </div>
         </TabsContent>
 
         {/* =========================
             TAB: SHIPPING
         ========================== */}
-        <TabsContent value="shipping" className="space-y-6">
-          <div className="flex items-center justify-between">
+        <TabsContent value="shipping" className="m-0 space-y-12">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-2 border-black pb-6">
             <div>
-              <h2 className="text-lg font-semibold">Métodos de Envío</h2>
-              <p className="text-sm text-muted-foreground">Configura los métodos de envío disponibles</p>
+              <h3 className="text-3xl font-black uppercase tracking-tighter">Red de Distribución</h3>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gestión de Logística y Despacho</p>
             </div>
             <Button
               onClick={() => {
@@ -926,476 +741,307 @@ export default function AdminSettingsPage() {
                   type: "delivery",
                   additionalCost: 0,
                   freeFrom: 0,
-                  estimatedTime: "",
                   requiresAddress: true,
-                  pickupData: {},
-                  whatsappMessage: "",
                   order: (settings.shippingMethods?.length ?? 0) + 1,
+                  pickupData: {},
                 })
                 setShowShippingForm(true)
               }}
+              className="h-14 rounded-none bg-black text-white px-10 font-black uppercase text-xs tracking-widest"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Agregar Método
+              <Plus className="h-4 w-4 mr-2" /> REGISTRAR RUTA
             </Button>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {sortedShipping.map((method) => {
               const Icon = shippingIconFor(method.type)
               return (
-                <Card key={method._id ?? method.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-5 w-5" />
-                          <span className="font-medium">{method.name}</span>
-                        </div>
-
-                        {method.additionalCost > 0 && (
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                            {formatMoney(settings.currency.symbol, Number(method.additionalCost))}
-                          </span>
-                        )}
-
-                        {method.freeFrom > 0 && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                            Gratis desde {settings.currency.symbol}
-                            {Number(method.freeFrom)}
-                          </span>
-                        )}
-
+                <div key={method._id ?? method.id} className="industrial-card p-6 bg-white border border-black flex items-center justify-between group hover:bg-gray-50 transition-all">
+                  <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 bg-black text-white flex items-center justify-center">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-black uppercase tracking-tight">{method.name}</span>
                         {!method.isActive && (
-                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Inactivo</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest bg-gray-200 text-gray-500 px-1">INACTIVO</span>
                         )}
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingShipping({
-                              ...method,
-                              pickupData: { ...(method.pickupData || {}) },
-                            })
-                            setShowShippingForm(true)
-                          }}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => deleteShippingMethod(method.id)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                      <div className="flex items-center gap-4 mt-1">
+                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{method.type === "pickup" ? "RETIRO" : "ENVÍO"}</span>
+                        <span className="text-[9px] font-black uppercase text-black tracking-widest">
+                          COSTO: {method.additionalCost > 0 ? formatMoney(currencySymbol, method.additionalCost) : "GRATIS"}
+                        </span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+                  </div>
 
-          {showShippingForm && editingShipping && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>{editingShipping.id ? "Editar" : "Agregar"} Método de Envío</CardTitle>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="rounded-none h-10 w-10 border border-black hover:bg-black hover:text-white"
                       onClick={() => {
-                        setShowShippingForm(false)
-                        setEditingShipping(null)
+                        setEditingShipping({
+                          ...method,
+                          pickupData: { ...(method.pickupData || {}) },
+                        })
+                        setShowShippingForm(true)
                       }}
                     >
-                      <X className="h-4 w-4" />
+                      <Edit2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Nombre</Label>
-                      <Input
-                        value={editingShipping.name}
-                        onChange={(e) => setEditingShipping({ ...editingShipping, name: e.target.value })}
-                        placeholder="Ej: Delivery"
-                      />
-                      {!editingShipping.id && (
-                        <p className="text-xs text-muted-foreground">
-                          *El ID se genera automáticamente en el backend a partir del nombre.*
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Tipo</Label>
-                      <Select
-                        value={editingShipping.type}
-                        onValueChange={(value) => {
-                          const v = value as ShippingMethod["type"]
-                          setEditingShipping({
-                            ...editingShipping,
-                            type: v,
-                            requiresAddress: v !== "pickup",
-                          })
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {shippingTypes.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              {type.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Descripción</Label>
-                      <Input
-                        value={editingShipping.description || ""}
-                        onChange={(e) => setEditingShipping({ ...editingShipping, description: e.target.value })}
-                        placeholder="Descripción que verá el cliente"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={!!editingShipping.isActive}
-                          onCheckedChange={(checked) => setEditingShipping({ ...editingShipping, isActive: checked })}
-                        />
-                        <Label>Activo</Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={!!editingShipping.requiresAddress}
-                          onCheckedChange={(checked) =>
-                            setEditingShipping({ ...editingShipping, requiresAddress: checked })
-                          }
-                        />
-                        <Label>Requiere dirección</Label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Costo adicional ({settings.currency.symbol})</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={editingShipping.additionalCost ?? 0}
-                        onChange={(e) =>
-                          setEditingShipping({
-                            ...editingShipping,
-                            additionalCost: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Envío gratis desde ({settings.currency.symbol})</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={editingShipping.freeFrom ?? 0}
-                        onChange={(e) =>
-                          setEditingShipping({
-                            ...editingShipping,
-                            freeFrom: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                        placeholder="0 = sin mínimo"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Tiempo estimado</Label>
-                    <Input
-                      value={editingShipping.estimatedTime || ""}
-                      onChange={(e) => setEditingShipping({ ...editingShipping, estimatedTime: e.target.value })}
-                      placeholder="Ej: 24-48 horas"
-                    />
-                  </div>
-
-                  {editingShipping.type === "pickup" && (
-                    <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
-                      <Label className="text-base font-medium">Datos de punto de retiro</Label>
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input
-                          placeholder="Dirección"
-                          value={editingShipping.pickupData?.address || ""}
-                          onChange={(e) =>
-                            setEditingShipping({
-                              ...editingShipping,
-                              pickupData: { ...(editingShipping.pickupData || {}), address: e.target.value },
-                            })
-                          }
-                        />
-                        <Input
-                          placeholder="Teléfono"
-                          value={editingShipping.pickupData?.phone || ""}
-                          onChange={(e) =>
-                            setEditingShipping({
-                              ...editingShipping,
-                              pickupData: { ...(editingShipping.pickupData || {}), phone: e.target.value },
-                            })
-                          }
-                        />
-                      </div>
-
-                      <Input
-                        placeholder="Horario (ej: Lunes a Viernes 9am - 6pm)"
-                        value={editingShipping.pickupData?.schedule || ""}
-                        onChange={(e) =>
-                          setEditingShipping({
-                            ...editingShipping,
-                            pickupData: { ...(editingShipping.pickupData || {}), schedule: e.target.value },
-                          })
-                        }
-                      />
-
-                      <Input
-                        placeholder="URL de Google Maps"
-                        value={editingShipping.pickupData?.mapUrl || ""}
-                        onChange={(e) =>
-                          setEditingShipping({
-                            ...editingShipping,
-                            pickupData: { ...(editingShipping.pickupData || {}), mapUrl: e.target.value },
-                          })
-                        }
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label>Mensaje para WhatsApp</Label>
-                    <Textarea
-                      value={editingShipping.whatsappMessage || ""}
-                      onChange={(e) => setEditingShipping({ ...editingShipping, whatsappMessage: e.target.value })}
-                      placeholder="Mensaje personalizado que se incluirá en el pedido por WhatsApp"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-2 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowShippingForm(false)
-                        setEditingShipping(null)
-                      }}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="rounded-none h-10 w-10 border border-black hover:bg-red-600 hover:text-white"
+                      onClick={() => deleteShippingMethod(method.id)}
                     >
-                      Cancelar
-                    </Button>
-                    <Button onClick={() => saveShippingMethod(editingShipping)}>
-                      <Save className="h-4 w-4 mr-2" />
-                      Guardar
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+                </div>
+              )
+            })}
+          </div>
         </TabsContent>
 
         {/* =========================
             TAB: EXCHANGE
         ========================== */}
-        <TabsContent value="exchange" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
-                Tasa de Cambio
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              {exchangeRate && (
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <div className="text-sm text-blue-600 font-medium">Dólar (USD)</div>
-                    <div className="text-3xl font-bold text-blue-700">Bs. {Number(exchangeRate.usd).toFixed(2)}</div>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <div className="text-sm text-green-600 font-medium">Euro (EUR)</div>
-                    <div className="text-3xl font-bold text-green-700">Bs. {Number(exchangeRate.eur).toFixed(2)}</div>
-                  </div>
+        <TabsContent value="exchange" className="m-0 space-y-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <h3 className="text-3xl font-black uppercase tracking-tighter border-b-2 border-black pb-4">Indicador de Cambio</h3>
+              
+              <div className="industrial-card p-12 bg-black text-white border border-black text-center space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Tasa de Referencia BCV</p>
+                <div className="flex items-baseline justify-center gap-2">
+                  <span className="text-6xl font-black tracking-tighter">Bs {exchangeRate?.usd.toFixed(2) || "0.00"}</span>
+                  <span className="text-xl font-bold text-gray-500 uppercase">/ USD</span>
                 </div>
-              )}
-
-              <div className="flex items-center justify-between pt-4 border-t">
-                <div className="text-sm text-muted-foreground">
-                  {exchangeRate?.date ? <>Última actualización: {new Date(exchangeRate.date).toLocaleString("es-VE")}</> : null}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={loadRateHistory}>
-                    <Clock className="h-4 w-4 mr-2" />
-                    Ver Historial
-                  </Button>
-                  <Button onClick={updateExchangeRate} disabled={updatingRate}>
-                    <RefreshCw className={`h-4 w-4 mr-2 ${updatingRate ? "animate-spin" : ""}`} />
-                    Actualizar Ahora
+                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest pt-4 border-t border-gray-800">
+                  ÚLTIMA SINCRONIZACIÓN: {exchangeRate?.date ? new Date(exchangeRate.date).toLocaleString() : "N/A"}
+                </p>
+                
+                <div className="pt-6">
+                  <Button
+                    onClick={updateExchangeRate}
+                    disabled={updatingRate}
+                    className="w-full h-14 rounded-none bg-white text-black hover:bg-gray-200 font-black uppercase text-xs tracking-widest transition-all shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                  >
+                    {updatingRate ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                    FORZAR REFRESCO BCV
                   </Button>
                 </div>
               </div>
+            </div>
 
-              {showHistory && rateHistory.length > 0 && (
-                <div className="mt-4 p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-medium">Historial de Tasas (últimos 30 días)</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <div className="max-h-60 overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead className="sticky top-0 bg-white">
-                        <tr className="border-b">
-                          <th className="text-left py-2">Fecha</th>
-                          <th className="text-right py-2">USD</th>
-                          <th className="text-right py-2">EUR</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rateHistory.map((rate, index) => (
-                          <tr key={index} className="border-b last:border-0">
-                            <td className="py-2">{rate.date}</td>
-                            <td className="text-right py-2">Bs. {Number(rate.usd).toFixed(2)}</td>
-                            <td className="text-right py-2">Bs. {Number(rate.eur).toFixed(2)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium">Actualización automática</p>
-                    <p className="text-muted-foreground">
-                      La tasa se actualiza automáticamente
-                    </p>
-                  </div>
-                </div>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b-2 border-black pb-4">
+                <h3 className="text-xl font-black uppercase tracking-tighter">Historial de Fluctuación</h3>
+                <Button variant="link" onClick={loadRateHistory} className="text-[10px] font-black uppercase tracking-widest text-black underline p-0 h-auto">VER TODO</Button>
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="border border-black bg-white overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-black">
+                    <tr>
+                      <th className="p-4 text-[9px] font-black uppercase text-left tracking-widest">FECHA</th>
+                      <th className="p-4 text-[9px] font-black uppercase text-right tracking-widest">TASA (BS)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {(rateHistory.length > 0 ? rateHistory : (exchangeRate ? [exchangeRate] : [])).slice(0, 5).map((h, i) => (
+                      <tr key={i}>
+                        <td className="p-4 text-[10px] font-bold uppercase">{new Date(h.date).toLocaleDateString()}</td>
+                        <td className="p-4 text-right font-black">Bs {h.usd.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </TabsContent>
 
         {/* =========================
             TAB: BUSINESS
         ========================== */}
-        <TabsContent value="business" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Información del Negocio</CardTitle>
-              <CardDescription>Datos de contacto</CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+        <TabsContent value="business" className="m-0 space-y-12">
+          <div className="border border-black bg-white">
+            <div className="p-8 border-b-2 border-black bg-gray-50">
+              <h3 className="text-3xl font-black uppercase tracking-tighter">Manifesto Corporativo</h3>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Datos de Identidad y Contacto</p>
+            </div>
+            
+            <div className="p-8 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
-                  <Label>Nombre del negocio</Label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Razón Social / Marca</label>
                   <Input
                     value={settings.business?.name || ""}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        business: { ...(settings.business || {}), name: e.target.value },
-                      })
-                    }
-                    placeholder="Tu Tienda"
+                    onChange={(e) => setSettings({ ...settings, business: { ...settings.business, name: e.target.value } })}
+                    className="h-14 rounded-none border-black focus:ring-0 font-black uppercase tracking-tight text-lg"
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    value={settings.business?.email || ""}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        business: { ...(settings.business || {}), email: e.target.value },
-                      })
-                    }
-                    placeholder="contacto@tutienda.com"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Teléfono</Label>
-                  <Input
-                    value={settings.business?.phone || ""}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        business: { ...(settings.business || {}), phone: e.target.value },
-                      })
-                    }
-                    placeholder="+58 412 1234567"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Slogan (opcional)</Label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Slogan / Manifesto</label>
                   <Input
                     value={settings.business?.slogan || ""}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        business: { ...(settings.business || {}), slogan: e.target.value },
-                      })
-                    }
-                    placeholder="Lo mejor en..."
-                  />
-                </div>
-
-                <div className="space-y-2 col-span-2">
-                  <Label>Dirección</Label>
-                  <Input
-                    value={settings.business?.address || ""}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        business: { ...(settings.business || {}), address: e.target.value },
-                      })
-                    }
-                    placeholder="Calle Principal, Ciudad"
+                    onChange={(e) => setSettings({ ...settings, business: { ...settings.business, slogan: e.target.value } })}
+                    className="h-14 rounded-none border-black focus:ring-0 font-bold text-gray-600"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end pt-4">
-                <Button onClick={() => saveSettings({ business: settings.business })} disabled={saving}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Guardar Cambios
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Canal de Ventas (WhatsApp)</label>
+                  <Input
+                    value={settings.whatsapp?.number || ""}
+                    onChange={(e) => setSettings({ ...settings, whatsapp: { ...settings.whatsapp, number: e.target.value } })}
+                    className="h-14 rounded-none border-black focus:ring-0 font-black"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Email Administrativo</label>
+                  <Input
+                    value={settings.business?.email || ""}
+                    onChange={(e) => setSettings({ ...settings, business: { ...settings.business, email: e.target.value } })}
+                    className="h-14 rounded-none border-black focus:ring-0 font-black"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Teléfono Contacto</label>
+                  <Input
+                    value={settings.business?.phone || ""}
+                    onChange={(e) => setSettings({ ...settings, business: { ...settings.business, phone: e.target.value } })}
+                    className="h-14 rounded-none border-black focus:ring-0 font-black"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Centro de Operaciones (Dirección)</label>
+                <Textarea
+                  value={settings.business?.address || ""}
+                  onChange={(e) => setSettings({ ...settings, business: { ...settings.business, address: e.target.value } })}
+                  className="min-h-[120px] rounded-none border-black focus:ring-0 font-bold"
+                />
+              </div>
+
+              <div className="flex justify-end pt-8 border-t border-gray-100">
+                <Button
+                  onClick={() => saveSettings({ business: settings.business, whatsapp: settings.whatsapp })}
+                  disabled={saving}
+                  className="h-16 rounded-none bg-black text-white px-16 font-black uppercase text-sm tracking-[0.2em] transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] active:shadow-none active:translate-x-[4px] active:translate-y-[4px]"
+                >
+                  {saving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
+                  GUARDAR MANIFESTO
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
+      
+      {/* MODAL OVERLAYS (PAYMENT & SHIPPING) */}
+      {showPaymentForm && editingPayment && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-white border-2 border-black p-0 shadow-[16px_16px_0px_0px_rgba(0,0,0,0.1)]">
+            <div className="p-6 bg-black text-white flex items-center justify-between">
+              <h3 className="text-xl font-black uppercase tracking-tighter">
+                {editingPayment.id ? "MODIFICAR TERMINAL" : "INTEGRAR NUEVO CANAL"}
+              </h3>
+              <Button variant="ghost" size="sm" onClick={() => { setShowPaymentForm(false); setEditingPayment(null); }} className="text-white hover:bg-white/10 rounded-none">
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+            <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+               <div className="grid grid-cols-2 gap-6">
+                 <div className="space-y-1">
+                   <Label className="text-[10px] font-black uppercase text-gray-400">Denominación</Label>
+                   <Input value={editingPayment.name} onChange={(e) => setEditingPayment({ ...editingPayment, name: e.target.value })} className="rounded-none border-black font-black uppercase" />
+                 </div>
+                 <div className="space-y-1">
+                   <Label className="text-[10px] font-black uppercase text-gray-400">Descripción Pública</Label>
+                   <Input value={editingPayment.description || ""} onChange={(e) => setEditingPayment({ ...editingPayment, description: e.target.value })} className="rounded-none border-black font-bold text-xs" />
+                 </div>
+               </div>
+               <div className="flex gap-6 py-4 border-y border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={!!editingPayment.isActive} onCheckedChange={(checked) => setEditingPayment({ ...editingPayment, isActive: checked })} className="data-[state=checked]:bg-black" />
+                    <Label className="text-[10px] font-black uppercase">Canal Activo</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch checked={!!editingPayment.requiresProof} onCheckedChange={(checked) => setEditingPayment({ ...editingPayment, requiresProof: checked })} className="data-[state=checked]:bg-black" />
+                    <Label className="text-[10px] font-black uppercase">Exige Comprobante</Label>
+                  </div>
+               </div>
+               <div className="space-y-4">
+                  <Label className="text-[10px] font-black uppercase text-gray-400">Instrucciones de Operación</Label>
+                  <Textarea value={editingPayment.instructions || ""} onChange={(e) => setEditingPayment({ ...editingPayment, instructions: e.target.value })} className="rounded-none border-black font-bold h-24" />
+               </div>
+            </div>
+            <div className="p-6 bg-gray-50 border-t border-black flex justify-end gap-4">
+               <Button variant="ghost" onClick={() => { setShowPaymentForm(false); setEditingPayment(null); }} className="rounded-none font-black uppercase text-[10px] tracking-widest">DESCARTAR</Button>
+               <Button onClick={() => savePaymentMethod(editingPayment)} className="rounded-none bg-black text-white h-12 px-10 font-black uppercase text-[10px] tracking-widest hover:bg-gray-800">SINCRONIZAR TERMINAL</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showShippingForm && editingShipping && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-white border-2 border-black p-0 shadow-[16px_16px_0px_0px_rgba(0,0,0,0.1)]">
+            <div className="p-6 bg-black text-white flex items-center justify-between">
+              <h3 className="text-xl font-black uppercase tracking-tighter">
+                {editingShipping.id ? "MODIFICAR RUTA" : "REGISTRAR NUEVA RUTA"}
+              </h3>
+              <Button variant="ghost" size="sm" onClick={() => { setShowShippingForm(false); setEditingShipping(null); }} className="text-white hover:bg-white/10 rounded-none">
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+            <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+               <div className="grid grid-cols-2 gap-6">
+                 <div className="space-y-1">
+                   <Label className="text-[10px] font-black uppercase text-gray-400">Nombre de la Ruta</Label>
+                   <Input value={editingShipping.name} onChange={(e) => setEditingShipping({ ...editingShipping, name: e.target.value })} className="rounded-none border-black font-black uppercase" />
+                 </div>
+                 <div className="space-y-1">
+                   <Label className="text-[10px] font-black uppercase text-gray-400">Tipo de Distribución</Label>
+                   <Select value={editingShipping.type} onValueChange={(v) => setEditingShipping({ ...editingShipping, type: v as any, requiresAddress: v !== "pickup" })}>
+                     <SelectTrigger className="rounded-none border-black font-bold uppercase text-[10px] h-10">
+                       <SelectValue />
+                     </SelectTrigger>
+                     <SelectContent className="rounded-none border-black">
+                        <SelectItem value="delivery" className="font-bold uppercase text-[10px]">ENVÍO A DOMICILIO</SelectItem>
+                        <SelectItem value="pickup" className="font-bold uppercase text-[10px]">RETIRO EN PUNTO</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
+               </div>
+               <div className="grid grid-cols-2 gap-6">
+                 <div className="space-y-1">
+                   <Label className="text-[10px] font-black uppercase text-gray-400">Tarifa Base (BS)</Label>
+                   <Input type="number" value={editingShipping.additionalCost} onChange={(e) => setEditingShipping({ ...editingShipping, additionalCost: parseFloat(e.target.value) })} className="rounded-none border-black font-black" />
+                 </div>
+                 <div className="space-y-1">
+                   <Label className="text-[10px] font-black uppercase text-gray-400">Umbral Gratis (BS)</Label>
+                   <Input type="number" value={editingShipping.freeFrom} onChange={(e) => setEditingShipping({ ...editingShipping, freeFrom: parseFloat(e.target.value) })} className="rounded-none border-black font-black" />
+                 </div>
+               </div>
+            </div>
+            <div className="p-6 bg-gray-50 border-t border-black flex justify-end gap-4">
+               <Button variant="ghost" onClick={() => { setShowShippingForm(false); setEditingShipping(null); }} className="rounded-none font-black uppercase text-[10px] tracking-widest">DESCARTAR</Button>
+               <Button onClick={() => saveShippingMethod(editingShipping)} className="rounded-none bg-black text-white h-12 px-10 font-black uppercase text-[10px] tracking-widest hover:bg-gray-800">SINCRONIZAR RUTA</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
-}
+}

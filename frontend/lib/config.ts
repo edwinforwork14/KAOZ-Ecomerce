@@ -1,13 +1,13 @@
 export const brandConfig = {
   name: "KAOZ",
   tagline: "Elegancia y calidad en cada detalle",
-  description: "KAOZ es la marca de ropa deportiva líder en Valencia. Diseño elegante, minimalista y sencillo, creado para ofrecer la máxima comodidad a hombres, mujeres y niños.",
+  description: "Somos una marca de ropa deportiva y casual que va contigo a todas partes. No hay nada a lo que no nos adaptemos, por eso te invitamos a ser parte de nuestros KAOS",
   url: "https://kaoz-sport.com", // URL sugerida
   contact: {
     email: "info@kaoz-sport.com",
-    phone: "+34 600 000 000",
-    whatsapp: "34600000000",
-    address: "Valencia, España"
+    phone: "+58 412-8494887",
+    whatsapp: "584128494887",
+    address: "Venezuela"
   },
   colors: {
     primary: "#000000",
@@ -29,8 +29,8 @@ export const brandConfig = {
     twitterHandle: "@kaoz_sport"
   },
   social: {
-    instagram: "kaoz.sport",
-    facebook: "kaoz.sport",
-    twitter: "kaoz_sport"
+    instagram: "kaos.vzla",
+    facebook: "kaos.vzla",
+    twitter: "kaos_vzla"
   }
 }

@@ -2,94 +2,88 @@ import { createClient } from "@/utils/supabase/client"
 
 const supabase = createClient()
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5010"
+const API_BASE_URL = `${BACKEND_URL}/api`
+
 // Helper para limpiar URLs de imágenes
-const cleanImageUrl = (url: string) => {
+export const cleanImageUrl = (url: string) => {
   if (!url) return "/placeholder.svg"
   if (url.startsWith('http')) return url
-  return url
+  if (url.startsWith('/')) return `${BACKEND_URL}${url}`
+  return `${BACKEND_URL}/uploads/${url}`
 }
 
 // === CATEGORIES ===
 export async function getCategories() {
-  const { data, error } = await supabase
-    .from('Category')
-    .select('*')
-    .order('name')
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/categories`)
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error fetching categories:", error)
+    return { success: false, error }
+  }
+}
 
-  if (error) return { success: false, error }
-  
-  return { 
-    success: true, 
-    categories: data.map((c: any) => ({
-      ...c,
-      _id: c.id,
-      image: cleanImageUrl(c.image),
-      image_url: cleanImageUrl(c.image)
-    })) 
+// === CUSTOMERS ===
+export async function getAllCustomers() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/customers`)
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error fetching customers:", error)
+    return { success: false, error }
   }
 }
 
 // === PRODUCTS ===
 export async function getProducts(params?: any) {
-  let query = supabase
-    .from('Product')
-    .select(`
-      *,
-      category:Category!categoryId(*),
-      images:ProductImage(*),
-      variants:ProductVariant(*)
-    `, { count: 'exact' })
-
-  if (params?.category) query = query.eq('categoryId', params.category)
-  if (params?.subcategory) query = query.eq('subcategory', params.subcategory)
-  if (params?.search) query = query.ilike('name', `%${params.search}%`)
-  if (params?.isNew) query = query.eq('isNew', true)
-  if (params?.brand) query = query.eq('brand', params.brand)
-  
-  // Price Filtering
-  if (params?.minPrice !== undefined) query = query.gte('price', params.minPrice)
-  if (params?.maxPrice !== undefined) query = query.lte('price', params.maxPrice)
-
-  // Color & Size filtering would ideally be done via subquery or joins in a more complex setup
-  // For now, we'll fetch and filter in memory if these are small datasets, 
-  // or use Supabase filters if variants are included.
-  
-  const page = params?.page || 1
-  const limit = params?.limit || 20
-  const from = (page - 1) * limit
-  const to = from + limit - 1
-
-  const { data, error, count } = await query.range(from, to)
-
-  if (error) return { success: false, error }
-
-  let mappedProducts = data.map((p: any) => ({
-    ...p,
-    _id: p.id,
-    images: (p.images || []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) })),
-    variants: p.variants || []
-  }))
-
-  // Client-side filtering for complex nested relations (Colors/Sizes)
-  if (params?.colors) {
-    const selectedColors = params.colors.split(',').map((c: string) => c.toLowerCase())
-    mappedProducts = mappedProducts.filter((p: any) => 
-      p.variants.some((v: any) => v.color && selectedColors.includes(v.color.toLowerCase()))
-    )
+  try {
+    const queryParams = new URLSearchParams()
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined) queryParams.append(key, params[key])
+      })
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/products?${queryParams.toString()}`)
+    const data = await response.json()
+    
+    // El backend devuelve los productos con _id si es MongoDB, pero si es Prisma/Supabase 
+    // y el backend los mapea, debemos asegurar consistencia.
+    if (data.success) {
+      data.products = data.products.map((p: any) => ({
+        ...p,
+        _id: p.id || p._id,
+        images: (p.images || []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) }))
+      }))
+    }
+    
+    return data
+  } catch (error: any) {
+    console.error("Error fetching products:", error)
+    return { success: false, error }
   }
+}
 
-  if (params?.sizes) {
-    const selectedSizes = params.sizes.split(',')
-    mappedProducts = mappedProducts.filter((p: any) => 
-      p.variants.some((v: any) => v.size && selectedSizes.includes(v.size))
-    )
-  }
-
-  return { 
-    success: true, 
-    products: mappedProducts, 
-    total: count || mappedProducts.length,
-    totalPages: Math.ceil((count || mappedProducts.length) / limit)
+export async function getProduct(id: string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`)
+    const data = await response.json()
+    
+    if (data.success && data.product) {
+      data.product = {
+        ...data.product,
+        _id: data.product.id || data.product._id,
+        images: (data.product.images || []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) }))
+      }
+    }
+    
+    return data
+  } catch (error: any) {
+    console.error(`Error fetching product ${id}:`, error)
+    return { success: false, error }
   }
 }
 
@@ -120,104 +114,85 @@ export async function updateOrderWhatsApp(orderId: string) {
 
 // === USER / AUTH ===
 export async function getMe() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { success: false }
-  
-  return { 
-    success: true, 
-    user: {
-      ...user,
-      firstName: user.user_metadata?.first_name,
-      lastName: user.user_metadata?.last_name,
-      phone: user.user_metadata?.phone
-    } 
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/me`)
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error fetching me:", error)
+    return { success: false, error: error.message }
   }
 }
 
 // === DASHBOARD & STATS ===
 export async function getDashboardStats() {
-  const { count: productCount } = await supabase.from('Product').select('*', { count: 'exact', head: true })
-  const { count: categoryCount } = await supabase.from('Category').select('*', { count: 'exact', head: true })
-  const { count: orderCount } = await supabase.from('Order').select('*', { count: 'exact', head: true })
-
-  return {
-    success: true,
-    stats: {
-      totalRevenue: 0,
-      totalOrders: orderCount || 0,
-      totalCustomers: 0,
-      totalProducts: productCount || 0,
-      aov: 0,
-      conversionRate: 0,
-      revenuePerCustomer: 0,
-      retentionRate: 0,
-      abandonmentRate: 0,
-      recentOrders: [],
-      topProducts: [],
-      ordersByStatus: [
-        { _id: 'pending', count: orderCount || 0 },
-        { _id: 'delivered', count: 0 }
-      ]
-    }
+  try {
+    const response = await fetch(`${API_BASE_URL}/analytics/dashboard`)
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error fetching dashboard stats:", error)
+    return { success: false, error: error.message }
   }
 }
 
 export async function updateExchangeRate() { return { success: true } }
 
 // === ADMIN CRUD ===
-export async function createProduct(formData: any) {
-  const rawData = JSON.parse(formData.get('data'))
-  const { data, error } = await supabase
-    .from('Product')
-    .insert([{
-      id: crypto.randomUUID(),
-      name: rawData.name,
-      description: rawData.description,
-      price: rawData.price,
-      originalPrice: rawData.originalPrice,
-      categoryId: rawData.category,
-      brand: rawData.brand,
-      isNew: rawData.isNew,
-      isFeatured: rawData.isFeatured,
-      isActive: true,
-      rating: 0,
-      reviewCount: 0,
-      viewCount: 0,
-      addToCartCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }])
-    .select()
-    .single()
-
-  if (error) return { success: false, message: error.message }
-  return { success: true, product: { ...data, _id: data.id } }
+export async function createProduct(formData: FormData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/products`, {
+      method: "POST",
+      body: formData,
+      // Nota: No incluimos Content-Type para que el navegador ponga el boundary de multipart/form-data
+    })
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error creating product:", error)
+    return { success: false, message: error.message }
+  }
 }
 
-export async function updateProduct(id: string, formData: any) {
-  const rawData = JSON.parse(formData.get('data'))
-  const { error } = await supabase
-    .from('Product')
-    .update({
-      name: rawData.name,
-      description: rawData.description,
-      price: rawData.price,
-      originalPrice: rawData.originalPrice,
-      categoryId: rawData.category,
-      brand: rawData.brand,
-      isNew: rawData.isNew,
-      isFeatured: rawData.isFeatured
+export async function updateProduct(id: string, formData: FormData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
+      method: "PUT",
+      body: formData,
     })
-    .eq('id', id)
-
-  if (error) return { success: false, message: error.message }
-  return { success: true }
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error updating product:", error)
+    return { success: false, message: error.message }
+  }
 }
 
 export async function deleteProduct(id: string) {
-  const { error } = await supabase.from('Product').delete().eq('id', id)
-  if (error) return { success: false, message: error.message }
-  return { success: true }
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
+      method: "DELETE",
+    })
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error deleting product:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+export async function uploadVariantImages(productId: string, variantIndex: number, formData: FormData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/products/${productId}/variants/${variantIndex}/images`, {
+      method: "POST",
+      body: formData,
+    })
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error uploading variant images:", error)
+    return { success: false, message: error.message }
+  }
 }
 
 // === SETTINGS ===
@@ -250,182 +225,126 @@ const getSessionId = () => {
   return sessionId
 }
 
-const getOrCreateCart = async () => {
+const getAuthHeaders = async () => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  
   const sessionId = getSessionId()
-  const { data: { user } } = await supabase.auth.getUser()
+  if (sessionId) {
+    headers['x-session-id'] = sessionId
+  }
   
-  let query = supabase.from('Cart').select('id')
-  if (user) query = query.eq('userId', user.id)
-  else query = query.eq('sessionId', sessionId)
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`
+  }
   
-  const { data: existingCart } = await query.single()
-  
-  if (existingCart) return existingCart.id
-  
-  const { data: newCart, error } = await supabase
-    .from('Cart')
-    .insert([{
-      userId: user?.id || null,
-      sessionId: user ? null : sessionId
-    }])
-    .select()
-    .single()
-    
-  if (error) throw error
-  return newCart.id
+  return headers
 }
 
 // === CART ===
 export async function getCart() {
   try {
-    const sessionId = getSessionId()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    let query = supabase.from('Cart').select('id')
-    if (user) query = query.eq('userId', user.id)
-    else query = query.eq('sessionId', sessionId)
-    
-    const { data: cart } = await query.single()
-    if (!cart) return { success: true, cart: { items: [] } }
-    
-    const { data: items, error } = await supabase
-      .from('CartItem')
-      .select('*, product:Product(*)')
-      .eq('cartId', cart.id)
-      
-    if (error) return { success: false, message: error.message }
-    
-    return { 
-      success: true, 
-      cart: { 
-        items: items.map(item => ({
-          ...item,
-          _id: item.id,
-          product: {
-            ...item.product,
-            _id: item.product.id
-          }
-        })) 
-      } 
-    }
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/cart`, { headers })
+    return await response.json()
   } catch (error: any) {
+    console.error('Error in getCart:', error)
     return { success: false, message: error.message }
   }
 }
 
 export async function addToCart(itemData: any) {
   try {
-    const cartId = await getOrCreateCart()
-    
-    // Check if item already exists
-    const { data: existingItem } = await supabase
-      .from('CartItem')
-      .select('*')
-      .eq('cartId', cartId)
-      .eq('productId', itemData.productId)
-      .eq('size', itemData.size)
-      .eq('color', itemData.color)
-      .single()
-      
-    if (existingItem) {
-      const newQty = existingItem.quantity + (itemData.quantity || 1)
-      const { error } = await supabase
-        .from('CartItem')
-        .update({ 
-          quantity: newQty,
-          subtotal: newQty * existingItem.price
-        })
-        .eq('id', existingItem.id)
-      if (error) return { success: false, message: error.message }
-    } else {
-      const { error } = await supabase
-        .from('CartItem')
-        .insert([{
-          cartId,
-          productId: itemData.productId,
-          name: itemData.name,
-          image: itemData.image,
-          color: itemData.color,
-          size: itemData.size,
-          quantity: itemData.quantity || 1,
-          price: itemData.price,
-          subtotal: (itemData.quantity || 1) * itemData.price
-        }])
-      if (error) return { success: false, message: error.message }
-    }
-    
-    return { success: true }
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/cart/add`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(itemData)
+    })
+    return await response.json()
   } catch (error: any) {
+    console.error('Error in addToCart:', error)
     return { success: false, message: error.message }
   }
 }
 
 export async function removeFromCart(itemId: string) {
-  const { error } = await supabase.from('CartItem').delete().eq('id', itemId)
-  if (error) return { success: false, message: error.message }
-  return { success: true }
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/cart/item/${itemId}`, {
+      method: 'DELETE',
+      headers
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error('Error in removeFromCart:', error)
+    return { success: false, message: error.message }
+  }
 }
 
 export async function updateCartItem(itemId: string, quantity: number) {
-  const { data: item } = await supabase.from('CartItem').select('price').eq('id', itemId).single()
-  if (!item) return { success: false, message: 'Item not found' }
-  
-  const { error } = await supabase
-    .from('CartItem')
-    .update({ 
-      quantity,
-      subtotal: quantity * item.price
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/cart/item/${itemId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ quantity })
     })
-    .eq('id', itemId)
-    
-  if (error) return { success: false, message: error.message }
-  return { success: true }
+    return await response.json()
+  } catch (error: any) {
+    console.error('Error in updateCartItem:', error)
+    return { success: false, message: error.message }
+  }
 }
 
 export async function clearCart() {
   try {
-    const sessionId = getSessionId()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    let query = supabase.from('Cart').select('id')
-    if (user) query = query.eq('userId', user.id)
-    else query = query.eq('sessionId', sessionId)
-    
-    const { data: cart } = await query.single()
-    if (!cart) return { success: true }
-    
-    const { error } = await supabase.from('CartItem').delete().eq('cartId', cart.id)
-    if (error) return { success: false, message: error.message }
-    
-    return { success: true }
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/cart/clear`, {
+      method: 'DELETE',
+      headers
+    })
+    return await response.json()
   } catch (error: any) {
+    console.error('Error in clearCart:', error)
     return { success: false, message: error.message }
   }
 }
 
 // === FILTER OPTIONS ===
 export async function getFilterOptions(params?: any) {
-  const { data: products } = await supabase.from('Product').select('brand, price')
-  const { data: variants } = await supabase.from('ProductVariant').select('color')
-  
-  const brands = Array.from(new Set((products || []).map(p => p.brand).filter(Boolean)))
-  const colors = Array.from(new Set((variants || []).map(v => v.color).filter(Boolean)))
-  
-  const prices = (products || []).map(p => p.price)
-  const minPrice = prices.length ? Math.min(...prices) : 0
-  const maxPrice = prices.length ? Math.max(...prices) : 1000
-
-  return { 
-    success: true, 
-    brands, 
-    colors, 
-    priceRange: { min: minPrice, max: maxPrice }
+  try {
+    const queryParams = new URLSearchParams()
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined) queryParams.append(key, params[key])
+      })
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/products/filter-options?${queryParams.toString()}`)
+    const data = await response.json()
+    
+    if (data.success && data.filterOptions) {
+      return {
+        success: true,
+        brands: data.filterOptions.brands || [],
+        colors: (data.filterOptions.colors || []).map((c: any) => c.name),
+        priceRange: data.filterOptions.priceRange || { min: 0, max: 1000 }
+      }
+    }
+    return data
+  } catch (error: any) {
+    console.error("Error fetching filter options:", error)
+    return { success: false, error }
   }
 }
 
 export const api = {
   getCategories,
   getProducts,
+  getProduct,
   createOrder,
   updateOrderWhatsApp,
   getMe,
@@ -434,6 +353,7 @@ export const api = {
   createProduct,
   updateProduct,
   deleteProduct,
+  uploadVariantImages,
   getPublicSettings,
   getSettings: getPublicSettings,
   getCart,
@@ -441,5 +361,6 @@ export const api = {
   removeFromCart,
   updateCartItem,
   clearCart,
-  getFilterOptions
+  getFilterOptions,
+  getAllCustomers
 }

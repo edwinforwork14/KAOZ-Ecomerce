@@ -121,7 +121,6 @@ exports.addToCart = async (req, res) => {
         data: {
           quantity: newQuantity,
           price: itemPrice,
-          originalPrice: itemOriginalPrice,
           name: itemName,
           image: itemImage,
           subtotal: newQuantity * itemPrice
@@ -134,7 +133,6 @@ exports.addToCart = async (req, res) => {
           productId,
           name: itemName,
           price: itemPrice,
-          originalPrice: itemOriginalPrice,
           image: itemImage,
           color,
           size,
@@ -150,21 +148,25 @@ exports.addToCart = async (req, res) => {
       data: { addToCartCount: { increment: 1 } }
     });
 
-    // Registrar en historial
-    await prisma.cartHistory.create({
-      data: {
-        userId: req.user?.id,
-        sessionId: req.headers["x-session-id"],
-        productId,
-        productName: itemName,
-        color,
-        size,
-        quantity,
-        price: itemPrice,
-        originalPrice: itemOriginalPrice,
-        action: "added",
-      }
-    });
+    // Registrar en historial (no-crítico)
+    try {
+      await prisma.cartHistory.create({
+        data: {
+          userId: req.user?.id,
+          sessionId: req.headers["x-session-id"],
+          productId,
+          productName: itemName,
+          color,
+          size,
+          quantity,
+          price: itemPrice,
+          originalPrice: itemOriginalPrice,
+          action: "added",
+        }
+      });
+    } catch (histErr) {
+      console.warn("CartHistory no disponible, omitiendo registro:", histErr.message);
+    }
 
     const updatedCart = await prisma.cart.findUnique({
       where: { id: cart.id },
@@ -232,27 +234,30 @@ exports.updateCartItem = async (req, res) => {
       data: {
         quantity,
         price: product.price,
-        originalPrice: product.originalPrice,
         name: product.name,
         subtotal: quantity * product.price
       }
     });
 
-    // Registrar en historial
-    await prisma.cartHistory.create({
-      data: {
-        userId: req.user?.id,
-        sessionId: req.headers["x-session-id"],
-        productId: item.productId,
-        productName: product.name,
-        color: item.color,
-        size: item.size,
-        quantity,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        action: "updated",
-      }
-    });
+    // Registrar en historial (no-crítico)
+    try {
+      await prisma.cartHistory.create({
+        data: {
+          userId: req.user?.id,
+          sessionId: req.headers["x-session-id"],
+          productId: item.productId,
+          productName: product.name,
+          color: item.color,
+          size: item.size,
+          quantity,
+          price: product.price,
+          originalPrice: product.originalPrice,
+          action: "updated",
+        }
+      });
+    } catch (histErr) {
+      console.warn("CartHistory no disponible, omitiendo registro:", histErr.message);
+    }
 
     const updatedCart = await prisma.cart.findUnique({
       where: { id: item.cartId },
@@ -283,21 +288,25 @@ exports.removeFromCart = async (req, res) => {
     });
 
     if (item) {
-      // Registrar en historial
-      await prisma.cartHistory.create({
-        data: {
-          userId: req.user?.id,
-          sessionId: req.headers["x-session-id"],
-          productId: item.productId,
-          productName: item.name,
-          color: item.color,
-          size: item.size,
-          quantity: item.quantity,
-          price: item.price,
-          originalPrice: item.originalPrice,
-          action: "removed",
-        }
-      });
+      // Registrar en historial (no-crítico)
+      try {
+        await prisma.cartHistory.create({
+          data: {
+            userId: req.user?.id,
+            sessionId: req.headers["x-session-id"],
+            productId: item.productId,
+            productName: item.name,
+            color: item.color,
+            size: item.size,
+            quantity: item.quantity,
+            price: item.price,
+            originalPrice: item.originalPrice,
+            action: "removed",
+          }
+        });
+      } catch (histErr) {
+        console.warn("CartHistory no disponible, omitiendo registro:", histErr.message);
+      }
 
       await prisma.cartItem.delete({ where: { id: itemId } });
     }
@@ -331,22 +340,26 @@ exports.clearCart = async (req, res) => {
     const cart = await prisma.cart.findUnique({ where, include: { items: true } });
 
     if (cart) {
-      // Historial
-      for (const item of cart.items) {
-        await prisma.cartHistory.create({
-          data: {
-            userId: req.user?.id,
-            sessionId: req.headers["x-session-id"],
-            productId: item.productId,
-            productName: item.name,
-            color: item.color,
-            size: item.size,
-            quantity: item.quantity,
-            price: item.price,
-            originalPrice: item.originalPrice,
-            action: "removed",
-          }
-        });
+      // Historial (no-crítico)
+      try {
+        for (const item of cart.items) {
+          await prisma.cartHistory.create({
+            data: {
+              userId: req.user?.id,
+              sessionId: req.headers["x-session-id"],
+              productId: item.productId,
+              productName: item.name,
+              color: item.color,
+              size: item.size,
+              quantity: item.quantity,
+              price: item.price,
+              originalPrice: item.originalPrice,
+              action: "removed",
+            }
+          });
+        }
+      } catch (histErr) {
+        console.warn("CartHistory no disponible, omitiendo registro:", histErr.message);
       }
 
       await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });

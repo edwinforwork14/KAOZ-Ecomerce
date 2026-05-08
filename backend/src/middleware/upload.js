@@ -2,6 +2,8 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const sharp = require("sharp");
+const heicConvert = require("heic-convert");
+const { supabase } = require("../config/supabase");
 
 // 1. Configuración de Directorios
 const uploadDir = path.join(__dirname, "../../uploads/products");
@@ -52,19 +54,45 @@ const processImage = async (req, res, next) => {
         const filename = `product-${uniqueSuffix}.webp`;
         const outputPath = path.join(uploadDir, filename);
 
-        // Convertir y guardar
-        await sharp(file.buffer)
+        let inputBuffer = file.buffer;
+
+        // Detectar si es formato HEIC/HEIF (iPhones)
+        const isHeic = file.originalname.toLowerCase().endsWith('.heic') || file.originalname.toLowerCase().endsWith('.heif');
+        if (isHeic) {
+          inputBuffer = await heicConvert({
+            buffer: file.buffer,
+            format: 'JPEG',
+            quality: 1 // 1 = Máxima calidad
+          });
+        }
+
+        // Convertir a buffer en memoria
+        const buffer = await sharp(inputBuffer)
           .toFormat("webp", { quality: 80 })
-          .toFile(outputPath);
+          .toBuffer();
+
+        // Subir a Supabase Storage bucket "products"
+        const { data, error } = await supabase.storage
+          .from("products")
+          .upload(filename, buffer, {
+            contentType: "image/webp",
+            upsert: false,
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        // Obtener URL pública
+        const { data: publicData } = supabase.storage
+          .from("products")
+          .getPublicUrl(filename);
 
         // ACTUALIZAMOS la información del archivo en el request
-        // Esto es clave: engañamos al controlador haciéndole creer
-        // que multer guardó el archivo en disco, pero fuimos nosotros con Sharp.
         file.filename = filename;
-        file.path = outputPath;
+        file.url = publicData.publicUrl; // Importante: pasamos directamente la URL completa de Supabase
         file.mimetype = "image/webp";
-        // Importante: Multer memoryStorage no pone 'destination', lo agregamos
-        file.destination = uploadDir;
+        // Ya no necesitamos destination ni path local
       })
     );
 
@@ -74,6 +102,7 @@ const processImage = async (req, res, next) => {
     return res.status(500).json({
       success: false,
       message: "Error al procesar las imágenes (conversión fallida)",
+      error: error.message || error,
     });
   }
 };

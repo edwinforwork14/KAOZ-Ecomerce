@@ -52,9 +52,20 @@ app.use(
 app.set("trust proxy", 1);
 
 // Configuración de CORS dinámica
+const allowedOrigins = [
+  "http://localhost:3000",
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: true, // En Vercel, permitimos que el middleware maneje el origen o usamos FRONTEND_URL
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === "development") {
+        callback(null, true);
+      } else {
+        callback(new Error("No permitido por CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -105,9 +116,33 @@ app.use("*", (req, res) => {
 // Solo iniciar el servidor si no estamos en Vercel
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5010;
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`🚀 Servidor local corriendo en puerto ${PORT}`);
+    console.log(`✅ Supabase (PostgreSQL) via Prisma conectado`);
   });
+
+  // Manejo de errores del servidor (como EADDRINUSE)
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`❌ El puerto ${PORT} ya está en uso. Intenta cerrando otros procesos o usa otro puerto.`);
+      process.exit(1);
+    } else {
+      console.error('❌ Error en el servidor:', error);
+    }
+  });
+
+  // Cierre gracioso (Graceful Shutdown)
+  const shutdown = async () => {
+    console.log('🛑 Recibida señal de cierre. Cerrando servidor...');
+    server.close(async () => {
+      console.log('📡 Servidor HTTP cerrado.');
+      // Aquí podrías cerrar conexiones a DB si fuera necesario (Prisma lo hace solo usualmente)
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }
 
 // Exportar para Vercel

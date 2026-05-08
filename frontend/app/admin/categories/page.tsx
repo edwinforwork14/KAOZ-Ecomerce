@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { 
   Plus, Trash2, Edit2, X, GripVertical, ChevronRight, ChevronDown,
-  FolderOpen, Folder, Image as ImageIcon, Save, AlertCircle, Search
+  FolderOpen, Folder, Image as ImageIcon, Save, AlertCircle, Search, Loader2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -192,20 +192,31 @@ export default function AdminCategoriesPage() {
     const isExpanded = expandedIds.has(category._id)
 
     return (
-      <div key={category._id}>
+      <div key={category._id} className="relative">
+        {depth > 0 && (
+          <div 
+            className="absolute left-0 top-0 bottom-0 border-l border-black" 
+            style={{ left: (depth * 24) - 12 }}
+          />
+        )}
         <div 
-          className={`
-            flex items-center justify-between p-3 border-b hover:bg-muted/50
-            ${depth > 0 ? `ml-${depth * 6}` : ""}
-          `}
+          className="flex items-center justify-between p-4 border border-black mb-2 bg-white transition-all hover:bg-gray-50 group relative"
           style={{ marginLeft: depth * 24 }}
         >
-          <div className="flex items-center gap-2">
+          {/* Depth line */}
+          {depth > 0 && (
+            <div 
+              className="absolute w-3 border-t border-black left-0 top-1/2 -translate-x-full"
+              style={{ left: 0 }}
+            />
+          )}
+
+          <div className="flex items-center gap-4">
             {hasChildren ? (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0"
+                className="h-8 w-8 p-0 rounded-none border border-black hover:bg-black hover:text-white transition-all"
                 onClick={() => toggleExpand(category._id)}
               >
                 {isExpanded ? (
@@ -215,34 +226,33 @@ export default function AdminCategoriesPage() {
                 )}
               </Button>
             ) : (
-              <div className="w-6" />
+              <div className="w-8 h-8 flex items-center justify-center opacity-20">
+                <div className="w-1.5 h-1.5 bg-black" />
+              </div>
             )}
             
-            {hasChildren ? (
-              <FolderOpen className="h-4 w-4 text-amber-500" />
-            ) : (
-              <Folder className="h-4 w-4 text-gray-400" />
-            )}
-            
-            <span className={`font-medium ${!category.isActive ? "text-muted-foreground" : ""}`}>
-              {category.name}
-            </span>
-            
-            {!category.isActive && (
-              <Badge variant="secondary" className="text-xs">Inactivo</Badge>
-            )}
-            
-            {category.productCount !== undefined && category.productCount > 0 && (
-              <Badge variant="outline" className="text-xs">
-                {category.productCount} productos
-              </Badge>
-            )}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-black uppercase tracking-tight">
+                  {category.name}
+                </span>
+                {!category.isActive && (
+                  <span className="text-[9px] font-black uppercase tracking-widest border border-red-500 text-red-500 px-1">INACTIVA</span>
+                )}
+              </div>
+              {category.productCount !== undefined && category.productCount > 0 && (
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                  {category.productCount} SKUs REGISTRADOS
+                </span>
+              )}
+            </div>
           </div>
           
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="ghost"
               size="sm"
+              className="rounded-none h-8 w-8 hover:bg-black hover:text-white"
               onClick={() => {
                 setEditingCategory({
                   name: "",
@@ -259,6 +269,7 @@ export default function AdminCategoriesPage() {
             <Button
               variant="ghost"
               size="sm"
+              className="rounded-none h-8 w-8 hover:bg-black hover:text-white"
               onClick={() => {
                 setEditingCategory({
                   ...category,
@@ -272,15 +283,16 @@ export default function AdminCategoriesPage() {
             <Button
               variant="ghost"
               size="sm"
+              className="rounded-none h-8 w-8 hover:bg-red-600 hover:text-white"
               onClick={() => deleteCategory(category._id)}
             >
-              <Trash2 className="h-4 w-4 text-red-500" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
         
         {hasChildren && isExpanded && (
-          <div>
+          <div className="space-y-1">
             {category.subcategories!.map(sub => renderTreeItem(sub, depth + 1))}
           </div>
         )}
@@ -291,258 +303,297 @@ export default function AdminCategoriesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-gray-400" />
+          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Escaneando Estructura de Directorios...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-8 space-y-8 bg-[#fafafa] min-h-screen">
+      {/* Industrial Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-black pb-8">
         <div>
-          <h1 className="text-2xl font-bold">Categorías</h1>
-          <p className="text-muted-foreground">Administra las categorías y subcategorías de productos</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-2 h-2 bg-black animate-pulse"></div>
+            <span className="industrial-stat-label text-black">Arquitectura de Catálogo</span>
+          </div>
+          <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
+            Categorías
+          </h1>
         </div>
-        <Button onClick={() => {
-          setEditingCategory({
-            name: "",
-            description: "",
-            parent: undefined,
-            isActive: true,
-            order: categories.length
-          })
-          setShowForm(true)
-        }}>
+        <Button 
+          onClick={() => {
+            setEditingCategory({
+              name: "",
+              description: "",
+              parent: undefined,
+              isActive: true,
+              order: categories.length
+            })
+            setShowForm(true)
+          }}
+          className="rounded-none bg-black text-white hover:bg-gray-800 h-14 px-10 font-black uppercase text-xs tracking-widest transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+        >
           <Plus className="h-4 w-4 mr-2" />
-          Nueva Categoría
+          Nueva Rama
         </Button>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* Industrial Tools Bar */}
+      <div className="flex flex-col md:flex-row items-center gap-6">
+        <div className="relative flex-1 group w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
           <Input
-            placeholder="Buscar categorías..."
+            placeholder="FILTRAR POR NOMBRE O RUTA CRÍTICA..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-12 h-14 rounded-none border-black focus:ring-0 uppercase text-xs font-bold tracking-widest bg-white"
           />
         </div>
-        <div className="flex gap-1 border rounded-lg p-1">
-          <Button
-            variant={viewMode === "list" ? "default" : "ghost"}
-            size="sm"
+        <div className="flex border border-black p-1 bg-white w-full md:w-auto h-14">
+          <button
             onClick={() => setViewMode("list")}
+            className={`flex-1 md:flex-none px-8 font-black uppercase text-[10px] tracking-widest transition-all ${
+              viewMode === "list" ? "bg-black text-white" : "text-black hover:bg-gray-100"
+            }`}
           >
-            Lista
-          </Button>
-          <Button
-            variant={viewMode === "tree" ? "default" : "ghost"}
-            size="sm"
+            MODO MANIFIESTO
+          </button>
+          <button
             onClick={() => setViewMode("tree")}
+            className={`flex-1 md:flex-none px-8 font-black uppercase text-[10px] tracking-widest transition-all ${
+              viewMode === "tree" ? "bg-black text-white" : "text-black hover:bg-gray-100"
+            }`}
           >
-            Árbol
-          </Button>
+            MODO JERÁRQUICO
+          </button>
         </div>
       </div>
 
       {viewMode === "list" ? (
-        <Card>
-          <CardContent className="p-0">
-            <div className="divide-y">
-              {filteredCategories.map((category) => (
-                <div
-                  key={category._id}
-                  className="flex items-center justify-between p-4 hover:bg-muted/50"
-                >
+        <div className="space-y-4">
+          {filteredCategories.map((category) => (
+            <div
+              key={category._id}
+              className="industrial-card flex items-center justify-between p-6 bg-white hover:border-black group relative transition-all"
+            >
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-black transition-all group-hover:w-2" />
+              
+              <div className="flex items-center gap-6">
+                {category.image ? (
+                  <div className="w-16 h-16 border border-black p-1 grayscale hover:grayscale-0 transition-all">
+                    <img
+                      src={category.image}
+                      alt={category.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 border border-black bg-gray-50 flex items-center justify-center">
+                    <Folder className="h-6 w-6 text-gray-400" />
+                  </div>
+                )}
+                <div>
                   <div className="flex items-center gap-3">
-                    <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-                    {category.image ? (
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        className="w-10 h-10 object-cover rounded"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
-                        <Folder className="h-5 w-5 text-muted-foreground" />
-                      </div>
+                    <span className="text-xl font-black uppercase tracking-tighter">{category.name}</span>
+                    {!category.isActive && (
+                      <span className="text-[9px] font-black uppercase tracking-widest border border-red-500 text-red-500 px-1">INACTIVA</span>
                     )}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{category.name}</span>
-                        {!category.isActive && (
-                          <Badge variant="secondary" className="text-xs">Inactivo</Badge>
-                        )}
-                      </div>
-                      {category.fullPath && category.fullPath !== category.name && (
-                        <div className="text-sm text-muted-foreground">
-                          {category.fullPath}
-                        </div>
-                      )}
-                    </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    {category.productCount !== undefined && (
-                      <Badge variant="outline">
-                        {category.productCount} productos
-                      </Badge>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingCategory({
-                            ...category,
-                            parent: category.parent?._id || undefined
-                          })
-                          setShowForm(true)
-                        }}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteCategory(category._id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
+                  {category.fullPath && category.fullPath !== category.name && (
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                      RUTA: {category.fullPath.toUpperCase()}
                     </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-8">
+                {category.productCount !== undefined && (
+                  <div className="text-right hidden md:block">
+                    <p className="industrial-stat-label">Stock de Ítems</p>
+                    <p className="text-xl font-black">{category.productCount}</p>
                   </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-none h-10 w-10 border border-black hover:bg-black hover:text-white transition-all"
+                    onClick={() => {
+                      setEditingCategory({
+                        ...category,
+                        parent: category.parent?._id || undefined
+                      })
+                      setShowForm(true)
+                    }}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-none h-10 w-10 border border-black hover:bg-red-600 hover:text-white transition-all"
+                    onClick={() => deleteCategory(category._id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-              ))}
-
-              {filteredCategories.length === 0 && (
-                <div className="p-8 text-center text-muted-foreground">
-                  {searchTerm ? "No se encontraron categorías" : "No hay categorías creadas"}
-                </div>
-              )}
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+
+          {filteredCategories.length === 0 && (
+            <div className="border-2 border-dashed border-gray-200 p-24 text-center">
+              <Folder className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-xl font-black uppercase tracking-tighter text-gray-400">Sin Datos de Estructura</p>
+            </div>
+          )}
+        </div>
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            {treeCategories.length > 0 ? (
-              <div className="divide-y">
-                {treeCategories.map(category => renderTreeItem(category))}
-              </div>
-            ) : (
-              <div className="p-8 text-center text-muted-foreground">
-                No hay categorías creadas
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-2 max-w-4xl mx-auto">
+          {treeCategories.length > 0 ? (
+            <div className="space-y-4">
+              {treeCategories.map(category => renderTreeItem(category))}
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-gray-200 p-24 text-center">
+              <Folder className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-xl font-black uppercase tracking-tighter text-gray-400">Mapa de Árbol Vacío</p>
+            </div>
+          )}
+        </div>
       )}
 
-      {/* Modal de edición */}
+      {/* Modal de edición Industrial */}
       {showForm && editingCategory && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-lg">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>
-                  {editingCategory._id ? "Editar" : "Nueva"} Categoría
-                </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => {
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-xl bg-white border border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
+            <div className="p-8 bg-black text-white flex justify-between items-center">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest bg-white text-black px-2 py-0.5 mb-2 inline-block">MÓDULO DE ARQUITECTURA</span>
+                <h2 className="text-3xl font-black uppercase tracking-tighter">
+                  {editingCategory._id ? "Modificar" : "Crear"} Rama
+                </h2>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
                   setShowForm(false)
                   setEditingCategory(null)
-                }}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
+                }}
+                className="h-12 w-12 rounded-none hover:bg-white hover:text-black transition-all"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+
+            <div className="p-8 space-y-6">
               <div className="space-y-2">
-                <Label>Nombre *</Label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Nomenclatura Obligatoria</label>
                 <Input
                   value={editingCategory.name || ""}
                   onChange={(e) => setEditingCategory({
                     ...editingCategory,
                     name: e.target.value
                   })}
-                  placeholder="Nombre de la categoría"
+                  placeholder="NOMBRE DE LA CATEGORÍA..."
+                  className="h-14 rounded-none border-black focus:ring-0 uppercase font-bold text-xs tracking-widest"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Descripción</Label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Descripción del Segmento</label>
                 <Textarea
                   value={editingCategory.description || ""}
                   onChange={(e) => setEditingCategory({
                     ...editingCategory,
                     description: e.target.value
                   })}
-                  placeholder="Descripción opcional"
+                  placeholder="DETALLES TÉCNICOS O DESCRIPCIÓN..."
+                  className="rounded-none border-black focus:ring-0 uppercase font-bold text-xs tracking-widest min-h-[100px]"
                   rows={3}
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Categoría padre</Label>
-                <Select
-                  value={editingCategory.parent?.toString() || "none"}
-                  onValueChange={(value) => setEditingCategory({
-                    ...editingCategory,
-                    parent: value === "none" ? undefined : value
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sin categoría padre (raíz)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sin categoría padre (raíz)</SelectItem>
-                    {parentCategories
-                      .filter(cat => cat._id !== editingCategory._id)
-                      .map(cat => (
-                        <SelectItem key={cat._id} value={cat._id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Dependencia Jerárquica</label>
+                  <Select
+                    value={editingCategory.parent?.toString() || "none"}
+                    onValueChange={(value) => setEditingCategory({
+                      ...editingCategory,
+                      parent: value === "none" ? undefined : value
+                    })}
+                  >
+                    <SelectTrigger className="h-14 rounded-none border-black focus:ring-0 uppercase font-bold text-[10px] tracking-widest">
+                      <SelectValue placeholder="RAÍZ (SIN PADRE)" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-none border-black">
+                      <SelectItem value="none" className="text-[10px] font-bold uppercase">RAÍZ (SIN PADRE)</SelectItem>
+                      {parentCategories
+                        .filter(cat => cat._id !== editingCategory._id)
+                        .map(cat => (
+                          <SelectItem key={cat._id} value={cat._id} className="text-[10px] font-bold uppercase">
+                            {cat.name.toUpperCase()}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Recurso Visual (URL)</label>
+                  <Input
+                    value={editingCategory.image || ""}
+                    onChange={(e) => setEditingCategory({
+                      ...editingCategory,
+                      image: e.target.value
+                    })}
+                    placeholder="https://static.kaoz.com/..."
+                    className="h-14 rounded-none border-black focus:ring-0 text-[10px] font-bold"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>URL de imagen</Label>
-                <Input
-                  value={editingCategory.image || ""}
-                  onChange={(e) => setEditingCategory({
-                    ...editingCategory,
-                    image: e.target.value
-                  })}
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 p-4 border border-black bg-gray-50">
                 <Switch
                   checked={editingCategory.isActive !== false}
                   onCheckedChange={(checked) => setEditingCategory({
                     ...editingCategory,
                     isActive: checked
                   })}
+                  className="data-[state=checked]:bg-black"
                 />
-                <Label>Categoría activa</Label>
+                <label className="text-[10px] font-black uppercase tracking-widest">ESTADO OPERATIVO (ACTIVO)</label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => {
-                  setShowForm(false)
-                  setEditingCategory(null)
-                }}>
-                  Cancelar
+              <div className="flex gap-4 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowForm(false)
+                    setEditingCategory(null)
+                  }}
+                  className="flex-1 h-14 rounded-none border-black font-black uppercase text-xs tracking-widest hover:bg-gray-100 transition-all"
+                >
+                  ABORTAR
                 </Button>
-                <Button onClick={saveCategory} disabled={saving}>
+                <Button 
+                  onClick={saveCategory} 
+                  disabled={saving}
+                  className="flex-1 h-14 rounded-none bg-black text-white font-black uppercase text-xs tracking-widest hover:bg-gray-800 transition-all"
+                >
                   <Save className="h-4 w-4 mr-2" />
-                  {saving ? "Guardando..." : "Guardar"}
+                  {saving ? "PROCESANDO..." : "GUARDAR RAMA"}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
     </div>

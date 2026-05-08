@@ -214,652 +214,342 @@ export default function AnalyticsPage() {
       <div className="flex items-center justify-center h-full min-h-[400px]">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-500">Cargando análisis...</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Analizando Datos de Inteligencia...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="p-8 space-y-8 bg-[#fafafa] min-h-screen">
+      {/* Industrial Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-black pb-8">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Análisis e Inventario
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-2 h-2 bg-black animate-pulse"></div>
+            <span className="industrial-stat-label text-black">Inteligencia de Negocio</span>
+          </div>
+          <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
+            Análisis
           </h1>
-          <p className="text-gray-500 mt-1">Vista detallada del rendimiento y stock de {brandConfig.name}</p>
         </div>
-        <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="gap-2">
-          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-          Actualizar
+        <Button 
+          variant="outline" 
+          onClick={handleRefresh} 
+          disabled={refreshing} 
+          className="rounded-none border-black h-14 px-10 font-black uppercase text-xs tracking-widest hover:bg-black hover:text-white transition-all"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+          Sincronizar Logs
         </Button>
       </div>
 
-      {/* Tabs KPI */}
-      <Tabs defaultValue="resumen" className="space-y-6">
-        <TabsList className="bg-white shadow-sm">
-          <TabsTrigger value="resumen" className="gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Resumen KPI
+      <Tabs defaultValue="resumen" className="space-y-8">
+        <TabsList className="grid w-full grid-cols-4 rounded-none border border-black p-0 bg-white h-16">
+          <TabsTrigger value="resumen" className="rounded-none border-r border-black data-[state=active]:bg-black data-[state=active]:text-white font-black uppercase text-[10px] tracking-widest h-full">
+            <BarChart3 className="h-4 w-4 mr-2" /> RESUMEN EJECUTIVO
           </TabsTrigger>
-          <TabsTrigger value="inventario" className="gap-2">
-            <Package className="h-4 w-4" />
-            Inventario
+          <TabsTrigger value="inventario" className="rounded-none border-r border-black data-[state=active]:bg-black data-[state=active]:text-white font-black uppercase text-[10px] tracking-widest h-full">
+            <Package className="h-4 w-4 mr-2" /> CONTROL DE STOCK
           </TabsTrigger>
-          <TabsTrigger value="precios" className="gap-2">
-            <DollarSign className="h-4 w-4" />
-            Precios
+          <TabsTrigger value="precios" className="rounded-none border-r border-black data-[state=active]:bg-black data-[state=active]:text-white font-black uppercase text-[10px] tracking-widest h-full">
+            <DollarSign className="h-4 w-4 mr-2" /> ESTRATEGIA PRECIOS
           </TabsTrigger>
-          <TabsTrigger value="tallas" className="gap-2">
-            <Eye className="h-4 w-4" />
-            Prenda / Talla
+          <TabsTrigger value="tallas" className="rounded-none data-[state=active]:bg-black data-[state=active]:text-white font-black uppercase text-[10px] tracking-widest h-full">
+            <Eye className="h-4 w-4 mr-2" /> DESGLOSE TÉCNICO
           </TabsTrigger>
         </TabsList>
 
         {/* TAB: RESUMEN */}
-        <TabsContent value="resumen" className="space-y-6">
-          {/* Main Stats (tu bloque original, usando kpis) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all bg-gradient-to-br from-blue-50 to-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Total Productos</p>
-                    <p className="text-3xl font-bold text-blue-600">{kpis.totalProducts}</p>
-                    <div className="flex items-center gap-1 mt-2">
-                      <ArrowUpRight className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-green-600">Activos</span>
-                    </div>
-                  </div>
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Package className="h-7 w-7 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all bg-gradient-to-br from-amber-50 to-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Stock Crítico</p>
-                    <p className="text-3xl font-bold text-amber-600">{kpis.criticalStockCount}</p>
-                    <div className="flex items-center gap-1 mt-2">
-                      <AlertTriangle className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm text-amber-600">{`< ${CRITICAL_STOCK_THRESHOLD} unidades`}</span>
-                    </div>
-                  </div>
-                  <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <TrendingDown className="h-7 w-7 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all bg-gradient-to-br from-red-50 to-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Sin Stock</p>
-                    <p className="text-3xl font-bold text-red-600">{kpis.outOfStockCount}</p>
-                    <div className="flex items-center gap-1 mt-2">
-                      <XCircle className="h-4 w-4 text-red-500" />
-                      <span className="text-sm text-red-600">Crítico</span>
-                    </div>
-                  </div>
-                  <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <XCircle className="h-7 w-7 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all bg-gradient-to-br from-green-50 to-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Stock Total</p>
-                    <p className="text-3xl font-bold text-green-600">{kpis.totalStock.toLocaleString()}</p>
-                    <div className="flex items-center gap-1 mt-2">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-green-600">Unidades disponibles</span>
-                    </div>
-                  </div>
-                  <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <BarChart3 className="h-7 w-7 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <TabsContent value="resumen" className="m-0 space-y-12">
+          {/* Main Industrial Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 border border-black divide-x divide-black bg-white">
+            <div className="p-8">
+              <p className="industrial-stat-label text-gray-400">Items en Catálogo</p>
+              <div className="flex items-baseline gap-2">
+                <span className="industrial-stat-value">{kpis.totalProducts}</span>
+                <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">Activos</span>
+              </div>
+            </div>
+            <div className="p-8 bg-black text-white">
+              <p className="industrial-stat-label text-gray-400">Valor de Almacén</p>
+              <div className="flex items-baseline gap-2">
+                <span className="industrial-stat-value text-white">{currencySymbol}{kpis.inventoryValue.toLocaleString()}</span>
+              </div>
+            </div>
+            <div className="p-8">
+              <p className="industrial-stat-label text-gray-400">Unidades Totales</p>
+              <div className="flex items-baseline gap-2">
+                <span className="industrial-stat-value">{kpis.totalStock.toLocaleString()}</span>
+              </div>
+            </div>
+            <div className="p-8 border-l-4 border-l-red-600">
+              <p className="industrial-stat-label text-red-600">Puntos de Falla</p>
+              <div className="flex items-baseline gap-2">
+                <span className="industrial-stat-value text-red-600">{kpis.outOfStockCount + kpis.criticalStockCount}</span>
+                <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest">Alertas</span>
+              </div>
+            </div>
           </div>
 
-          {/* Sales Stats (tu bloque original) */}
-          {stats && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                      <DollarSign className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Ingresos Totales</p>
-                      <p className="text-2xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                        {currencySymbol}
-                        {toNumberSafe(stats.totalRevenue, 0).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                      <ShoppingCart className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Total Pedidos</p>
-                      <p className="text-2xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                        {toNumberSafe(stats.totalOrders, 0)}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center">
-                      <Users className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Total Clientes</p>
-                      <p className="text-2xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                        {toNumberSafe(stats.totalCustomers, 0)}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="industrial-card p-8 bg-white border border-black">
+              <p className="industrial-stat-label mb-2">Ingresos Acumulados</p>
+              <p className="text-4xl font-black uppercase tracking-tighter">
+                {currencySymbol}{toNumberSafe(stats?.totalRevenue, 0).toFixed(0)}
+              </p>
+              <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-green-500" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Crecimiento Orgánico</span>
+              </div>
             </div>
-          )}
 
-          {/* KPI Cards extra (los que pediste) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Promedio de stock por producto</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                  {kpis.avgStock.toFixed(1)}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">Detecta sobrestock o riesgo de quiebres</p>
-              </CardContent>
-            </Card>
+            <div className="industrial-card p-8 bg-white border border-black">
+              <p className="industrial-stat-label mb-2">Volumen de Pedidos</p>
+              <p className="text-4xl font-black uppercase tracking-tighter">
+                {toNumberSafe(stats?.totalOrders, 0)}
+              </p>
+              <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4 text-black" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Transacciones Confirmadas</span>
+              </div>
+            </div>
 
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Producto con mayor stock</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-base font-semibold text-gray-900">
-                  {kpis.maxStockProduct ? kpis.maxStockProduct.name : "—"}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {kpis.maxStockProduct ? `${toNumberSafe(kpis.maxStockProduct.totalStock, 0)} unidades` : "—"}
-                </p>
-                <p className="text-sm text-gray-500 mt-2">Identifica capital inmovilizado</p>
-              </CardContent>
-            </Card>
+            <div className="industrial-card p-8 bg-black text-white border border-black">
+              <p className="industrial-stat-label text-gray-400 mb-2">Base de Clientes</p>
+              <p className="text-4xl font-black uppercase tracking-tighter text-white">
+                {toNumberSafe(stats?.totalCustomers, 0)}
+              </p>
+              <div className="mt-4 pt-4 border-t border-gray-800 flex items-center gap-2 text-gray-400">
+                <Users className="h-4 w-4" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Perfiles Registrados</span>
+              </div>
+            </div>
+          </div>
 
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Producto con menor stock</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-base font-semibold text-gray-900">
-                  {kpis.minStockProduct ? kpis.minStockProduct.name : "—"}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {kpis.minStockProduct ? `${toNumberSafe(kpis.minStockProduct.totalStock, 0)} unidades` : "—"}
-                </p>
-                <p className="text-sm text-gray-500 mt-2">Detecta riesgo de agotamiento</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Valor total del inventario</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                  {formatMoney(kpis.inventoryValue, currencySymbol)}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">Mide capital inmovilizado</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg md:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Producto más vendido</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-base font-semibold text-gray-900">{kpis.bestSellerLabel}</p>
-                <p className="text-sm text-gray-500 mt-1">Prioriza producción y reposición</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg md:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">% productos con descuento / precio fijo</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className="gap-1">
-                    <Percent className="h-3 w-3" />
-                    Descuento: {kpis.discountPct.toFixed(0)}%
-                  </Badge>
-                  <Badge variant="outline" className="gap-1">
-                    <Package className="h-3 w-3" />
-                    Precio fijo: {kpis.fixedPct.toFixed(0)}%
-                  </Badge>
-                  <Badge variant="outline" className="gap-1">
-                    <TrendingDown className="h-3 w-3" />
-                    Descuento máx: {kpis.maxDiscountApplied.toFixed(0)}%
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  Controla estabilidad y rentabilidad de tu estrategia de precios
-                </p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="p-6 border border-black bg-white">
+              <p className="industrial-stat-label mb-1">Stock Promedio</p>
+              <p className="text-2xl font-black">{kpis.avgStock.toFixed(1)} <span className="text-xs text-gray-400">UDS</span></p>
+            </div>
+            <div className="p-6 border border-black bg-white">
+              <p className="industrial-stat-label mb-1">Ticket Promedio</p>
+              <p className="text-2xl font-black">{currencySymbol}{(toNumberSafe(stats?.totalRevenue, 0) / Math.max(toNumberSafe(stats?.totalOrders, 1), 1)).toFixed(0)}</p>
+            </div>
+            <div className="p-6 border border-black bg-white md:col-span-2">
+              <p className="industrial-stat-label mb-1">Producto Estrella</p>
+              <p className="text-xl font-black uppercase truncate">{kpis.bestSellerLabel}</p>
+            </div>
           </div>
         </TabsContent>
 
         {/* TAB: INVENTARIO */}
-        <TabsContent value="inventario" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Total de productos activos</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                  {kpis.totalProducts}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">Indica el tamaño real de tu catálogo disponible</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Stock total disponible</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold text-green-600">{kpis.totalStock.toLocaleString()}</p>
-                <p className="text-sm text-gray-500 mt-1">Mide tu capacidad de venta inmediata</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Productos sin stock</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold text-red-600">{kpis.outOfStockCount}</p>
-                <p className="text-sm text-gray-500 mt-1">Evita perder ventas</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Productos en stock crítico</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold text-amber-600">{kpis.criticalStockCount}</p>
-                <p className="text-sm text-gray-500 mt-1">Permite reponer antes de quedarte sin inventario</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Lista de críticos (si hay) */}
-          {kpis.criticalStockProducts?.length > 0 && (
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-amber-600">
-                  <AlertTriangle className="h-5 w-5" />
-                  Productos en Stock Crítico
-                  <Badge className="bg-amber-100 text-amber-700 ml-2">
-                    {kpis.criticalStockProducts.length} productos
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {kpis.criticalStockProducts.map((product: AnyObj) => (
-                    <div
-                      key={product.id}
-                      className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-white rounded-xl border border-amber-100 hover:shadow-md transition-all"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{product.name}</p>
-                        <p className="text-sm text-gray-500">{product.brand}</p>
-                        <p className="text-xs text-gray-400 mt-1">{product.category}</p>
-                      </div>
-                      <div className="text-right ml-4">
-                        <p className="text-3xl font-bold text-amber-600">{toNumberSafe(product.totalStock, 0)}</p>
-                        <p className="text-xs text-gray-500">unidades</p>
-                      </div>
-                    </div>
-                  ))}
+        <TabsContent value="inventario" className="m-0 space-y-12">
+          {/* Critical Alerts Bar */}
+          {kpis.criticalStockCount > 0 && (
+            <div className="bg-red-600 text-white p-6 border border-black flex items-center justify-between shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]">
+              <div className="flex items-center gap-4">
+                <AlertTriangle className="h-8 w-8 animate-bounce" />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Alerta de Suministro</p>
+                  <p className="text-2xl font-black uppercase tracking-tighter">
+                    {kpis.criticalStockCount} RAMAS EN ESTADO CRÍTICO
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="hidden md:block text-right">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Umbral de Falla</p>
+                <p className="text-xl font-black uppercase tracking-tighter">{`< ${CRITICAL_STOCK_THRESHOLD} UNIDADES`}</p>
+              </div>
+            </div>
           )}
 
-          {/* Inventario completo (tu bloque original) */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle style={{ color: brandConfig.colors.primary }} className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  Inventario Completo
-                </CardTitle>
-                <Badge variant="outline">{products.length || 0} productos</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {products.map((product: AnyObj) => (
-                  <div key={product.id} className="border rounded-xl p-4 hover:shadow-md transition-all bg-white">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <h4 className="font-semibold text-gray-900">{product.name}</h4>
-                          {product.priceConfig?.mode !== "fixed" && (
-                            <Badge variant="outline" className="text-xs">
-                              <Percent className="h-3 w-3 mr-1" />
-                              {product.priceConfig?.mode === "markup" ? "+" : "-"}
-                              {toNumberSafe(product.priceConfig?.percentage, 0)}%
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {product.brand} • {product.category}
-                        </p>
-                      </div>
+          {/* Industrial Inventory Manifest */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b-2 border-black pb-4">
+              <h3 className="text-2xl font-black uppercase tracking-tighter">Manifiesto de Existencias</h3>
+              <span className="text-[10px] font-black uppercase tracking-widest bg-black text-white px-3 py-1">TOTAL: {products.length} SKUs</span>
+            </div>
 
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                            {currencySymbol}
-                            {toNumberSafe(product.price, 0).toFixed(2)}
-                          </p>
-                          {product.originalPrice && product.originalPrice > product.price && (
-                            <p className="text-sm text-gray-400 line-through">
-                              {currencySymbol}
-                              {toNumberSafe(product.originalPrice, 0).toFixed(2)}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-center bg-gray-50 px-4 py-2 rounded-lg">
-                          <p
-                            className={`text-2xl font-bold ${
-                              toNumberSafe(product.totalStock, 0) === 0
-                                ? "text-red-600"
-                                : toNumberSafe(product.totalStock, 0) < 10
-                                  ? "text-amber-600"
-                                  : "text-green-600"
-                            }`}
-                          >
-                            {toNumberSafe(product.totalStock, 0)}
-                          </p>
-                          <p className="text-xs text-gray-500">Stock Total</p>
-                        </div>
-                      </div>
+            <div className="space-y-4">
+              {products.map((product: AnyObj) => (
+                <div key={product.id} className="industrial-card p-6 bg-white border border-black flex flex-col md:flex-row gap-6 items-start md:items-center group transition-all hover:bg-gray-50">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="text-xl font-black uppercase tracking-tighter truncate">{product.name}</span>
+                      {product.totalStock <= 0 ? (
+                        <span className="text-[9px] font-black uppercase tracking-widest bg-red-600 text-white px-2 py-0.5">AGOTADO</span>
+                      ) : product.totalStock < CRITICAL_STOCK_THRESHOLD ? (
+                        <span className="text-[9px] font-black uppercase tracking-widest bg-amber-500 text-white px-2 py-0.5">CRÍTICO</span>
+                      ) : (
+                        <span className="text-[9px] font-black uppercase tracking-widest bg-green-600 text-white px-2 py-0.5">OPERATIVO</span>
+                      )}
                     </div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                      {product.brand} // {product.category}
+                    </p>
+                  </div>
 
-                    <div className="space-y-3">
-                      {product.variants?.map((variant: AnyObj, vIndex: number) => (
-                        <div key={vIndex} className="bg-gray-50 p-3 rounded-lg">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div
-                              className="w-5 h-5 rounded-full border-2 border-white shadow-sm"
-                              style={{ backgroundColor: variant.colorHex || "#ccc" }}
-                            />
-                            <span className="text-sm font-medium">{variant.color}</span>
-                            {variant.images?.length > 0 && (
-                              <Badge variant="outline" className="text-xs">
-                                {variant.images.length} imágenes
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
-                            {variant.sizes?.map((size: AnyObj, sIndex: number) => (
-                              <div
-                                key={sIndex}
-                                className={`text-center p-2 bg-white rounded-lg border ${
-                                  toNumberSafe(size.stock, 0) === 0
-                                    ? "border-red-200"
-                                    : toNumberSafe(size.stock, 0) < 5
-                                      ? "border-amber-200"
-                                      : "border-green-200"
-                                }`}
-                              >
-                                <p className="text-xs text-gray-500 font-medium">{size.size}</p>
-                                <p
-                                  className={`font-bold ${
-                                    toNumberSafe(size.stock, 0) === 0
-                                      ? "text-red-600"
-                                      : toNumberSafe(size.stock, 0) < 5
-                                        ? "text-amber-600"
-                                        : "text-green-600"
-                                  }`}
-                                >
-                                  {toNumberSafe(size.stock, 0)}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+                  <div className="flex items-center gap-8 w-full md:w-auto">
+                    <div className="text-right">
+                      <p className="industrial-stat-label">Precio Unitario</p>
+                      <p className="text-xl font-black">{currencySymbol}{toNumberSafe(product.price, 0).toFixed(0)}</p>
+                    </div>
+                    <div className={`p-4 border border-black min-w-[100px] text-center ${
+                      product.totalStock <= 0 ? "bg-red-50" : product.totalStock < CRITICAL_STOCK_THRESHOLD ? "bg-amber-50" : "bg-white"
+                    }`}>
+                      <p className="industrial-stat-label">Unidades</p>
+                      <p className={`text-2xl font-black ${
+                        product.totalStock <= 0 ? "text-red-600" : product.totalStock < CRITICAL_STOCK_THRESHOLD ? "text-amber-600" : "text-black"
+                      }`}>
+                        {toNumberSafe(product.totalStock, 0)}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              ))}
+            </div>
+          </div>
         </TabsContent>
 
         {/* TAB: PRECIOS */}
-        <TabsContent value="precios" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Precio promedio del catálogo</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                  {formatMoney(kpis.avgPrice, currencySymbol)}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">Marca tu posicionamiento de precios</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Precio máximo</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold text-gray-900">{formatMoney(kpis.maxPrice, currencySymbol)}</p>
-                <p className="text-sm text-gray-500 mt-1">Define tu techo de mercado</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Precio mínimo</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold text-gray-900">{formatMoney(kpis.minPrice, currencySymbol)}</p>
-                <p className="text-sm text-gray-500 mt-1">Define tu piso de mercado</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">Descuento máximo aplicado</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold text-amber-600">{kpis.maxDiscountApplied.toFixed(0)}%</p>
-                <p className="text-sm text-gray-500 mt-1">Controla rentabilidad</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg md:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">% productos con descuento</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                  {kpis.discountPct.toFixed(0)}%
-                </p>
-                <p className="text-sm text-gray-500 mt-1">Mide agresividad comercial</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg md:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-gray-600">% productos con precio fijo</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                  {kpis.fixedPct.toFixed(0)}%
-                </p>
-                <p className="text-sm text-gray-500 mt-1">Controla estabilidad de precios</p>
-              </CardContent>
-            </Card>
+        <TabsContent value="precios" className="m-0 space-y-12">
+          {/* Prices KPI Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-4 border border-black divide-x divide-black bg-white">
+            <div className="p-8">
+              <p className="industrial-stat-label text-gray-400">Media de Mercado</p>
+              <span className="industrial-stat-value">{formatMoney(kpis.avgPrice, currencySymbol)}</span>
+            </div>
+            <div className="p-8">
+              <p className="industrial-stat-label text-gray-400">Techo (Máx)</p>
+              <span className="industrial-stat-value">{formatMoney(kpis.maxPrice, currencySymbol)}</span>
+            </div>
+            <div className="p-8">
+              <p className="industrial-stat-label text-gray-400">Piso (Mín)</p>
+              <span className="industrial-stat-value">{formatMoney(kpis.minPrice, currencySymbol)}</span>
+            </div>
+            <div className="p-8 bg-black text-white">
+              <p className="industrial-stat-label text-gray-400">Índice Promo</p>
+              <span className="industrial-stat-value text-white">{kpis.discountPct.toFixed(0)}%</span>
+            </div>
           </div>
 
-          {/* Tabla rápida por producto */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2" style={{ color: brandConfig.colors.primary }}>
-                <DollarSign className="h-5 w-5" />
-                Precios por producto
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b">
-                      <th className="py-2 pr-4">Producto</th>
-                      <th className="py-2 pr-4">Precio</th>
-                      <th className="py-2 pr-4">Precio original</th>
-                      <th className="py-2 pr-4">Modo</th>
-                      <th className="py-2 pr-4">% config</th>
-                      <th className="py-2 pr-4">Stock</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.map((p: AnyObj) => (
-                      <tr key={p.id} className="border-b last:border-b-0">
-                        <td className="py-3 pr-4 font-medium text-gray-900">{p.name}</td>
-                        <td className="py-3 pr-4">{formatMoney(toNumberSafe(p.price, 0), currencySymbol)}</td>
-                        <td className="py-3 pr-4 text-gray-500">
-                          {p.originalPrice ? formatMoney(toNumberSafe(p.originalPrice, 0), currencySymbol) : "—"}
-                        </td>
-                        <td className="py-3 pr-4">
-                          <Badge variant="outline" className="capitalize">
-                            {p?.priceConfig?.mode || "fixed"}
-                          </Badge>
-                        </td>
-                        <td className="py-3 pr-4">
-                          {p?.priceConfig?.mode !== "fixed" ? `${toNumberSafe(p?.priceConfig?.percentage, 0)}%` : "—"}
-                        </td>
-                        <td className="py-3 pr-4">{toNumberSafe(p.totalStock, 0)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {/* Pricing Table */}
+          <div className="border border-black bg-white">
+            <div className="p-6 border-b border-black bg-gray-50 flex justify-between items-center">
+              <h3 className="text-sm font-black uppercase tracking-widest">Matriz de Valorización</h3>
+              <div className="flex gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-black"></div>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Fixed</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 border border-black"></div>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">Dynamic</span>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left border-b border-black">
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Producto</th>
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Base</th>
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Actual</th>
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Config</th>
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Variación</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {products.map((p: AnyObj) => (
+                    <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="p-6">
+                        <p className="text-xs font-black uppercase tracking-tight">{p.name}</p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{p.brand}</p>
+                      </td>
+                      <td className="p-6 text-right font-bold text-gray-400 text-xs">
+                        {p.originalPrice ? formatMoney(toNumberSafe(p.originalPrice, 0), currencySymbol) : "—"}
+                      </td>
+                      <td className="p-6 text-right font-black text-sm">
+                        {formatMoney(toNumberSafe(p.price, 0), currencySymbol)}
+                      </td>
+                      <td className="p-6 text-center">
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 border ${
+                          p?.priceConfig?.mode === "fixed" ? "border-black bg-black text-white" : "border-black text-black"
+                        }`}>
+                          {p?.priceConfig?.mode || "fixed"}
+                        </span>
+                      </td>
+                      <td className="p-6 text-right">
+                        {p?.priceConfig?.mode !== "fixed" ? (
+                          <span className={`text-[10px] font-black ${
+                            p?.priceConfig?.mode === "markup" ? "text-green-600" : "text-red-600"
+                          }`}>
+                            {p?.priceConfig?.mode === "markup" ? "+" : "-"}{toNumberSafe(p?.priceConfig?.percentage, 0)}%
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-gray-300">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </TabsContent>
 
         {/* TAB: PRENDA / TALLA */}
-        <TabsContent value="tallas" className="space-y-6">
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2" style={{ color: brandConfig.colors.primary }}>
-                <Eye className="h-5 w-5" />
-                Valor del inventario por prenda / talla
-              </CardTitle>
-              <p className="text-sm text-gray-500 mt-1">
-                Mide capital por prenda / talla (ordenado por valor total)
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b">
-                      <th className="py-2 pr-4">Producto</th>
-                      <th className="py-2 pr-4">Color</th>
-                      <th className="py-2 pr-4">Talla</th>
-                      <th className="py-2 pr-4">Unidades</th>
-                      <th className="py-2 pr-4">Precio unit.</th>
-                      <th className="py-2 pr-4">Valor total</th>
+        <TabsContent value="tallas" className="m-0 space-y-12">
+          <div className="border border-black bg-white">
+            <div className="p-6 border-b border-black bg-gray-50 flex justify-between items-center">
+              <h3 className="text-sm font-black uppercase tracking-widest">Desglose de Inventario Crítico</h3>
+              <span className="text-[10px] font-black uppercase tracking-widest bg-black text-white px-3 py-1">TOTAL REGISTROS: {kpis.inventoryByGarmentSize.length}</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left border-b border-black">
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Prenda / Especificación</th>
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Color</th>
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Talla</th>
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Existencia</th>
+                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Valorización</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {kpis.inventoryByGarmentSize.map((row: any) => (
+                    <tr key={row.key} className="hover:bg-gray-50 transition-colors">
+                      <td className="p-6">
+                        <p className="text-xs font-black uppercase tracking-tight">{row.productName}</p>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{row.brand}</p>
+                      </td>
+                      <td className="p-6">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 border border-black" 
+                            style={{ backgroundColor: row.colorHex || "#ccc" }}
+                          />
+                          <span className="text-[10px] font-black uppercase tracking-widest">{row.color || "—"}</span>
+                        </div>
+                      </td>
+                      <td className="p-6 text-center">
+                        <span className="text-xs font-black">{row.size}</span>
+                      </td>
+                      <td className="p-6 text-right">
+                        <span className={`text-sm font-black ${row.units < 5 ? "text-red-600" : "text-black"}`}>
+                          {row.units}
+                        </span>
+                      </td>
+                      <td className="p-6 text-right font-black text-xs">
+                        {currencySymbol}{row.totalValue.toLocaleString()}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {kpis.inventoryByGarmentSize.length === 0 ? (
-                      <tr>
-                        <td className="py-6 text-gray-500" colSpan={6}>
-                          No hay desglose por talla disponible.
-                        </td>
-                      </tr>
-                    ) : (
-                      kpis.inventoryByGarmentSize.map((row: AnyObj) => (
-                        <tr key={row.key} className="border-b last:border-b-0">
-                          <td className="py-3 pr-4 font-medium text-gray-900">
-                            <div className="flex flex-col">
-                              <span>{row.productName}</span>
-                              <span className="text-xs text-gray-500">{row.brand || ""}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 pr-4">
-                            <div className="flex items-center gap-2">
-                              <span
-                                className="w-3 h-3 rounded-full border"
-                                style={{ backgroundColor: row.colorHex || "#ccc" }}
-                              />
-                              <span className="text-gray-700">{row.color || "—"}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 pr-4">
-                            <Badge variant="outline">{row.size}</Badge>
-                          </td>
-                          <td className="py-3 pr-4">{toNumberSafe(row.units, 0)}</td>
-                          <td className="py-3 pr-4">{formatMoney(toNumberSafe(row.unitPrice, 0), currencySymbol)}</td>
-                          <td className="py-3 pr-4 font-semibold" style={{ color: brandConfig.colors.primary }}>
-                            {formatMoney(toNumberSafe(row.totalValue, 0), currencySymbol)}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

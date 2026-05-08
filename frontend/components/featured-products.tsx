@@ -131,7 +131,7 @@ export default function FeaturedProducts({
 
   useEffect(() => {
     if (selectedCategoryId) {
-      const cat = categories.find((c) => c._id === selectedCategoryId)
+      const cat = categories.find((c) => (c.id || c._id) === selectedCategoryId)
       setSubcategories(cat?.subcategories || [])
       setSelectedSubcategory("")
     } else {
@@ -144,7 +144,7 @@ export default function FeaturedProducts({
     const cat = categories.find(
       (c) => c.name.toLowerCase() === slug.toLowerCase() || c.slug === slug
     )
-    return cat?._id || ""
+    return cat?.id || cat?._id || ""
   }
 
   useEffect(() => {
@@ -301,7 +301,7 @@ export default function FeaturedProducts({
   }
 
   const pageTitle = categoryProp && categoryProp !== "shop" && categoryProp !== "home" 
-    ? categories.find(c => c._id === selectedCategoryId)?.name || "PRODUCTOS"
+    ? categories.find(c => (c.id || c._id) === selectedCategoryId)?.name || "PRODUCTOS"
     : "PRODUCTOS"
 
   const FiltersLoadingSkeleton = () => (
@@ -367,10 +367,10 @@ export default function FeaturedProducts({
             </button>
             {Array.isArray(categories) && categories.map((cat) => (
               <button
-                key={cat._id}
-                onClick={() => setSelectedCategoryId(selectedCategoryId === cat._id ? "" : cat._id)}
+                key={cat.id || cat._id}
+                onClick={() => setSelectedCategoryId(selectedCategoryId === (cat.id || cat._id) ? "" : (cat.id || cat._id))}
                 className={`px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${
-                  selectedCategoryId === cat._id ? "bg-kaosNeon text-black shadow-lg scale-105" : "bg-white text-gray-400 hover:bg-gray-100 border border-gray-100"
+                  selectedCategoryId === (cat.id || cat._id) ? "bg-kaosNeon text-black shadow-lg scale-105" : "bg-white text-gray-400 hover:bg-gray-100 border border-gray-100"
                 }`}
               >
                 {cat.name}
@@ -387,10 +387,10 @@ export default function FeaturedProducts({
           <div className="flex flex-wrap gap-2">
             {subcategories.map((sub: any) => (
               <button
-                key={sub._id}
-                onClick={() => setSelectedSubcategory(selectedSubcategory === sub._id ? "" : sub._id)}
+                key={sub.id || sub._id}
+                onClick={() => setSelectedSubcategory(selectedSubcategory === (sub.id || sub._id) ? "" : (sub.id || sub._id))}
                 className={`px-4 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
-                  selectedSubcategory === sub._id ? "bg-black text-white shadow-lg scale-105" : "bg-gray-50 text-gray-400 hover:bg-gray-100"
+                  selectedSubcategory === (sub.id || sub._id) ? "bg-black text-white shadow-lg scale-105" : "bg-gray-50 text-gray-400 hover:bg-gray-100"
                 }`}
               >
                 {sub.name}
@@ -523,14 +523,8 @@ export default function FeaturedProducts({
             <div className={`grid grid-cols-1 sm:grid-cols-2 ${viewMode === 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'} gap-8`}>
               {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
                 <div key={i} className="space-y-5">
-                  <div className="aspect-[3/4] bg-gray-50 rounded-[32px] relative overflow-hidden group">
-                    {/* Premium Shimmer Overlay */}
-                    <div className="absolute inset-0 z-10">
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-shimmer" />
-                    </div>
-                    {/* Placeholder content */}
-                    <div className="absolute top-4 left-4 w-12 h-4 bg-gray-200 rounded-full" />
-                    <div className="absolute top-4 right-4 w-8 h-8 bg-gray-200 rounded-full" />
+                  <div className="aspect-[3/4] bg-gray-50 rounded-2xl relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
                   </div>
                   <div className="px-2 space-y-3">
                     <div className="h-4 w-3/4 bg-gray-100 rounded-full" />
@@ -540,34 +534,88 @@ export default function FeaturedProducts({
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 border border-gray-100">
-                <Search className="w-10 h-10 text-gray-300" />
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+              <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-8 border border-gray-100 shadow-inner">
+                <Search className="w-12 h-12 text-gray-200" />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight mb-2">No hay resultados</h3>
-              <Button onClick={clearFilters} className="bg-black text-white px-8 py-6 rounded-2xl font-black uppercase text-[10px]">Reiniciar Filtros</Button>
+              <h3 className="text-2xl font-black uppercase tracking-tight mb-4">No se encontraron productos</h3>
+              <p className="text-gray-500 mb-8 max-w-xs mx-auto">Prueba ajustando los filtros o buscando algo diferente.</p>
+              <Button onClick={clearFilters} className="bg-black text-white px-10 py-7 rounded-full font-bold uppercase text-[10px] tracking-widest hover:bg-kaosNeon hover:text-black transition-all">Reiniciar Filtros</Button>
             </div>
           ) : (
-            <div className={`grid grid-cols-1 sm:grid-cols-2 ${viewMode === 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'} gap-x-8 gap-y-12`}>
+            <motion.div 
+              layout
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.1 }
+                }
+              }}
+              className={`grid grid-cols-1 sm:grid-cols-2 ${viewMode === 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'} gap-x-8 gap-y-16`}
+            >
               {products.map((product) => (
                 <motion.div
-                  key={product._id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  key={product.id || product._id}
+                  variants={{
+                    hidden: { opacity: 0, y: 30 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
+                  }}
+                  whileHover={{ y: -10 }}
                   className="group cursor-pointer"
                   onClick={() => onProductClick?.(product)}
                 >
-                  <div className="aspect-[3/4] rounded-[32px] overflow-hidden bg-gray-50 relative mb-6 border border-gray-100 shadow-sm transition-all duration-500 group-hover:shadow-2xl">
-                    <img src={product.images?.[0]?.url || "/placeholder.svg"} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-50 mb-6 transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] ring-1 ring-black/5">
+                    <img 
+                      src={product.images?.[0]?.url || "/placeholder.svg"} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" 
+                    />
+                    
+                    {/* Badge Overlay */}
+                    {product.isNew && (
+                      <div className="absolute top-4 left-4 z-10">
+                        <Badge className="bg-kaosNeon text-black font-black uppercase text-[9px] tracking-widest px-3 py-1 rounded-full border-none">NEW_DROP</Badge>
+                      </div>
+                    )}
+
+                    {/* Action Overlay */}
+                    <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[0.22, 1, 0.36, 1] z-20">
+                      <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 flex items-center justify-between shadow-xl">
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">Explorar</span>
+                          <span className="text-xs font-black uppercase truncate max-w-[120px]">{product.name}</span>
+                        </div>
+                        <Button 
+                          size="icon" 
+                          className="rounded-full bg-black text-white hover:bg-kaosNeon hover:text-black transition-colors shadow-lg"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Hover Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
-                  <div className="px-2">
-                    <h3 className="font-black text-sm uppercase tracking-tight group-hover:text-kaosNeon transition-colors">{product.name}</h3>
-                    <span className="font-black text-lg">${product.price}</span>
+
+                  <div className="px-1 flex justify-between items-start">
+                    <div className="flex flex-col">
+                      <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-gray-500 mb-1">{product.category?.name || "URBAN"}</h3>
+                      <h4 className="font-sans font-black text-lg uppercase tracking-tight leading-tight group-hover:text-kaosNeon transition-colors">{product.name}</h4>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="font-sans font-black text-xl leading-none">${product.price}</span>
+                      {product.originalPrice && (
+                        <span className="text-[10px] text-gray-400 line-through mt-1">${product.originalPrice}</span>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
 
           {totalPages > 1 && (

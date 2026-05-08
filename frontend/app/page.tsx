@@ -15,6 +15,8 @@ import ProductDetail from "@/components/product-detail"
 import Checkout from "@/components/checkout"
 import { MessageCircle } from "lucide-react"
 import { brandConfig } from "@/lib/config"
+import AnimatedSection from "@/components/animated-section"
+import LoadingScreen from "@/components/LoadingScreen"
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("home")
@@ -100,11 +102,26 @@ export default function Home() {
       return (
         <div className="animate-in fade-in duration-700">
           <Hero onExploreClick={() => handleTabChange("shop")} />
-          <CategorySection onCategoryClick={handleTabChange} />
-          <BenefitsBar />
-          <LifestyleSection />
-          <InstagramFeed />
-          <NewsletterSection />
+          
+          <AnimatedSection delay={0.2}>
+            <CategorySection onCategoryClick={handleTabChange} />
+          </AnimatedSection>
+          
+          <AnimatedSection delay={0.1}>
+            <BenefitsBar />
+          </AnimatedSection>
+          
+          <AnimatedSection>
+            <LifestyleSection />
+          </AnimatedSection>
+          
+          <AnimatedSection>
+            <InstagramFeed />
+          </AnimatedSection>
+          
+          <AnimatedSection>
+            <NewsletterSection />
+          </AnimatedSection>
         </div>
       )
     }
@@ -123,6 +140,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-kaosNeon selection:text-black">
+      <LoadingScreen />
       <Header
         activeTab={activeTab}
         setActiveTab={handleTabChange}
@@ -138,13 +156,14 @@ export default function Home() {
       {/* WhatsApp Floating Button */}
       <button
         onClick={handleWhatsAppClick}
-        className="fixed bottom-6 right-6 z-40 bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 group"
+        className="fixed bottom-8 right-8 z-40 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl p-5 shadow-[0_10px_30px_rgba(37,211,102,0.3)] transition-all duration-500 hover:scale-110 active:scale-95 group overflow-hidden"
         aria-label="Contactar por WhatsApp"
       >
-        <MessageCircle className="h-7 w-7" />
-        <span className="absolute -top-1 -right-1 flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+        <MessageCircle className="h-8 w-8 relative z-10" />
+        <span className="absolute top-2 right-2 flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
         </span>
       </button>
     </div>

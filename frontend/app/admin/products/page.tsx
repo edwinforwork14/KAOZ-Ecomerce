@@ -237,8 +237,8 @@ export default function ProductsPage() {
         description: formData.description,
         price: finalPrice,
         originalPrice: finalOriginalPrice,
-        category: formData.category,
-        subcategory: formData.subcategory || undefined,
+        categoryId: formData.category,
+        subcategoryId: formData.subcategory || undefined,
         brand: formData.brand,
         isNew: formData.isNew,
         isFeatured: formData.isFeatured,
@@ -255,13 +255,13 @@ export default function ProductsPage() {
 
       let result
       if (editingProduct) {
-        result = await api.updateProduct(editingProduct._id, formDataToSend)
+        result = await api.updateProduct(editingProduct.id || editingProduct._id, formDataToSend)
       } else {
         result = await api.createProduct(formDataToSend)
       }
 
       if (result?.success) {
-        const productId = result.product?._id
+        const productId = result.product?.id || result.product?._id
         if (productId) {
           for (const [variantIndex, files] of Object.entries(variantNewImages)) {
             if (files.length > 0) {
@@ -332,8 +332,8 @@ export default function ProductsPage() {
       description: String(product?.description ?? ""),
       price: String(product?.price ?? ""),
       originalPrice: product?.originalPrice != null ? String(product.originalPrice) : "",
-      category: String(product?.category?._id || product?.category || ""),
-      subcategory: String(product?.subcategory?._id || product?.subcategory || ""),
+      category: String(product?.categoryId || product?.category?.id || product?.category?._id || (typeof product?.category === 'string' ? product.category : "")),
+      subcategory: String(product?.subcategoryId || product?.subcategory?.id || product?.subcategory?._id || (typeof product?.subcategory === 'string' ? product.subcategory : "")),
       brand: String(product?.brand ?? ""),
       isNew: !!product?.isNew,
       isFeatured: !!product?.isFeatured,
@@ -435,7 +435,7 @@ export default function ProductsPage() {
   }
 
   const removeGeneralImage = (imageId: string) => {
-    setGeneralImages((prev) => prev.filter((img) => img._id !== imageId))
+    setGeneralImages((prev) => prev.filter((img) => (img.id || img._id) !== imageId))
   }
 
   const removeNewGeneralImage = (index: number) => {
@@ -444,7 +444,7 @@ export default function ProductsPage() {
 
   const removeVariantImage = (variantIndex: number, imageId: string) => {
     const newVariants = [...formData.variants]
-    newVariants[variantIndex].images = newVariants[variantIndex].images.filter((img) => img._id !== imageId)
+    newVariants[variantIndex].images = newVariants[variantIndex].images.filter((img) => (img.id || img._id) !== imageId)
     setFormData({ ...formData, variants: newVariants })
   }
 
@@ -459,7 +459,7 @@ export default function ProductsPage() {
     setGeneralImages((prev) => prev.map((img, i) => ({ ...img, isMain: i === index })))
   }
 
-  const subcategories = categories.filter((cat) => cat?.parent?._id === formData.category || cat?.parent === formData.category)
+  const subcategories = categories.filter((cat) => (cat?.parent?.id || cat?.parent?._id || cat?.parent) === formData.category)
   const parentCategories = categories.filter((cat) => !cat?.parent)
   const currencySymbol = settings?.currency?.symbol || "$"
 
@@ -477,334 +477,253 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-500">Cargando productos...</p>
+      <div className="flex items-center justify-center h-screen bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-1 bg-black overflow-hidden">
+            <div className="w-full h-full bg-kaosNeon animate-progress-fast"></div>
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Cargando Inventario...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div className="p-4 md:p-8 space-y-8 bg-transparent min-h-screen">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-black/10 pb-8">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Gestión de Catálogo • KAOZ</span>
+          </div>
+          <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
             Productos
           </h1>
-          <p className="text-gray-500 mt-1">Gestiona tu inventario de {brandConfig.name}</p>
         </div>
         <Button
           onClick={() => {
             resetForm()
             setIsDialogOpen(true)
           }}
-          className="text-white shadow-lg hover:shadow-xl transition-all"
-          style={{ backgroundColor: brandConfig.colors.primary }}
+          className="bg-black text-white rounded-none hover:bg-kaosNeon hover:text-black transition-all h-14 px-8 text-xs font-black uppercase tracking-widest"
         >
           <Plus className="h-5 w-5 mr-2" />
-          Nuevo Producto
+          Registrar Producto
         </Button>
       </div>
 
-      {/* Search, Filters & View Controls */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+      {/* Search & Controls */}
+      <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 h-4 w-4 group-focus-within:text-kaosNeon transition-colors" />
           <Input
-            placeholder="Buscar productos..."
+            placeholder="BUSCAR EN CATÁLOGO..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
               setCurrentPage(1)
             }}
-            className="pl-10 border-2 focus:border-gray-400"
+            className="pl-12 h-12 rounded-none border-black/10 focus:border-black transition-all uppercase text-[10px] font-black tracking-widest bg-black/[0.02]"
           />
         </div>
         
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="px-3 py-1.5">
-            {totalProducts} productos totales
-          </Badge>
-          
-          <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="12">12 por página</SelectItem>
-              <SelectItem value="24">24 por página</SelectItem>
-              <SelectItem value="48">48 por página</SelectItem>
-              <SelectItem value="100">100 por página</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <div className="flex border rounded-lg overflow-hidden">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center border border-black/10 bg-white">
             <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
+              variant="ghost"
               size="sm"
               onClick={() => setViewMode("grid")}
-              className="rounded-none"
+              className={`rounded-none h-12 w-12 p-0 ${viewMode === 'grid' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
             >
               <Grid3x3 className="h-4 w-4" />
             </Button>
             <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
+              variant="ghost"
               size="sm"
               onClick={() => setViewMode("list")}
-              className="rounded-none"
+              className={`rounded-none h-12 w-12 p-0 ${viewMode === 'list' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
             >
               <List className="h-4 w-4" />
             </Button>
           </div>
+
+          <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+            <SelectTrigger className="w-[180px] h-12 rounded-none border-black/10 font-black text-[10px] uppercase tracking-widest bg-black/[0.02]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="rounded-none border-black">
+              <SelectItem value="12">12 ITEMS</SelectItem>
+              <SelectItem value="24">24 ITEMS</SelectItem>
+              <SelectItem value="48">48 ITEMS</SelectItem>
+              <SelectItem value="100">100 ITEMS</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Products Display */}
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {products.map((product) => {
             const variantsArr = Array.isArray(product?.variants) ? product.variants : []
-            const totalStock =
-              variantsArr.reduce((sum: number, v: any) => {
-                const sizesArr = Array.isArray(v?.sizes) ? v.sizes : []
-                return sum + sizesArr.reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0)
-              }, 0) || 0
+            const totalStock = variantsArr.reduce((sum: number, v: any) => {
+              const sizesArr = Array.isArray(v?.sizes) ? v.sizes : []
+              return sum + sizesArr.reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0)
+            }, 0) || 0
 
-            const productPriceConfig = ensurePriceConfig(product?.priceConfig)
-            const hasPriceConfigBadge = productPriceConfig.mode !== "fixed"
-            const productImages = Array.isArray(product?.images) ? product.images : []
-            const firstImage = productImages[0]
+            const firstImage = Array.isArray(product?.images) ? product.images[0] : null
 
             return (
-              <Card
-                key={product._id}
-                className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
+              <div
+                key={product.id || product._id}
+                className="group relative bg-white border border-black/5 hover:border-black transition-all duration-300 flex flex-col"
               >
-                <div className="relative aspect-square bg-gray-100 overflow-hidden">
+                <div className="relative aspect-square transition-all duration-500 overflow-hidden bg-black/[0.02]">
                   {firstImage?.url ? (
-                      <img
-                        src={firstImage.url || "/placeholder.svg"}
-                        alt={firstImage?.alt || product?.name || "Producto"}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
+                    <img
+                      src={firstImage.url}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
+                    />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      <ImageIcon className="h-16 w-16 text-gray-300" />
+                    <div className="w-full h-full flex items-center justify-center text-black/5">
+                      <ImageIcon className="h-20 w-20" />
                     </div>
                   )}
 
-                  <div className="absolute top-3 left-3 flex flex-col gap-2">
-                    {product?.isNew && <Badge className="bg-green-500 text-white shadow-md">NUEVO</Badge>}
+                  {/* Badges */}
+                  <div className="absolute top-0 left-0 p-3 space-y-2">
+                    {product?.isNew && (
+                      <span className="block px-2 py-1 bg-kaosNeon text-black text-[8px] font-black uppercase tracking-widest">
+                        New
+                      </span>
+                    )}
                     {product?.isFeatured && (
-                      <Badge className="bg-amber-500 text-white shadow-md">
-                        <Star className="h-3 w-3 mr-1 fill-current" />
-                        DESTACADO
-                      </Badge>
-                    )}
-                    {product?.isActive === false && (
-                      <Badge variant="secondary" className="bg-gray-800 text-white">
-                        INACTIVO
-                      </Badge>
+                      <span className="block px-2 py-1 bg-black text-white text-[8px] font-black uppercase tracking-widest">
+                        Hot
+                      </span>
                     )}
                   </div>
 
-                  <div className="absolute top-3 right-3">
-                    <Badge
-                      className={`shadow-md ${
-                        totalStock === 0 ? "bg-red-500" : totalStock < 10 ? "bg-amber-500" : "bg-green-500"
-                      } text-white`}
-                    >
-                      {totalStock} uds
-                    </Badge>
-                  </div>
-
-                  {hasPriceConfigBadge && (
-                    <div className="absolute bottom-3 left-3">
-                      <Badge variant="outline" className="bg-white/90 backdrop-blur">
-                        {productPriceConfig.mode === "markup" ? (
-                          <>
-                            <Percent className="h-3 w-3 mr-1" />+{productPriceConfig.percentage}%
-                          </>
-                        ) : (
-                          <>
-                            <Tag className="h-3 w-3 mr-1" />-{productPriceConfig.percentage}%
-                          </>
-                        )}
-                      </Badge>
+                  <div className="absolute top-0 right-0 p-3">
+                    <div className={`
+                      text-[9px] font-black px-2 py-1 border
+                      ${totalStock === 0 ? 'border-red-500 text-red-500 bg-white' : 
+                        totalStock < 5 ? 'border-amber-500 text-amber-500 bg-white' : 
+                        'border-black/10 text-black/40 bg-white'}
+                    `}>
+                      STOCK: {totalStock}
                     </div>
-                  )}
+                  </div>
 
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => handleEdit(product)}>
-                      <Edit className="h-4 w-4 mr-1" />
+                  {/* Actions Overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
+                    <Button 
+                      variant="outline" 
+                      className="w-32 bg-white text-black rounded-none border-none text-[10px] font-black uppercase tracking-widest hover:bg-kaosNeon transition-colors"
+                      onClick={() => handleEdit(product)}
+                    >
                       Editar
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id || product._id)}>
-                      <Trash2 className="h-4 w-4" />
+                    <Button 
+                      variant="destructive" 
+                      className="w-32 rounded-none text-[10px] font-black uppercase tracking-widest bg-black text-white hover:bg-red-600 transition-colors"
+                      onClick={() => handleDelete(product.id || product._id)}
+                    >
+                      Eliminar
                     </Button>
                   </div>
                 </div>
 
-                <CardContent className="p-4">
-                  <div className="mb-2">
-                    <h3 className="font-semibold text-gray-900 line-clamp-1">{String(product?.name ?? "")}</h3>
-                    <p className="text-sm text-gray-500">{String(product?.brand ?? "")}</p>
+                <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-black/20 mb-1">{product.brand || 'KAOZ'}</p>
+                    <h3 className="text-[11px] font-black uppercase tracking-tight line-clamp-1">{product.name}</h3>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xl font-bold" style={{ color: brandConfig.colors.primary }}>
-                        {currencySymbol}
-                        {toNumber(product?.price, 0).toFixed(2)}
-                      </p>
-                      {product?.originalPrice && toNumber(product?.originalPrice, 0) > toNumber(product?.price, 0) && (
-                        <p className="text-sm text-gray-400 line-through">
-                          {currencySymbol}
-                          {toNumber(product?.originalPrice, 0).toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-
+                  
+                  <div className="mt-3 pt-3 border-t border-black/5 flex items-center justify-between">
+                    <p className="text-sm font-black">{currencySymbol}{toNumber(product.price).toFixed(0)}</p>
                     <div className="flex -space-x-1">
-                      {variantsArr.slice(0, 4).map((v: any, i: number) => (
-                        <div
-                          key={i}
-                          className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
-                          style={{ backgroundColor: String(v?.colorHex || "#ccc") }}
-                          title={String(v?.color || "")}
+                      {variantsArr.slice(0, 3).map((v: any, i: number) => (
+                        <div 
+                          key={i} 
+                          className="w-3 h-3 border border-black/10" 
+                          style={{ backgroundColor: v.colorHex || '#ccc' }}
                         />
                       ))}
-                      {variantsArr.length > 4 && (
-                        <div className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs font-medium">
-                          +{variantsArr.length - 4}
-                        </div>
-                      )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )
           })}
         </div>
       ) : (
-        <div className="space-y-3">
-          {products.map((product) => {
-            const variantsArr = Array.isArray(product?.variants) ? product.variants : []
-            const totalStock =
-              variantsArr.reduce((sum: number, v: any) => {
-                const sizesArr = Array.isArray(v?.sizes) ? v.sizes : []
-                return sum + sizesArr.reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0)
-              }, 0) || 0
-
-            const productImages = Array.isArray(product?.images) ? product.images : []
-            const firstImage = productImages[0]
-
-            return (
-              <Card key={product._id} className="border-0 shadow-md hover:shadow-lg transition-all">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                      {firstImage?.url ? (
-                        <img
-                          src={firstImage.url}
-                          alt={firstImage?.alt || product?.name || "Producto"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="h-8 w-8 text-gray-300" />
+        <div className="border border-black bg-white">
+          <table className="w-full text-left">
+            <thead className="bg-black text-white border-b border-black">
+              <tr>
+                <th className="px-6 py-4 industrial-stat-label text-white">Item</th>
+                <th className="px-6 py-4 industrial-stat-label text-white">Categoría</th>
+                <th className="px-6 py-4 industrial-stat-label text-white">Stock</th>
+                <th className="px-6 py-4 industrial-stat-label text-white">Precio</th>
+                <th className="px-6 py-4 industrial-stat-label text-white text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black">
+              {products.map((product) => {
+                const totalStock = (product?.variants || []).reduce((sum: number, v: any) => 
+                  sum + (v.sizes || []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0), 0
+                )
+                return (
+                  <tr key={product.id || product._id} className="hover:bg-gray-50 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gray-100 grayscale group-hover:grayscale-0 transition-all border border-gray-200">
+                          {product.images?.[0]?.url && <img src={product.images[0].url} className="w-full h-full object-cover" />}
                         </div>
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 truncate">{String(product?.name ?? "")}</h3>
-                          <p className="text-sm text-gray-500">{String(product?.brand ?? "")}</p>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            className={`${
-                              totalStock === 0 ? "bg-red-500" : totalStock < 10 ? "bg-amber-500" : "bg-green-500"
-                            } text-white`}
-                          >
-                            {totalStock} uds
-                          </Badge>
-                          {product?.isNew && <Badge className="bg-green-500 text-white">NUEVO</Badge>}
-                          {product?.isFeatured && (
-                            <Badge className="bg-amber-500 text-white">
-                              <Star className="h-3 w-3 mr-1 fill-current" />
-                              DESTACADO
-                            </Badge>
-                          )}
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-tight">{product.name}</p>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase">{product.brand}</p>
                         </div>
                       </div>
-
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center gap-3">
-                          <p className="text-lg font-bold" style={{ color: brandConfig.colors.primary }}>
-                            {currencySymbol}
-                            {toNumber(product?.price, 0).toFixed(2)}
-                          </p>
-                          {product?.originalPrice && toNumber(product?.originalPrice, 0) > toNumber(product?.price, 0) && (
-                            <p className="text-sm text-gray-400 line-through">
-                              {currencySymbol}
-                              {toNumber(product?.originalPrice, 0).toFixed(2)}
-                            </p>
-                          )}
-                          <div className="flex -space-x-1">
-                            {variantsArr.slice(0, 3).map((v: any, i: number) => (
-                              <div
-                                key={i}
-                                className="w-5 h-5 rounded-full border-2 border-white shadow-sm"
-                                style={{ backgroundColor: String(v?.colorHex || "#ccc") }}
-                                title={String(v?.color || "")}
-                              />
-                            ))}
-                            {variantsArr.length > 3 && (
-                              <div className="w-5 h-5 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-[10px] font-medium">
-                                +{variantsArr.length - 3}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Button size="sm" variant="outline" onClick={() => handleEdit(product)}>
-                            <Edit className="h-4 w-4 mr-1" />
-                            Editar
+                    </td>
+                    <td className="px-6 py-4">
+                       <span className="text-[10px] font-bold uppercase tracking-widest bg-gray-100 px-2 py-1">
+                         {product.category?.name || '-'}
+                       </span>
+                    </td>
+                    <td className="px-6 py-4">
+                       <div className={`text-xs font-black ${totalStock < 10 ? 'text-red-500' : 'text-black'}`}>
+                         {totalStock} UDS
+                       </div>
+                    </td>
+                    <td className="px-6 py-4 font-black text-xs">
+                       {currencySymbol}{toNumber(product.price).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                          <Button variant="outline" size="sm" className="rounded-none border-black hover:bg-black hover:text-white" onClick={() => handleEdit(product)}>
+                            <Edit className="h-3 w-3" />
                           </Button>
-                          <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id || product._id)}>
-                            <Trash2 className="h-4 w-4" />
+                          <Button variant="destructive" size="sm" className="rounded-none bg-red-600" onClick={() => handleDelete(product.id || product._id)}>
+                            <Trash2 className="h-3 w-3" />
                           </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      )}
-
-      {products.length === 0 && (
-        <div className="text-center py-16">
-          <Package className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">No se encontraron productos</p>
-          <p className="text-gray-400 text-sm mt-1">Intenta con otra búsqueda o crea un nuevo producto</p>
+                       </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t pt-4">
-          <div className="text-sm text-gray-600">
+        <div className="flex items-center justify-between border-t border-black pt-8">
+          <div className="industrial-stat-label text-gray-400">
             Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, totalProducts)} de {totalProducts} productos
           </div>
           
@@ -812,6 +731,7 @@ export default function ProductsPage() {
             <Button
               variant="outline"
               size="sm"
+              className="rounded-none border-black"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
@@ -836,8 +756,8 @@ export default function ProductsPage() {
                     key={pageNum}
                     variant={currentPage === pageNum ? "default" : "outline"}
                     size="sm"
+                    className={`rounded-none w-10 ${currentPage === pageNum ? 'bg-black text-white' : 'border-black'}`}
                     onClick={() => handlePageChange(pageNum)}
-                    className="w-10"
                   >
                     {pageNum}
                   </Button>
@@ -848,6 +768,7 @@ export default function ProductsPage() {
             <Button
               variant="outline"
               size="sm"
+              className="rounded-none border-black"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
@@ -857,607 +778,216 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Product Dialog (sin cambios) */}
+      {/* Product Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold" style={{ color: brandConfig.colors.primary }}>
-              {editingProduct ? "Editar Producto" : "Nuevo Producto"}
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col rounded-none border-black">
+          <DialogHeader className="border-b border-black pb-4">
+            <DialogTitle className="text-2xl font-black uppercase tracking-tighter">
+              {editingProduct ? "Editar Registro" : "Nuevo Registro"}
             </DialogTitle>
           </DialogHeader>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
-            <TabsList className="grid w-full grid-cols-4 mb-4">
-              <TabsTrigger value="basic" className="gap-2">
-                <Package className="h-4 w-4" />
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col pt-4">
+            <TabsList className="grid w-full grid-cols-4 mb-8 bg-gray-100 rounded-none p-1">
+              <TabsTrigger value="basic" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white">
                 Básico
               </TabsTrigger>
-              <TabsTrigger value="pricing" className="gap-2">
-                <DollarSign className="h-4 w-4" />
+              <TabsTrigger value="pricing" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white">
                 Precio
               </TabsTrigger>
-              <TabsTrigger value="variants" className="gap-2">
-                <Palette className="h-4 w-4" />
+              <TabsTrigger value="variants" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white">
                 Variantes
               </TabsTrigger>
-              <TabsTrigger value="images" className="gap-2">
-                <ImageIcon className="h-4 w-4" />
+              <TabsTrigger value="images" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white">
                 Imágenes
               </TabsTrigger>
             </TabsList>
 
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
-              {/* Basic Info Tab */}
-              <TabsContent value="basic" className="space-y-4 mt-0">
-                <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+              {/* Tabs Content - Simplified for Industrial Look */}
+              <TabsContent value="basic" className="space-y-6 mt-0">
+                <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label>Nombre *</Label>
+                    <Label className="industrial-stat-label">Nombre del Producto</Label>
                     <Input
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Nombre del producto"
+                      className="rounded-none border-gray-200 focus:border-black font-bold uppercase text-xs"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Marca *</Label>
+                    <Label className="industrial-stat-label">Marca</Label>
                     <Input
                       value={formData.brand}
                       onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                      placeholder="Marca"
+                      className="rounded-none border-gray-200 focus:border-black font-bold uppercase text-xs"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Descripción *</Label>
+                  <Label className="industrial-stat-label">Descripción Técnica</Label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                    placeholder="Descripción del producto"
+                    rows={4}
+                    className="rounded-none border-gray-200 focus:border-black text-xs font-medium"
                     required
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label>Categoría *</Label>
-                    <Select
-                      value={formData.category}
-                      onValueChange={(value) => setFormData({ ...formData, category: value, subcategory: "" })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar categoría" />
+                    <Label className="industrial-stat-label">Categoría</Label>
+                    <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                      <SelectTrigger className="rounded-none border-gray-200 font-bold text-xs uppercase">
+                        <SelectValue placeholder="Seleccionar..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="rounded-none border-black">
                         {parentCategories.map((cat: any) => (
-                          <SelectItem key={cat._id} value={cat._id}>
-                            {cat.name}
-                          </SelectItem>
+                          <SelectItem key={cat.id || cat._id} value={cat.id || cat._id} className="text-xs font-bold uppercase">{cat.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-
-                  {subcategories.length > 0 && (
-                    <div className="space-y-2">
-                      <Label>Subcategoría</Label>
-                      <Select 
-                        value={formData.subcategory || "none"} 
-                        onValueChange={(value) => setFormData({ 
-                          ...formData, 
-                          subcategory: value === "none" ? "" : value 
-                        })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar subcategoría" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Ninguna</SelectItem>
-                          {subcategories.map((cat: any) => (
-                            <SelectItem key={cat._id} value={cat._id}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Etiquetas (separadas por coma)</Label>
-                    <Input
-                      value={formData.tags}
-                      onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                      placeholder="deportivo, casual, verano"
-                    />
+                  <div className="flex items-center gap-6 pt-8">
+                     <div className="flex items-center gap-2">
+                        <Switch checked={formData.isActive} onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })} className="data-[state=checked]:bg-black" />
+                        <Label className="industrial-stat-label">Activo</Label>
+                     </div>
+                     <div className="flex items-center gap-2">
+                        <Switch checked={formData.isFeatured} onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })} className="data-[state=checked]:bg-black" />
+                        <Label className="industrial-stat-label">Destacado</Label>
+                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Características (separadas por coma)</Label>
-                    <Input
-                      value={formData.features}
-                      onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                      placeholder="Algodón 100%, Lavable, etc."
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-4 gap-4 pt-4 border-t">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <Label className="cursor-pointer">Producto Nuevo</Label>
-                    <Switch checked={formData.isNew} onCheckedChange={(checked) => setFormData({ ...formData, isNew: checked })} />
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <Label className="cursor-pointer">Destacado</Label>
-                    <Switch
-                      checked={formData.isFeatured}
-                      onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <Label className="cursor-pointer">Activo</Label>
-                    <Switch checked={formData.isActive} onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })} />
-                  </div>
-                  {formData.isNew && (
-                    <div className="space-y-2">
-                      <Label className="text-xs">Días como "nuevo"</Label>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={formData.newDurationDays}
-                        onChange={(e) => setFormData({ ...formData, newDurationDays: e.target.value })}
-                        placeholder={`${settings?.newProductDuration || 30} (default)`}
-                      />
-                    </div>
-                  )}
                 </div>
               </TabsContent>
 
-              {/* Pricing Tab */}
-              <TabsContent value="pricing" className="space-y-6 mt-0">
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <Label className="text-base font-semibold mb-3 block">Modo de Precio</Label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { value: "fixed", label: "Precio Fijo", icon: DollarSign, desc: "Ingresa el precio directamente" },
-                      { value: "markup", label: "Margen (%)", icon: Percent, desc: "Precio base + porcentaje" },
-                      { value: "discount", label: "Descuento (%)", icon: Tag, desc: "Precio base - porcentaje" },
-                    ].map((mode) => (
-                      <div
-                        key={mode.value}
-                        onClick={() =>
-                          setFormData({
-                            ...formData,
-                            priceConfig: ensurePriceConfig({ ...formData.priceConfig, mode: mode.value }),
-                          })
-                        }
-                        className={`
-                          p-4 rounded-xl border-2 cursor-pointer transition-all
-                          ${
-                            formData.priceConfig.mode === mode.value
-                              ? "border-blue-500 bg-blue-100"
-                              : "border-gray-200 hover:border-gray-300 bg-white"
-                          }
-                        `}
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <mode.icon
-                            className={`h-5 w-5 ${
-                              formData.priceConfig.mode === mode.value ? "text-blue-600" : "text-gray-500"
-                            }`}
-                          />
-                          <span className="font-medium">{mode.label}</span>
-                          {formData.priceConfig.mode === mode.value && <Check className="h-4 w-4 text-blue-600 ml-auto" />}
-                        </div>
-                        <p className="text-xs text-gray-500">{mode.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {formData.priceConfig.mode === "fixed" ? (
-                  <div className="grid grid-cols-2 gap-4">
+              {/* Pricing Content */}
+              <TabsContent value="pricing" className="space-y-8 mt-0">
+                 <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <Label>Precio de Venta ({currencySymbol}) *</Label>
+                      <Label className="industrial-stat-label text-black">Precio de Venta ({currencySymbol})</Label>
                       <Input
                         type="number"
                         step="0.01"
-                        min="0"
                         value={formData.price}
                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                        className="rounded-none border-black h-16 text-3xl font-black"
                         required
-                        className="text-xl font-bold"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Precio Original ({currencySymbol})</Label>
+                      <Label className="industrial-stat-label">Precio Original / Ref</Label>
                       <Input
                         type="number"
                         step="0.01"
-                        min="0"
                         value={formData.originalPrice}
                         onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                        placeholder="Para mostrar descuento"
+                        className="rounded-none border-gray-200 h-16 text-xl font-bold text-gray-400"
                       />
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Precio Base ({currencySymbol}) *</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={formData.priceConfig.basePrice || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              priceConfig: ensurePriceConfig({
-                                ...formData.priceConfig,
-                                basePrice: toNumber(e.target.value, 0),
-                              }),
-                            })
-                          }
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>
-                          {formData.priceConfig.mode === "markup" ? "Porcentaje de Aumento" : "Porcentaje de Descuento"} (%)
-                        </Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="100"
-                          value={formData.priceConfig.percentage || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              priceConfig: ensurePriceConfig({
-                                ...formData.priceConfig,
-                                percentage: toNumber(e.target.value, 0),
-                              }),
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {formData.priceConfig.basePrice > 0 && (
-                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                        <p className="text-sm text-green-700 mb-2">Vista previa del precio:</p>
-                        <div className="flex items-baseline gap-3">
-                          <span className="text-3xl font-bold text-green-700">
-                            {currencySymbol}
-                            {calculatePrice().toFixed(2)}
-                          </span>
-                          {formData.priceConfig.mode === "discount" && (
-                            <span className="text-lg text-gray-400 line-through">
-                              {currencySymbol}
-                              {formData.priceConfig.basePrice.toFixed(2)}
-                            </span>
-                          )}
-                          <Badge className={formData.priceConfig.mode === "markup" ? "bg-blue-500" : "bg-red-500"}>
-                            {formData.priceConfig.mode === "markup" ? "+" : "-"}
-                            {formData.priceConfig.percentage}%
-                          </Badge>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                 </div>
               </TabsContent>
 
-              {/* Variants Tab */}
-              <TabsContent value="variants" className="space-y-4 mt-0">
-                {formData.variants.map((variant, vIndex) => (
-                  <Card key={vIndex} className="border-2">
-                    <CardContent className="p-4 space-y-4">
+              {/* Variants Content */}
+              <TabsContent value="variants" className="space-y-6 mt-0">
+                 {formData.variants.map((variant, vIndex) => (
+                   <div key={vIndex} className="border border-black p-6 space-y-6 relative group">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full border-2 shadow-inner" style={{ backgroundColor: variant.colorHex }} />
-                          <span className="font-semibold">
-                            Variante {vIndex + 1}: {variant.color || "Sin nombre"}
-                          </span>
-                        </div>
-                        {formData.variants.length > 1 && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              const newVariants = formData.variants.filter((_, i) => i !== vIndex)
-                              setFormData({ ...formData, variants: newVariants })
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                         <span className="industrial-heading">Variante #{vIndex + 1}</span>
+                         <Button type="button" variant="ghost" onClick={() => setFormData({ ...formData, variants: formData.variants.filter((_, i) => i !== vIndex) })} className="text-red-500 hover:bg-red-50 rounded-none">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Remover
+                         </Button>
                       </div>
-
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label>Nombre del Color</Label>
-                          <Input
-                            value={variant.color}
-                            onChange={(e) => {
-                              const newVariants = [...formData.variants]
-                              newVariants[vIndex].color = e.target.value
-                              setFormData({ ...formData, variants: newVariants })
-                            }}
-                            placeholder="Negro, Blanco, etc."
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Color (hex)</Label>
-                          <div className="flex gap-2">
-                            <Input
-                              type="color"
-                              value={variant.colorHex}
+                      
+                      <div className="grid grid-cols-2 gap-6">
+                         <div className="space-y-2">
+                            <Label className="industrial-stat-label">Nombre del Color</Label>
+                            <Input 
+                              value={variant.color} 
                               onChange={(e) => {
-                                const newVariants = [...formData.variants]
-                                newVariants[vIndex].colorHex = e.target.value
-                                setFormData({ ...formData, variants: newVariants })
+                                const newVariants = [...formData.variants];
+                                newVariants[vIndex].color = e.target.value;
+                                setFormData({ ...formData, variants: newVariants });
                               }}
-                              className="w-14 h-10 p-1 cursor-pointer"
+                              className="rounded-none border-gray-200 uppercase font-bold text-xs" 
                             />
-                            <Input
-                              value={variant.colorHex}
-                              onChange={(e) => {
-                                const newVariants = [...formData.variants]
-                                newVariants[vIndex].colorHex = e.target.value
-                                setFormData({ ...formData, variants: newVariants })
-                              }}
-                              className="flex-1"
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Imágenes de esta variante</Label>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">
-                              {variant.images.length + (variantNewImages[vIndex]?.length || 0)} imágenes
-                            </Badge>
-                            <span className="text-xs text-gray-500">(Se gestionan en la pestaña Imágenes)</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="mb-2 block">Stock por Talla</Label>
-                        <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
-                          {variant.sizes.map((size, sIndex) => (
-                            <div key={sIndex} className="text-center">
-                              <Label className="text-xs text-gray-500">{size.size}</Label>
-                              <Input
-                                type="number"
-                                min="0"
-                                value={size.stock}
-                                onChange={(e) => {
-                                  const newVariants = [...formData.variants]
-                                  newVariants[vIndex].sizes[sIndex].stock = parseInt(e.target.value, 10) || 0
-                                  setFormData({ ...formData, variants: newVariants })
-                                }}
-                                className="text-center"
-                              />
+                         </div>
+                         <div className="space-y-2">
+                            <Label className="industrial-stat-label">Muestra de Color</Label>
+                            <div className="flex gap-4">
+                               <Input 
+                                 type="color" 
+                                 value={variant.colorHex} 
+                                 onChange={(e) => {
+                                   const newVariants = [...formData.variants];
+                                   newVariants[vIndex].colorHex = e.target.value;
+                                   setFormData({ ...formData, variants: newVariants });
+                                 }}
+                                 className="w-16 h-10 p-1 rounded-none border-gray-200 cursor-pointer" 
+                               />
+                               <Input value={variant.colorHex} className="rounded-none border-gray-200 font-mono text-xs" readOnly />
                             </div>
-                          ))}
-                        </div>
+                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setFormData({
-                      ...formData,
-                      variants: [
-                        ...formData.variants,
-                        {
-                          color: "",
-                          colorHex: "#000000",
-                          images: [],
-                          sizes: [
-                            { size: "S", stock: 0 },
-                            { size: "M", stock: 0 },
-                            { size: "L", stock: 0 },
-                            { size: "XL", stock: 0 },
-                          ],
-                        },
-                      ],
-                    })
-                  }}
-                  className="w-full border-dashed"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Variante de Color
-                </Button>
+                      <div className="space-y-4">
+                         <Label className="industrial-stat-label">Stock por Talla</Label>
+                         <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                            {variant.sizes.map((size, sIndex) => (
+                               <div key={sIndex} className="space-y-1">
+                                  <div className="bg-black text-white text-[8px] font-black py-1 text-center">{size.size}</div>
+                                  <Input 
+                                    type="number" 
+                                    value={size.stock} 
+                                    onChange={(e) => {
+                                      const newVariants = [...formData.variants];
+                                      newVariants[vIndex].sizes[sIndex].stock = parseInt(e.target.value) || 0;
+                                      setFormData({ ...formData, variants: newVariants });
+                                    }}
+                                    className="rounded-none border-gray-200 text-center font-bold text-xs p-1 h-8" 
+                                  />
+                               </div>
+                            ))}
+                         </div>
+                      </div>
+                   </div>
+                 ))}
+                 <Button type="button" variant="outline" onClick={() => setFormData({ ...formData, variants: [...formData.variants, { color: '', colorHex: '#000000', images: [], sizes: [{ size: 'S', stock: 0 }, { size: 'M', stock: 0 }, { size: 'L', stock: 0 }, { size: 'XL', stock: 0 }] }] })} className="w-full h-12 rounded-none border-black border-dashed font-black uppercase tracking-widest">
+                    + Añadir Variante
+                 </Button>
               </TabsContent>
 
-              {/* Images Tab */}
-              <TabsContent value="images" className="space-y-6 mt-0">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-base font-semibold">Imágenes Generales</Label>
-                      <p className="text-sm text-gray-500">Se muestran cuando no hay imágenes para un color específico</p>
-                    </div>
-                    <Badge variant="outline">{generalImages.length + newGeneralImages.length} imágenes</Badge>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {generalImages.map((image, index) => (
-                      <div
-                        key={image._id}
-                        className={`relative group aspect-square rounded-lg overflow-hidden border-2 ${
-                          image.isMain ? "border-green-500" : "border-gray-200"
-                        }`}
-                      >
-                        <img
-                          src={`https://yenfit.shop${image.url}`}
-                          alt={image.alt}
-                          className="w-full h-full object-cover"
-                        />
-                        {image.isMain && (
-                          <Badge className="absolute top-2 left-2 bg-green-500">
-                            <Star className="h-3 w-3 mr-1 fill-current" />
-                            Principal
-                          </Badge>
-                        )}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                          {!image.isMain && (
-                            <Button size="sm" variant="secondary" type="button" onClick={() => setMainImage(index)}>
-                              <Star className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Button size="sm" variant="destructive" type="button" onClick={() => removeGeneralImage(image._id)}>
-                            <Trash2 className="h-4 w-4" />
+              {/* Images Content */}
+              <TabsContent value="images" className="space-y-8 mt-0">
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {generalImages.map((img, idx) => (
+                       <div key={img.id || img._id || idx} className="aspect-square bg-gray-100 border border-black relative group grayscale hover:grayscale-0 transition-all">
+                          <img src={img.url.startsWith('http') ? img.url : `https://yenfit.shop${img.url}`} className="w-full h-full object-cover" />
+                          <Button type="button" onClick={() => removeGeneralImage(img.id || img._id)} className="absolute top-2 right-2 h-8 w-8 bg-red-600 text-white rounded-none opacity-0 group-hover:opacity-100 transition-opacity">
+                             <X className="h-4 w-4" />
                           </Button>
-                        </div>
-                      </div>
+                       </div>
                     ))}
-
-                    {newGeneralImages.map((file, index) => (
-                      <div
-                        key={index}
-                        className="relative group aspect-square rounded-lg overflow-hidden border-2 border-green-500"
-                      >
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt={`Nueva ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <Badge className="absolute top-2 left-2 bg-green-500">Nueva</Badge>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          type="button"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
-                          onClick={() => removeNewGeneralImage(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-
-                    <label className="aspect-square rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 cursor-pointer flex flex-col items-center justify-center gap-2 transition-colors">
-                      <Upload className="h-8 w-8 text-gray-400" />
-                      <span className="text-sm text-gray-500">Agregar</span>
-                      <input type="file" multiple accept="image/*" onChange={handleGeneralImageChange} className="hidden" />
+                    <label className="aspect-square border-2 border-dashed border-black flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+                       <Upload className="h-8 w-8 mb-2" />
+                       <span className="industrial-stat-label">Subir Imagen</span>
+                       <input type="file" multiple accept="image/*" onChange={handleGeneralImageChange} className="hidden" />
                     </label>
-                  </div>
-                </div>
-
-                <div className="border-t pt-6">
-                  <Label className="text-base font-semibold mb-4 block">Imágenes por Color</Label>
-
-                  {formData.variants.map((variant, vIndex) => (
-                    <div key={vIndex} className="mb-6 p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-6 h-6 rounded-full border-2" style={{ backgroundColor: variant.colorHex }} />
-                        <span className="font-medium">{variant.color || `Variante ${vIndex + 1}`}</span>
-                        <Badge variant="outline" className="ml-auto">
-                          {variant.images.length + (variantNewImages[vIndex]?.length || 0)} imágenes
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {variant.images.map((image) => (
-                          <div
-                            key={image._id}
-                            className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200"
-                          >
-                            <img
-                              src={`https://yenfit.shop${image.url}`}
-                              alt={image.alt}
-                              className="w-full h-full object-cover"
-                            />
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              type="button"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
-                              onClick={() => removeVariantImage(vIndex, image._id)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-
-                        {variantNewImages[vIndex]?.map((file, index) => (
-                          <div
-                            key={index}
-                            className="relative group aspect-square rounded-lg overflow-hidden border-2 border-green-500"
-                          >
-                            <img
-                              src={URL.createObjectURL(file)}
-                              alt={`Nueva ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                            <Badge className="absolute top-2 left-2 bg-green-500">Nueva</Badge>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              type="button"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
-                              onClick={() => removeVariantNewImage(vIndex, index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-
-                        <label className="aspect-square rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 cursor-pointer flex flex-col items-center justify-center gap-2 transition-colors bg-white">
-                          <Upload className="h-6 w-6 text-gray-400" />
-                          <span className="text-xs text-gray-500">Agregar</span>
-                          <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={(e) => handleVariantImageChange(vIndex, e)}
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                 </div>
               </TabsContent>
-
-              <DialogFooter className="mt-6 pt-4 border-t">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={saving}
-                  className="text-white min-w-[140px]"
-                  style={{ backgroundColor: brandConfig.colors.primary }}
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Guardando...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-4 w-4 mr-2" />
-                      {editingProduct ? "Actualizar" : "Crear"} Producto
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
             </form>
+
+            <DialogFooter className="border-t border-black pt-6 mt-8">
+              <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="rounded-none industrial-heading">Cerrar</Button>
+              <Button onClick={handleSubmit} disabled={saving} className="rounded-none bg-black text-white h-12 px-12 industrial-heading hover:bg-gray-800">
+                 {saving ? 'Guardando...' : editingProduct ? 'Actualizar Registro' : 'Confirmar Registro'}
+              </Button>
+            </DialogFooter>
           </Tabs>
         </DialogContent>
       </Dialog>

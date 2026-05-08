@@ -12,28 +12,27 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="bg-kaosBlack text-white pt-20 pb-10" data-purpose="site-footer">
+    <footer className="bg-kaosBlack text-white pt-24 pb-12 noise border-t border-white/5 font-sans" data-purpose="site-footer">
       <div className="max-w-[1440px] mx-auto px-4 md:px-10">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-16 mb-24">
           {/* Brand Info */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 space-y-10">
             <img 
               alt="KAOS Logo White" 
-              className="h-10 mb-8 filter invert brightness-200" 
-              src="https://lh3.googleusercontent.com/aida/ADBb0uj46qIOice25s0wgyOd-LWnDeeM714ClVTSkgFmiKINOqICN7ryrVzJXi2KnKtRTHVlW5O0MkHLfZhKcKbseqUF-wGctwnzRG9UdCxQ1zsGgHlTpyhKmVSpUm59_pY0tI0hB3fV03rfoM8-dI7r12Kfc4fDKJAMJTbh6sRJXS-GojAuprxcm2ab8PL3d0xbnenw4N5lZONHF3_7vha7rinJjOF0N5POrpaHCf5EOiY_jvlK3dkpRJZBIAWybkiOBl045I3DXqosiGg" 
-              style={{ objectPosition: "15% 91.5%" }}
+              className="h-14 object-contain filter invert brightness-200 logo-shadow" 
+              src="/kaozlogo1.jpeg" 
             />
-            <p className="text-xs text-gray-400 leading-relaxed mb-8 max-w-sm">
-              {brandConfig.description}
+            <p className="text-[13px] text-gray-400 leading-relaxed max-w-sm font-medium">
+              Somos una marca de ropa deportiva y casual que va contigo a todas partes. No hay nada a lo que no nos adaptemos, por eso te invitamos a ser parte de nuestros KAOS
             </p>
-            <div className="flex gap-6">
+            <div className="flex gap-4">
               {socialLinks.map((link) => (
                 <a 
                   key={link.name}
                   href={link.href} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="hover:text-kaosNeon transition-colors"
+                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-kaosNeon hover:text-black transition-all duration-500 hover:-translate-y-1"
                 >
                   {link.icon}
                 </a>
@@ -43,44 +42,44 @@ export default function Footer() {
 
           {/* Links Columns */}
           <div className="md:col-span-1">
-            <h4 className="font-bold text-sm uppercase mb-6">Comprar</h4>
-            <ul className="text-xs text-gray-400 space-y-4">
-              <li><button className="hover:text-white transition-colors">Hombre</button></li>
-              <li><button className="hover:text-white transition-colors">Mujer</button></li>
-              <li><button className="hover:text-white transition-colors">Kids</button></li>
-              <li><button className="hover:text-white transition-colors">Accesorios</button></li>
-              <li><button className="hover:text-white transition-colors">Nuevos Drops</button></li>
+            <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] mb-8 text-white/50">Comprar</h4>
+            <ul className="text-xs space-y-5">
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Tienda</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Hombre</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Mujer</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Accesorios</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest text-kaosNeon/80">Nuevos Drops</button></li>
             </ul>
           </div>
 
           <div className="md:col-span-1">
-            <h4 className="font-bold text-sm uppercase mb-6">KAOS</h4>
-            <ul className="text-xs text-gray-400 space-y-4">
-              <li><button className="hover:text-white transition-colors">Nosotros</button></li>
-              <li><button className="hover:text-white transition-colors">Blog</button></li>
-              <li><button className="hover:text-white transition-colors">Atletas</button></li>
-              <li><button className="hover:text-white transition-colors">Eventos</button></li>
+            <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] mb-8 text-white/50">KAOS</h4>
+            <ul className="text-xs space-y-5">
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Nosotros</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Blog</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Atletas</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Eventos</button></li>
             </ul>
           </div>
 
           <div className="md:col-span-1">
-            <h4 className="font-bold text-sm uppercase mb-6">Ayuda</h4>
-            <ul className="text-xs text-gray-400 space-y-4">
-              <li><button className="hover:text-white transition-colors">Contacto</button></li>
-              <li><button className="hover:text-white transition-colors">Envíos</button></li>
-              <li><button className="hover:text-white transition-colors">Devoluciones</button></li>
-              <li><button className="hover:text-white transition-colors">Preguntas Frecuentes</button></li>
+            <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] mb-8 text-white/50">Ayuda</h4>
+            <ul className="text-xs space-y-5">
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Contacto</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Envíos</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">Devoluciones</button></li>
+              <li><button className="hover:text-kaosNeon transition-colors font-bold uppercase tracking-widest">FAQ</button></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[10px] text-gray-500 uppercase tracking-widest">
-            © {currentYear} {brandConfig.name}. DISEÑADO EN VENEZUELA.
+        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.3em]">
+            © {currentYear} {brandConfig.name}. STRICTLY ENGINEERED IN VENEZUELA.
           </p>
-          <div className="flex gap-8 text-[10px] text-gray-500 uppercase tracking-widest">
-            <button className="hover:text-white transition-colors">Términos y Condiciones</button>
+          <div className="flex gap-10 text-[9px] text-gray-500 font-bold uppercase tracking-[0.3em]">
+            <button className="hover:text-white transition-colors">Términos</button>
             <button className="hover:text-white transition-colors">Privacidad</button>
           </div>
         </div>

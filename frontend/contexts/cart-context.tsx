@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { api } from "@/lib/api"
+import { api, cleanImageUrl } from "@/lib/api"
 import { toast } from "sonner"
 
 export interface CartItem {
@@ -67,24 +67,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setLoading(true)
       const result = await api.getCart()
       if (result.success && result.cart && result.cart.items) {
-        // Filtrar items con productos válidos y mapear correctamente
+        // Mapear items del backend al formato del frontend
         const validItems = result.cart.items
-          .filter((item: any) => item.product && (item.product._id || item.product))
+          .filter((item: any) => item.productId || (item.product && (item.product._id || item.product.id)))
           .map((item: any) => {
-            // Manejar tanto productos populados como referencias
-            const productId = typeof item.product === 'object' && item.product._id 
-              ? item.product._id 
-              : item.product
+            // Manejar tanto formato backend (productId) como populado (product._id)
+            const productId = item.productId 
+              || (typeof item.product === 'object' ? (item.product._id || item.product.id) : item.product)
 
-            // Asegurarnos de usar el precio correcto del item
-            // El backend debe guardar el precio con descuento en item.price
             return {
-              _id: item._id,
+              _id: item._id || item.id,
               id: productId,
               name: item.name,
-              price: item.price, // Precio actual (con descuento si aplica)
-              originalPrice: item.originalPrice || undefined, // Precio original (antes del descuento)
-              image: item.image,
+              price: item.price,
+              originalPrice: item.originalPrice || undefined,
+              image: cleanImageUrl(item.image),
               size: item.size,
               color: item.color,
               quantity: item.quantity,

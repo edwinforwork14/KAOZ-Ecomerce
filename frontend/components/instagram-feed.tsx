@@ -19,7 +19,7 @@ export default function InstagramFeed() {
           <Instagram className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="font-bold text-sm">@{brandConfig.social.instagram.toUpperCase()}</h3>
+          <h3 className="font-black text-sm lowercase tracking-tight">@kaos.vzla</h3>
           <p className="text-[10px] text-gray-500 uppercase tracking-widest">Síguenos en Instagram</p>
         </div>
       </div>

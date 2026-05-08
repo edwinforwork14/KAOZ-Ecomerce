@@ -2,6 +2,7 @@ const { prisma } = require("../config/database");
 const Settings = require("../services/settingsService");
 const fs = require("fs");
 const path = require("path");
+const { supabase } = require("../config/supabase");
 
 // ===== PRODUCTS =====
 exports.createProduct = async (req, res) => {
@@ -12,7 +13,7 @@ exports.createProduct = async (req, res) => {
     let imagesData = [];
     if (req.files && req.files.length > 0) {
       imagesData = req.files.map((file, index) => ({
-        url: `/uploads/products/${file.filename}`,
+        url: file.url, // Ya viene con la URL de Supabase desde processImage
         alt: productData.name,
         isMain: index === 0,
       }));
@@ -21,12 +22,11 @@ exports.createProduct = async (req, res) => {
     const product = await prisma.product.create({
       data: {
         name: productData.name,
-        slug: productData.slug || productData.name.toLowerCase().replace(/ /g, "-"),
         description: productData.description,
         price: productData.price,
         originalPrice: productData.originalPrice,
-        categoryId: productData.categoryId,
-        subcategoryId: productData.subcategoryId,
+        categoryId: productData.categoryId || null,
+        subcategoryId: productData.subcategoryId || null,
         isActive: productData.isActive ?? true,
         isNew: productData.isNew ?? false,
         markedAsNewAt: productData.isNew ? new Date() : null,
@@ -71,7 +71,10 @@ exports.updateProduct = async (req, res) => {
     const { id } = req.params;
     const productData = req.body.data ? JSON.parse(req.body.data) : req.body;
 
-    const existingProduct = await prisma.product.findUnique({ where: { id } });
+    const existingProduct = await prisma.product.findUnique({ 
+      where: { id },
+      include: { images: true }
+    });
     if (!existingProduct) {
       return res.status(404).json({ success: false, message: "Producto no encontrado" });
     }
@@ -85,19 +88,38 @@ exports.updateProduct = async (req, res) => {
     // Simplificado: Para variantes y tallas en Prisma, es mejor manejar actualizaciones específicas 
     // o borrar y recrear si el dataset es pequeño, o usar updateMany/upsert.
     // Por ahora, solo actualizamos campos básicos del producto.
+    // Procesar nuevas imágenes generales si se subieron
+    let newImagesData = [];
+    if (req.files && req.files.length > 0) {
+      newImagesData = req.files.map((file, index) => ({
+        url: file.url, // URL de Supabase
+        alt: productData.name,
+        // Si no había imágenes previas, la primera será main
+        isMain: existingProduct.images?.length === 0 && index === 0,
+      }));
+    }
+
+    const updateData = {
+      name: productData.name,
+      description: productData.description,
+      price: productData.price,
+      originalPrice: productData.originalPrice,
+      categoryId: productData.categoryId || null,
+      subcategoryId: productData.subcategoryId || null,
+      isActive: productData.isActive,
+      isNew: productData.isNew,
+      markedAsNewAt
+    };
+
+    if (newImagesData.length > 0) {
+      updateData.images = {
+        create: newImagesData
+      };
+    }
+
     const product = await prisma.product.update({
       where: { id },
-      data: {
-        name: productData.name,
-        description: productData.description,
-        price: productData.price,
-        originalPrice: productData.originalPrice,
-        categoryId: productData.categoryId,
-        subcategoryId: productData.subcategoryId,
-        isActive: productData.isActive,
-        isNew: productData.isNew,
-        markedAsNewAt
-      },
+      data: updateData,
       include: {
         images: true,
         variants: { include: { sizes: true } }
@@ -132,16 +154,24 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: "Producto no encontrado" });
     }
 
-    // Eliminar imágenes locales
+    // Eliminar imágenes de Supabase Storage
     const allImages = [
       ...product.images,
       ...product.variants.flatMap(v => v.images || [])
     ];
 
-    allImages.forEach((image) => {
-      const imagePath = path.join(__dirname, "../..", image.url);
-      if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
-    });
+    const filesToRemove = allImages
+      .map(image => {
+        // Extraer el nombre del archivo de la URL
+        // https://.../storage/v1/object/public/products/product-123.webp
+        const parts = image.url.split('/');
+        return parts[parts.length - 1];
+      })
+      .filter(filename => filename && filename.startsWith('product-'));
+
+    if (filesToRemove.length > 0) {
+      await supabase.storage.from("products").remove(filesToRemove);
+    }
 
     await prisma.product.delete({ where: { id } });
 
@@ -167,9 +197,14 @@ exports.deleteProductImage = async (req, res) => {
       return res.status(404).json({ success: false, message: "Imagen no encontrada" });
     }
 
-    // Eliminar archivo local
-    const imagePath = path.join(__dirname, "../..", image.url);
-    if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+    // Eliminar archivo de Supabase Storage
+    if (image.url) {
+      const parts = image.url.split('/');
+      const filename = parts[parts.length - 1];
+      if (filename && filename.startsWith('product-')) {
+        await supabase.storage.from("products").remove([filename]);
+      }
+    }
 
     await prisma.productImage.delete({ where: { id: imageId } });
 
@@ -196,7 +231,7 @@ exports.uploadVariantImages = async (req, res) => {
 
     if (req.files && req.files.length > 0) {
       const imagesData = req.files.map(file => ({
-        url: `/uploads/products/${file.filename}`,
+        url: file.url, // URL pública de Supabase
         alt: product.name,
         productId: product.id,
         variantId: variantId
@@ -478,7 +513,10 @@ exports.getCategories = async (req, res) => {
     const categories = await prisma.category.findMany({
       include: {
         _count: {
-          select: { products: true, subproducts: true }
+          select: {
+            products: true,
+            subProducts: true
+          }
         },
         parent: true
       },

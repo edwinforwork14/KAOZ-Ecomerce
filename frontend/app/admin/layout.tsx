@@ -21,8 +21,15 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="w-16 h-1 bg-gray-200 mb-4 mx-auto overflow-hidden">
+            <div className="w-full h-full bg-black animate-progress-fast"></div>
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black">
+            Iniciando Protocolos Administrativos
+          </p>
+        </div>
       </div>
     )
   }
@@ -32,9 +39,9 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-[#f4f4f5]">
       <AdminSidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto custom-scrollbar">
         {children}
       </div>
     </div>

@@ -220,11 +220,11 @@ export default function AdminSidebar() {
       <>
         {/* Mobile Header */}
         <header className="lg:hidden fixed top-0 left-0 right-0 z-50">
-          <div className="bg-gray-900 border-b border-gray-800">
+          <div className="bg-white border-b border-black/10">
             <div className="flex items-center justify-between px-4 py-3">
               {/* Logo */}
               <Link href="/" className="flex items-center gap-3">
-                <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-white/20">
+                <div className="relative w-10 h-10 overflow-hidden ring-1 ring-black/5">
                   <Image
                     src="/Kaoz.jpg"
                     alt={brandConfig.name}
@@ -234,21 +234,21 @@ export default function AdminSidebar() {
                   />
                 </div>
                 <div>
-                  <h1 className="text-base font-bold text-white leading-tight">{brandConfig.name}</h1>
-                  <p className="text-[10px] text-white/50 uppercase tracking-wider">Panel Admin</p>
+                  <h1 className="text-base font-black text-black leading-tight tracking-tighter">{brandConfig.name}</h1>
+                  <p className="text-[10px] text-black/50 uppercase tracking-[0.2em]">Panel Admin</p>
                 </div>
               </Link>
 
               {/* Menu Button */}
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all"
+                className="relative w-10 h-10 flex items-center justify-center bg-black/5 hover:bg-black/10 transition-all border border-black/5"
               >
                 <div className={`transition-all duration-300 ${isOpen ? 'rotate-180 scale-0' : 'rotate-0 scale-100'}`}>
-                  <Menu className="h-5 w-5 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                  <Menu className="h-5 w-5 text-black absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 </div>
                 <div className={`transition-all duration-300 ${isOpen ? 'rotate-0 scale-100' : '-rotate-180 scale-0'}`}>
-                  <X className="h-5 w-5 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                  <X className="h-5 w-5 text-black absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 </div>
               </button>
             </div>
@@ -258,43 +258,30 @@ export default function AdminSidebar() {
           <div 
             className={`
               fixed inset-x-0 top-[64px] bottom-0 z-40
-              bg-gray-900
+              bg-white
               transition-all duration-300 ease-out
               ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}
             `}
           >
             <div className="h-full flex flex-col">
               {/* User Info */}
-              <div className="px-4 py-5 border-b border-white/10">
+              <div className="px-4 py-5 border-b border-black/10">
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <div 
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg shadow-xl ring-2 ring-white/20"
-                      style={{ 
-                        background: `linear-gradient(135deg, ${brandConfig.colors.secondary} 0%, ${brandConfig.colors.primary} 100%)`
-                      }}
+                      className="w-14 h-14 bg-black/5 border border-black/10 flex items-center justify-center font-bold text-lg"
                     >
-                      <span className="text-white">
+                      <span className="text-black">
                         {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
                       </span>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-base font-semibold text-white truncate">
+                    <p className="text-base font-black text-black uppercase tracking-tight truncate">
                       {user?.firstName} {user?.lastName}
                     </p>
-                    <p className="text-sm text-white/50 truncate">{user?.email}</p>
+                    <p className="text-sm text-black/50 truncate">{user?.email}</p>
                   </div>
-                  <span 
-                    className="px-3 py-1.5 text-xs rounded-full font-semibold uppercase tracking-wide"
-                    style={{ 
-                      background: `linear-gradient(135deg, ${brandConfig.colors.secondary} 0%, ${brandConfig.colors.primary} 100%)`,
-                      color: 'white'
-                    }}
-                  >
-                    Admin
-                  </span>
                 </div>
               </div>
 
@@ -310,27 +297,15 @@ export default function AdminSidebar() {
                         key={item.href}
                         href={item.href}
                         className={`
-                          flex items-center gap-4 px-4 py-3.5 rounded-2xl
-                          transition-all duration-200
+                          flex items-center gap-4 px-4 py-3 border transition-all duration-200
                           ${isActive
-                            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
-                            : 'text-white/70 hover:bg-white/10 hover:text-white active:bg-white/20'
+                            ? 'bg-kaosNeon text-black border-kaosNeon font-black'
+                            : 'text-black/70 border-transparent hover:border-black/10 hover:text-black font-bold'
                           }
                         `}
-                        style={{
-                          animationDelay: `${index * 50}ms`
-                        }}
                       >
-                        <div className={`
-                          w-10 h-10 rounded-xl flex items-center justify-center
-                          ${isActive ? 'bg-white/20' : 'bg-white/10'}
-                        `}>
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <span className="flex-1 font-medium text-[15px]">{item.title}</span>
-                        {isActive && (
-                          <div className="w-2 h-2 rounded-full bg-white shadow-lg" />
-                        )}
+                        <Icon className="h-5 w-5" />
+                        <span className="flex-1 text-xs uppercase tracking-widest">{item.title}</span>
                       </Link>
                     )
                   })}
@@ -338,25 +313,21 @@ export default function AdminSidebar() {
               </nav>
 
               {/* Footer Actions */}
-              <div className="px-3 py-4 border-t border-white/10 space-y-2">
+              <div className="px-3 py-4 border-t border-black/10 space-y-2">
                 <Link 
                   href="/"
-                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition-all active:scale-[0.98]"
+                  className="flex items-center gap-4 px-4 py-3 bg-black/5 hover:bg-black/10 text-black transition-all border border-black/5 font-bold"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                    <Home className="h-5 w-5" />
-                  </div>
-                  <span className="font-medium">Ver Tienda</span>
+                  <Home className="h-5 w-5" />
+                  <span className="text-xs uppercase tracking-widest">Ver Tienda</span>
                 </Link>
 
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all active:scale-[0.98]"
+                  className="w-full flex items-center gap-4 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 transition-all border border-red-500/10 font-bold"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
-                    <LogOut className="h-5 w-5" />
-                  </div>
-                  <span className="font-medium">Cerrar Sesión</span>
+                  <LogOut className="h-5 w-5" />
+                  <span className="text-xs uppercase tracking-widest">Cerrar Sesión</span>
                 </button>
               </div>
             </div>
@@ -375,27 +346,24 @@ export default function AdminSidebar() {
       className={`
         hidden lg:flex
         sticky top-0 h-screen
-        bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950
-        text-white border-r border-white/5
+        bg-white text-black border-r border-black/5
         transition-all duration-300 ease-out
-        ${isCollapsed ? 'w-[88px]' : 'w-72'}
+        ${isCollapsed ? 'w-[80px]' : 'w-64'}
         flex-col flex-shrink-0
         overflow-hidden
       `}
     >
       {/* Header with Logo */}
       <div className={`
-        relative p-5 border-b border-white/5 flex-shrink-0
+        relative p-5 border-b border-black/5 flex-shrink-0
         ${isCollapsed ? 'px-4' : ''}
       `}>
-        <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-50" />
-        
         <div className="relative flex items-center justify-between">
           <Link 
             href="/" 
             className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}
           >
-            <div className="relative w-11 h-11 flex-shrink-0 rounded-xl overflow-hidden ring-2 ring-white/10 transition-transform hover:scale-105 duration-300">
+            <div className="relative w-10 h-10 flex-shrink-0 border border-black/5 transition-transform hover:scale-105 duration-300">
               <Image
                 src="/Kaoz.jpg"
                 alt={brandConfig.name}
@@ -406,72 +374,65 @@ export default function AdminSidebar() {
             </div>
             {!isCollapsed && (
               <div className="animate-in slide-in-from-left-2 duration-300 overflow-hidden">
-                <h1 className="text-lg font-bold whitespace-nowrap bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+                <h1 className="text-xl font-black whitespace-nowrap tracking-tighter">
                   {brandConfig.name}
                 </h1>
-                <p className="text-[10px] text-white/40 uppercase tracking-widest whitespace-nowrap">
-                  Panel de Control
+                <p className="text-[10px] text-black/30 uppercase tracking-[0.2em] whitespace-nowrap font-bold">
+                  Admin Panel
                 </p>
               </div>
             )}
           </Link>
 
-          <button
-            onClick={toggleCollapse}
-            className={`
-              flex items-center justify-center w-8 h-8 rounded-lg 
-              bg-white/5 hover:bg-white/10 
-              transition-all duration-300 hover:scale-110 flex-shrink-0
-              ${isCollapsed ? 'absolute -right-4 top-1/2 -translate-y-1/2 bg-gray-800 shadow-xl border border-white/10' : ''}
-            `}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* User info */}
-      <div className={`p-4 border-b border-white/5 flex-shrink-0 ${isCollapsed ? 'px-3' : ''}`}>
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-          <div className="relative group">
-            <div 
-              className="w-11 h-11 rounded-xl flex items-center justify-center font-semibold shadow-lg transition-all duration-300 group-hover:scale-105 flex-shrink-0 ring-2 ring-white/10"
-              style={{ 
-                background: `linear-gradient(135deg, ${brandConfig.colors.secondary} 0%, ${brandConfig.colors.primary} 100%)`
-              }}
-            >
-              <span className="text-sm text-white">
-                {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-              </span>
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900" />
-          </div>
           {!isCollapsed && (
-            <div className="flex-1 min-w-0 animate-in slide-in-from-left-2 duration-300 overflow-hidden">
-              <p className="text-sm font-semibold truncate text-white/90">
-                {user?.firstName} {user?.lastName}
-              </p>
-              <p className="text-xs text-white/40 truncate">{user?.email}</p>
-            </div>
+            <button
+              onClick={toggleCollapse}
+              className="flex items-center justify-center w-8 h-8 bg-black/5 hover:bg-black/10 transition-all border border-black/5"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
           )}
         </div>
       </div>
+
+      {isCollapsed && (
+        <button
+          onClick={toggleCollapse}
+          className="mx-auto my-4 flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 transition-all border border-black/5"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      )}
+
+      {/* User info */}
+      {!isCollapsed && (
+        <div className="p-4 border-b border-black/5 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-xs"
+            >
+              <span>
+                {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0 animate-in slide-in-from-left-2 duration-300 overflow-hidden">
+              <p className="text-xs font-black uppercase tracking-tight truncate text-black">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <p className="text-[10px] text-black/30 truncate uppercase tracking-widest font-bold">{user?.email}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-6 overflow-y-auto overflow-x-hidden custom-scrollbar">
         {menuGroups.map((group) => (
           <div key={group.title}>
             {!isCollapsed && (
-              <h3 className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+              <h3 className="px-3 mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-black/20">
                 {group.title}
               </h3>
-            )}
-            {isCollapsed && (
-              <div className="w-8 h-px bg-white/10 mx-auto mb-3" />
             )}
             
             <div className="space-y-1">
@@ -488,26 +449,20 @@ export default function AdminSidebar() {
                       <button
                         onClick={() => !isCollapsed && toggleSubmenu(item.title)}
                         className={`
-                          w-full flex items-center px-3 py-2.5 rounded-xl
-                          transition-all duration-200
-                          ${isCollapsed ? 'justify-center' : 'gap-3'}
+                          w-full flex items-center py-2.5 transition-all duration-200
+                          ${isCollapsed ? 'justify-center' : 'px-3 gap-3'}
                           ${isChildActive
-                            ? 'bg-white/10 text-white'
-                            : 'text-white/60 hover:bg-white/5 hover:text-white/80'
+                            ? 'text-black font-black'
+                            : 'text-black/40 hover:text-black font-bold'
                           }
                         `}
                       >
-                        <div className={`
-                          w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0
-                          ${isChildActive ? 'bg-white/10' : 'bg-transparent'}
-                        `}>
-                          <Icon className="h-[18px] w-[18px]" />
-                        </div>
+                        <Icon className="h-4 w-4" />
                         {!isCollapsed && (
                           <>
-                            <span className="flex-1 text-left text-sm font-medium">{item.title}</span>
+                            <span className="flex-1 text-left text-[10px] font-black uppercase tracking-[0.1em]">{item.title}</span>
                             <ChevronDown className={`
-                              h-4 w-4 transition-transform duration-200
+                              h-3 w-3 transition-transform duration-200
                               ${isExpanded ? 'rotate-180' : ''}
                             `} />
                           </>
@@ -519,7 +474,7 @@ export default function AdminSidebar() {
                           overflow-hidden transition-all duration-300 ease-out
                           ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
                         `}>
-                          <div className="ml-6 mt-1 space-y-1 border-l border-white/10 pl-3">
+                          <div className="ml-3 mt-1 space-y-1 border-l border-black/5 pl-3">
                             {item.children?.map((child) => {
                               const ChildIcon = child.icon
                               const isChildItemActive = isActiveRoute(child.href)
@@ -529,39 +484,18 @@ export default function AdminSidebar() {
                                   key={child.href}
                                   href={child.href!}
                                   className={`
-                                    flex items-center gap-3 px-3 py-2 rounded-lg
-                                    transition-all duration-200
+                                    flex items-center gap-3 py-2 px-3 transition-all duration-200 border
                                     ${isChildItemActive
-                                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
-                                      : 'text-white/50 hover:bg-white/5 hover:text-white/80'
+                                      ? 'bg-kaosNeon text-black border-kaosNeon font-black'
+                                      : 'text-black/30 border-transparent hover:text-black hover:border-black/10 font-bold'
                                     }
                                   `}
                                 >
-                                  <ChildIcon className="h-4 w-4" />
-                                  <span className="text-sm">{child.title}</span>
+                                  <ChildIcon className="h-3 w-3" />
+                                  <span className="text-[9px] font-black uppercase tracking-[0.1em]">{child.title}</span>
                                 </Link>
                               )
                             })}
-                          </div>
-                        </div>
-                      )}
-
-                      {isCollapsed && (
-                        <div className="absolute left-full ml-2 top-0 hidden group-hover:block z-50">
-                          <div className="bg-gray-800 rounded-xl shadow-2xl border border-white/10 py-2 min-w-[160px]">
-                            <div className="px-3 py-1.5 text-xs font-semibold text-white/50 uppercase tracking-wider">
-                              {item.title}
-                            </div>
-                            {item.children?.map((child) => (
-                              <Link
-                                key={child.href}
-                                href={child.href!}
-                                className="flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white"
-                              >
-                                <child.icon className="h-4 w-4" />
-                                {child.title}
-                              </Link>
-                            ))}
                           </div>
                         </div>
                       )}
@@ -574,27 +508,20 @@ export default function AdminSidebar() {
                     <Link
                       href={item.href!}
                       className={`
-                        flex items-center px-3 py-2.5 rounded-xl
-                        transition-all duration-200
-                        ${isCollapsed ? 'justify-center' : 'gap-3'}
+                        flex items-center py-2.5 transition-all duration-200 border
+                        ${isCollapsed ? 'justify-center border-transparent' : 'px-3 gap-3'}
                         ${isActive
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
-                          : 'text-white/60 hover:bg-white/5 hover:text-white/80'
+                          ? 'bg-kaosNeon text-black border-kaosNeon font-black'
+                          : 'text-black/40 border-transparent hover:text-black hover:border-black/10 font-bold'
                         }
                       `}
                     >
-                      <div className={`
-                        w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0
-                        transition-all duration-200
-                        ${isActive ? 'bg-white/20' : 'bg-transparent group-hover:bg-white/5'}
-                      `}>
-                        <Icon className="h-[18px] w-[18px]" />
-                      </div>
+                      <Icon className="h-4 w-4" />
                       {!isCollapsed && (
                         <>
-                          <span className="flex-1 text-sm font-medium whitespace-nowrap">{item.title}</span>
+                          <span className="flex-1 text-[10px] font-black uppercase tracking-[0.1em] whitespace-nowrap">{item.title}</span>
                           {item.badge && (
-                            <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${item.badgeColor} text-white`}>
+                            <span className={`px-1.5 py-0.5 text-[8px] font-black rounded-none ${item.badgeColor} text-white`}>
                               {item.badge}
                             </span>
                           )}
@@ -602,24 +529,23 @@ export default function AdminSidebar() {
                       )}
                     </Link>
 
+                    {isCollapsed && (isActive ? (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-kaosNeon" />
+                    ) : null)}
+
                     {isCollapsed && (
                       <div
                         className={`
                           absolute left-full ml-3 top-1/2 -translate-y-1/2
-                          px-3 py-2 bg-gray-800 text-white text-sm font-medium rounded-lg
+                          px-3 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest
                           opacity-0 group-hover:opacity-100 pointer-events-none
-                          transition-all duration-200 whitespace-nowrap shadow-xl
+                          transition-all duration-200 whitespace-nowrap shadow-2xl
                           border border-white/10 z-50
                           translate-x-2 group-hover:translate-x-0
                         `}
                       >
                         {item.title}
-                        {item.badge && (
-                          <span className={`ml-2 px-1.5 py-0.5 text-[10px] font-semibold rounded ${item.badgeColor}`}>
-                            {item.badge}
-                          </span>
-                        )}
-                        <div className="absolute right-full top-1/2 -translate-y-1/2 border-[6px] border-transparent border-r-gray-800" />
+                        <div className="absolute right-full top-1/2 -translate-y-1/2 border-[6px] border-transparent border-r-black" />
                       </div>
                     )}
                   </div>
@@ -631,79 +557,52 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Footer Actions */}
-      <div className={`p-3 border-t border-white/5 space-y-2 flex-shrink-0 ${isCollapsed ? 'px-2' : ''}`}>
-        <div className="relative group">
-          <Link 
-            href="/" 
-            className={`
-              flex items-center px-3 py-2.5 rounded-xl
-              bg-gradient-to-r from-white/5 to-white/10 hover:from-white/10 hover:to-white/15
-              transition-all duration-300
-              ${isCollapsed ? 'justify-center' : 'gap-3'}
-            `}
-          >
-            <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
-              <Home className="h-[18px] w-[18px]" />
-            </div>
-            {!isCollapsed && <span className="text-sm font-medium text-white/80">Ver Tienda</span>}
-          </Link>
+      <div className={`p-3 border-t border-black/5 space-y-2 flex-shrink-0 ${isCollapsed ? 'px-2' : ''}`}>
+        <Link 
+          href="/" 
+          className={`
+            flex items-center py-2.5 bg-black/5 hover:bg-black/10 transition-all border border-black/5
+            ${isCollapsed ? 'justify-center' : 'px-3 gap-3'}
+          `}
+        >
+          <Home className="h-4 w-4" />
+          {!isCollapsed && <span className="text-[10px] font-black uppercase tracking-widest text-black/80">Ver Tienda</span>}
+        </Link>
 
-          {isCollapsed && (
-            <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-gray-800 text-white text-sm font-medium rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap shadow-xl border border-white/10 z-50 translate-x-2 group-hover:translate-x-0">
-              Ver Tienda
-              <div className="absolute right-full top-1/2 -translate-y-1/2 border-[6px] border-transparent border-r-gray-800" />
-            </div>
-          )}
-        </div>
-
-        <div className="relative group">
-          <button
-            onClick={handleLogout}
-            className={`
-              w-full flex items-center px-3 py-2.5 rounded-xl
-              bg-red-500/10 hover:bg-red-500/20 
-              text-red-400 hover:text-red-300
-              transition-all duration-300
-              ${isCollapsed ? 'justify-center' : 'gap-3'}
-            `}
-          >
-            <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center">
-              <LogOut className="h-[18px] w-[18px]" />
-            </div>
-            {!isCollapsed && <span className="text-sm font-medium">Cerrar Sesión</span>}
-          </button>
-
-          {isCollapsed && (
-            <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-2 bg-gray-800 text-white text-sm font-medium rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap shadow-xl border border-white/10 z-50 translate-x-2 group-hover:translate-x-0">
-              Cerrar Sesión
-              <div className="absolute right-full top-1/2 -translate-y-1/2 border-[6px] border-transparent border-r-gray-800" />
-            </div>
-          )}
-        </div>
+        <button
+          onClick={handleLogout}
+          className={`
+            w-full flex items-center py-2.5 bg-red-500/5 hover:bg-red-500/10 
+            text-red-600 hover:text-red-700 transition-all border border-red-500/10
+            ${isCollapsed ? 'justify-center' : 'px-3 gap-3'}
+          `}
+        >
+          <LogOut className="h-4 w-4" />
+          {!isCollapsed && <span className="text-[10px] font-black uppercase tracking-widest font-bold">Cerrar Sesión</span>}
+        </button>
       </div>
 
       {!isCollapsed && (
-        <div className="p-4 border-t border-white/5 flex-shrink-0">
-          <div className="flex items-center justify-between text-[11px] text-white/30">
+        <div className="p-4 border-t border-black/5 flex-shrink-0">
+          <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-black/20">
             <span>© 2025 {brandConfig.name}</span>
-            <span className="px-2 py-0.5 bg-white/5 rounded-md">v2.0.0</span>
+            <span className="px-1.5 py-0.5 bg-black/5 border border-black/5">v2.1.0</span>
           </div>
         </div>
       )}
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
+          width: 2px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 4px;
+          background: rgba(0, 0, 0, 0.05);
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
+          background: rgba(0, 0, 0, 0.1);
         }
       `}</style>
     </aside>

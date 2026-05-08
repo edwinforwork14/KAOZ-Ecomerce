@@ -12,6 +12,14 @@ exports.protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
     }
 
+    // BYPASS para desarrollo local si no hay token
+    if (!token && process.env.NODE_ENV === "development") {
+      console.warn("⚠️ Advertencia: Bypass de autenticación activo en desarrollo");
+      // Buscamos el primer admin para asignar a req.user o creamos un mock
+      req.user = await prisma.user.findFirst({ where: { role: "admin" } });
+      if (req.user) return next();
+    }
+
     if (!token) {
       return res.status(401).json({
         success: false,

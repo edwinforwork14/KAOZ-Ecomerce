@@ -110,10 +110,10 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
       </div>
 
       {/* Main Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
-        <nav className="max-w-[1440px] mx-auto px-4 md:px-10 h-24 flex justify-between items-center">
+      <header className="sticky top-0 z-50 glass border-b border-white/20">
+        <nav className="max-w-[1440px] mx-auto px-4 md:px-10 h-20 flex justify-between items-center transition-all duration-300">
           {/* Left Nav */}
-          <div className="hidden lg:flex gap-8 text-[13px] font-black uppercase tracking-[0.1em] w-1/3">
+          <div className="hidden lg:flex gap-8 text-[11px] font-bold uppercase tracking-[0.15em] w-1/3 font-sans">
             {[
               { name: "Tienda", key: "shop" },
               { name: "Hombre", key: "men" },
@@ -124,11 +124,14 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
               <button
                 key={item.key}
                 onClick={() => handleNavClick(item.key)}
-                className={`hover:text-gray-600 transition-colors ${
-                  activeTab === item.key ? "text-kaosNeon" : "text-kaosBlack"
+                className={`relative py-1 group transition-colors ${
+                  activeTab === item.key ? "text-kaosNeon" : "text-kaosBlack hover:text-gray-500"
                 }`}
               >
                 {item.name}
+                <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-kaosNeon transform transition-transform duration-300 origin-left ${
+                  activeTab === item.key ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                }`}></span>
               </button>
             ))}
           </div>
@@ -137,52 +140,26 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
           <div className="w-1/3 flex justify-center cursor-pointer" onClick={() => handleNavClick("home")}>
             <img 
               alt="KAOS Logo" 
-              className="h-14 object-contain" 
+              className="h-12 object-contain logo-shadow" 
               src="/kaozlogo1.jpeg" 
             />
           </div>
 
           {/* Right Nav */}
-          <div className="flex items-center justify-end gap-6 w-1/3">
-            <div className="hidden lg:flex gap-8 text-[13px] font-black uppercase tracking-[0.1em] mr-4">
-              <button onClick={() => handleNavClick("empresas")} className="hover:text-gray-600">Empresas</button>
-              <button onClick={() => handleNavClick("sale")} className="hover:text-gray-600">Nuevos</button>
+          <div className="flex items-center justify-end gap-6 w-1/3 font-sans">
+            <div className="hidden lg:flex gap-8 text-[11px] font-bold uppercase tracking-[0.15em] mr-4">
+              <button onClick={() => handleNavClick("empresas")} className="relative py-1 group hover:text-gray-500 transition-colors">
+                Empresas
+                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-kaosNeon transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+              </button>
+              <button onClick={() => handleNavClick("sale")} className="relative py-1 group hover:text-gray-500 transition-colors">
+                Nuevos
+                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-kaosNeon transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+              </button>
             </div>
             <div className="flex gap-6">
               <button><Search className="w-6 h-6" /></button>
               
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="text-kaosNeon hover:scale-110 transition-transform">
-                      <User className="w-6 h-6" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 mt-4 p-2 bg-white rounded-2xl shadow-2xl border-none ring-1 ring-black/5 z-[100]">
-                    {isAdmin && (
-                      <DropdownMenuItem 
-                        onClick={() => router.push('/admin/dashboard')}
-                        className="flex items-center gap-2 p-3 rounded-xl cursor-pointer hover:bg-gray-50 focus:bg-gray-50 transition-colors"
-                      >
-                        <LayoutDashboard className="w-4 h-4 text-black" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Ir al Panel</span>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem 
-                      onClick={logout}
-                      className="flex items-center gap-2 p-3 rounded-xl cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-500 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Cerrar Sesión</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <button onClick={() => setIsAuthModalOpen(true)}>
-                  <User className="w-6 h-6" />
-                </button>
-              )}
-
               <button className="relative" onClick={() => setIsOpen(true)}>
                 <ShoppingBag className="w-6 h-6" />
                 {itemCount > 0 && (
