@@ -67,9 +67,9 @@ export default function CategorySection({ onCategoryClick }: CategorySectionProp
         </button>
       </div>
       <div className={`grid gap-4 md:gap-6 ${
-        categories.length === 1 ? 'grid-cols-1' :
-        categories.length === 2 ? 'grid-cols-1 md:grid-cols-2' :
-        categories.length === 3 ? 'grid-cols-1 md:grid-cols-3' :
+        categories.length === 1 ? 'max-w-4xl mx-auto grid-cols-1' :
+        categories.length === 2 ? 'max-w-6xl mx-auto grid-cols-1 md:grid-cols-2' :
+        categories.length === 3 ? 'grid-cols-1 md:grid-cols-2 md:grid-rows-2 md:h-[700px]' :
         categories.length === 4 ? 'grid-cols-2 md:grid-cols-4' :
         'grid-cols-2 md:grid-cols-5'
       }`}>
@@ -82,7 +82,11 @@ export default function CategorySection({ onCategoryClick }: CategorySectionProp
             transition={{ duration: 0.5, delay: index * 0.1 }}
             onClick={() => onCategoryClick?.(category.slug)}
             className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500 ${
-              categories.length === 1 ? 'aspect-[21/9] md:aspect-[25/9]' : 'aspect-card'
+              categories.length === 1 ? 'aspect-[16/9] md:aspect-[21/9]' : 
+              categories.length === 2 ? 'aspect-square md:aspect-[4/5]' :
+              categories.length === 3 && index === 0 ? 'md:row-span-2 h-full' :
+              categories.length === 3 ? 'h-full min-h-[300px]' :
+              'aspect-card'
             }`}
           >
             <img 
@@ -96,7 +100,11 @@ export default function CategorySection({ onCategoryClick }: CategorySectionProp
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ delay: (index * 0.1) + 0.3 }}
               >
-                <h3 className={`${categories.length === 1 ? 'text-3xl md:text-5xl' : 'text-xl md:text-2xl'} font-black uppercase leading-none tracking-tighter mb-2`}>
+                <h3 className={`${
+                  categories.length === 1 ? 'text-4xl md:text-6xl' : 
+                  (categories.length === 3 && index === 0) ? 'text-3xl md:text-5xl' :
+                  'text-xl md:text-2xl'
+                } font-black uppercase leading-none tracking-tighter mb-2`}>
                   {category.name}
                 </h3>
                 <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">
