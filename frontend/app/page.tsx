@@ -3,7 +3,11 @@
 import { useState, useRef } from "react"
 import Header from "@/components/header"
 import Hero from "@/components/hero"
+import CategorySection from "@/components/category-section"
 import FeaturedProducts from "@/components/featured-products"
+import BenefitsBar from "@/components/benefits-bar"
+import LifestyleSection from "@/components/lifestyle-section"
+import NewsletterSection from "@/components/newsletter-section"
 import InstagramFeed from "@/components/instagram-feed"
 import Footer from "@/components/footer"
 import Cart from "@/components/cart"
@@ -96,7 +100,11 @@ export default function Home() {
       return (
         <div className="animate-in fade-in duration-700">
           <Hero onExploreClick={() => handleTabChange("shop")} />
+          <CategorySection onCategoryClick={handleTabChange} />
+          <BenefitsBar />
+          <LifestyleSection />
           <InstagramFeed />
+          <NewsletterSection />
         </div>
       )
     }

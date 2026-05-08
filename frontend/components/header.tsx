@@ -145,6 +145,7 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
           {/* Right Nav */}
           <div className="flex items-center justify-end gap-6 w-1/3">
             <div className="hidden lg:flex gap-8 text-[13px] font-black uppercase tracking-[0.1em] mr-4">
+              <button onClick={() => handleNavClick("empresas")} className="hover:text-gray-600">Empresas</button>
               <button onClick={() => handleNavClick("sale")} className="hover:text-gray-600">Nuevos</button>
             </div>
             <div className="flex gap-6">

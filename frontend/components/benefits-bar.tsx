@@ -1,54 +1,56 @@
-import { Sun, Wind, Droplets, Leaf, Truck, ShieldCheck, Zap, Globe } from "lucide-react"
+import { Sun, Wind, Droplets, Leaf } from "lucide-react"
 
 export default function BenefitsBar() {
   const benefits = [
     { 
-      icon: Truck, 
-      title: "ENVÍOS NACIONALES", 
-      desc: "Llegamos a cada rincón de Venezuela en 48h.",
-      bg: "bg-black",
-      textColor: "text-white",
-      iconColor: "text-kaosNeon"
-    },
-    { 
-      icon: ShieldCheck, 
-      title: "CALIDAD PRO", 
-      desc: "Testeado por atletas de alto rendimiento.",
-      bg: "bg-gray-100",
+      icon: Sun, 
+      title: "PROTECCIÓN UV", 
+      desc: "Cuida tu piel en cada aventura.",
+      bg: "bg-white",
       textColor: "text-black",
       iconColor: "text-black"
     },
     { 
-      icon: Zap, 
-      title: "PAGO RÁPIDO", 
-      desc: "Múltiples métodos de pago integrados.",
-      bg: "bg-kaosNeon",
+      icon: Wind, 
+      title: "TECNOLOGÍA DRY-FIT", 
+      desc: "Te mantiene seco, siempre.",
+      bg: "bg-white",
       textColor: "text-black",
       iconColor: "text-black"
     },
     { 
-      icon: Globe, 
-      title: "CULTURA URBANA", 
-      desc: "Inspirado en el asfalto y el sol caribeño.",
-      bg: "bg-gray-50",
+      icon: Droplets, 
+      title: "IMPERMEABLES", 
+      desc: "Bolsos waterproof que flotan.",
+      bg: "bg-white",
       textColor: "text-black",
-      iconColor: "text-gray-400"
+      iconColor: "text-black"
+    },
+    { 
+      icon: Leaf, 
+      title: "DISEÑADO EN VENEZUELA", 
+      desc: "Hecho para nuestro clima y nuestra gente.",
+      bg: "bg-white",
+      textColor: "text-black",
+      iconColor: "text-black"
     },
   ]
 
   return (
-    <section className="py-20 bg-white" data-purpose="benefits-summary">
-      <div className="max-w-full mx-auto px-4 md:px-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section className="py-16 bg-white border-y border-gray-100" data-purpose="benefits-summary">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           {benefits.map((benefit, idx) => (
             <div 
               key={idx} 
-              className={`${benefit.bg} ${benefit.textColor} p-8 rounded-[32px] min-h-[220px] flex flex-col justify-between group cursor-pointer hover:scale-[1.02] transition-all duration-300 shadow-sm hover:shadow-xl`}
+              className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 group"
             >
-              <benefit.icon className={`w-10 h-10 ${benefit.iconColor}`} strokeWidth={1.5} />
+              <div className="flex-shrink-0">
+                <benefit.icon className="w-10 h-10 text-black stroke-[1.5px]" />
+              </div>
               <div>
-                <h4 className="text-xl font-black uppercase mb-1 tracking-tighter">{benefit.title}</h4>
-                <p className="text-sm opacity-70 font-medium leading-tight">{benefit.desc}</p>
+                <h4 className="text-sm font-black uppercase tracking-wider mb-1">{benefit.title}</h4>
+                <p className="text-xs text-gray-500 font-medium leading-tight max-w-[180px]">{benefit.desc}</p>
               </div>
             </div>
           ))}

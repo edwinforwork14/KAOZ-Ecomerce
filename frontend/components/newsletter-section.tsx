@@ -16,7 +16,7 @@ export default function NewsletterSection() {
         
         {/* Form Side */}
         <div className="md:w-1/2 p-12 md:p-20 flex flex-col justify-center">
-          <h2 className="text-5xl font-black uppercase mb-6">Únete al kaos</h2>
+          <h2 className="text-5xl font-black uppercase mb-6 tracking-tighter">ÚNETE AL KAOS</h2>
           <p className="text-sm text-gray-600 mb-10 max-w-sm">
             Recibe lanzamientos exclusivos, beneficios y contenido que te inspira a vivir sin límites.
           </p>
@@ -26,12 +26,12 @@ export default function NewsletterSection() {
               placeholder="Tu email" 
               type="email" 
             />
-            <button 
-              className="bg-kaosNeon text-black font-bold uppercase tracking-widest px-8 py-4 whitespace-nowrap hover:bg-black hover:text-white transition-colors rounded-md text-xs" 
-              type="submit"
-            >
-              Quiero estar en el kaos
-            </button>
+              <button 
+                className="bg-kaosNeon text-black font-bold uppercase tracking-widest px-8 py-4 whitespace-nowrap hover:bg-black hover:text-white transition-colors rounded-md text-xs" 
+                type="submit"
+              >
+                QUIERO ESTAR EN EL KAOS
+              </button>
           </form>
           <div className="flex items-center gap-2 text-[10px] text-gray-400">
             <Lock className="w-3 h-3" />
