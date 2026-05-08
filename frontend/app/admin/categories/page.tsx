@@ -30,6 +30,7 @@ interface Category {
   level: number
   order: number
   isActive: boolean
+  isFeatured: boolean
   productCount?: number
   fullPath?: string
   subcategories?: Category[]
@@ -239,6 +240,9 @@ export default function AdminCategoriesPage() {
                 {!category.isActive && (
                   <span className="text-[9px] font-black uppercase tracking-widest border border-red-500 text-red-500 px-1">INACTIVA</span>
                 )}
+                {category.isFeatured && (
+                  <span className="text-[9px] font-black uppercase tracking-widest border border-kaosNeon bg-kaosNeon text-black px-1">DESTACADA</span>
+                )}
               </div>
               {category.productCount !== undefined && category.productCount > 0 && (
                 <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
@@ -331,6 +335,7 @@ export default function AdminCategoriesPage() {
               description: "",
               parent: undefined,
               isActive: true,
+              isFeatured: false,
               order: categories.length
             })
             setShowForm(true)
@@ -401,6 +406,9 @@ export default function AdminCategoriesPage() {
                     <span className="text-xl font-black uppercase tracking-tighter">{category.name}</span>
                     {!category.isActive && (
                       <span className="text-[9px] font-black uppercase tracking-widest border border-red-500 text-red-500 px-1">INACTIVA</span>
+                    )}
+                    {category.isFeatured && (
+                      <span className="text-[9px] font-black uppercase tracking-widest border border-kaosNeon bg-kaosNeon text-black px-1">DESTACADA</span>
                     )}
                   </div>
                   {category.fullPath && category.fullPath !== category.name && (
@@ -560,16 +568,29 @@ export default function AdminCategoriesPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-4 border border-black bg-gray-50">
-                <Switch
-                  checked={editingCategory.isActive !== false}
-                  onCheckedChange={(checked) => setEditingCategory({
-                    ...editingCategory,
-                    isActive: checked
-                  })}
-                  className="data-[state=checked]:bg-black"
-                />
-                <label className="text-[10px] font-black uppercase tracking-widest">ESTADO OPERATIVO (ACTIVO)</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 p-4 border border-black bg-gray-50">
+                  <Switch
+                    checked={editingCategory.isActive !== false}
+                    onCheckedChange={(checked) => setEditingCategory({
+                      ...editingCategory,
+                      isActive: checked
+                    })}
+                    className="data-[state=checked]:bg-black"
+                  />
+                  <label className="text-[10px] font-black uppercase tracking-widest">ACTIVO</label>
+                </div>
+                <div className="flex items-center gap-3 p-4 border border-black bg-kaosNeon/10">
+                  <Switch
+                    checked={editingCategory.isFeatured === true}
+                    onCheckedChange={(checked) => setEditingCategory({
+                      ...editingCategory,
+                      isFeatured: checked
+                    })}
+                    className="data-[state=checked]:bg-kaosNeon"
+                  />
+                  <label className="text-[10px] font-black uppercase tracking-widest">DESTACADA EN HOME</label>
+                </div>
               </div>
 
               <div className="flex gap-4 pt-4">

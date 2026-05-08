@@ -568,6 +568,7 @@ exports.createCategory = async (req, res) => {
         parentId: parent || null,
         image,
         isActive: isActive ?? true,
+        isFeatured: req.body.isFeatured ?? false,
         order: order ?? 0,
       }
     });
@@ -591,6 +592,7 @@ exports.updateCategory = async (req, res) => {
         parentId: data.parent || null,
         image: data.image,
         isActive: data.isActive,
+        isFeatured: data.isFeatured,
         order: data.order
       }
     });

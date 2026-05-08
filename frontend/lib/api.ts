@@ -2,26 +2,102 @@ import { createClient } from "@/utils/supabase/client"
 
 const supabase = createClient()
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5010"
-const API_BASE_URL = `${BACKEND_URL}/api`
-
 // Helper para limpiar URLs de imágenes
 export const cleanImageUrl = (url: string) => {
   if (!url) return "/placeholder.svg"
   if (url.startsWith('http')) return url
-  if (url.startsWith('/')) return `${BACKEND_URL}${url}`
-  return `${BACKEND_URL}/uploads/${url}`
+  const base = BACKEND_URL.replace(/\/$/, ''); // Eliminar slash final
+  if (url.startsWith('/')) return `${base}${url}`
+  return `${base}/uploads/${url}`
 }
+
+// Sanitizar BACKEND_URL para evitar dobles slashes
+const getSanitizedBackendUrl = () => {
+  const url = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5010";
+  return url.replace(/\/$/, ''); // Remueve el slash al final si existe
+}
+
+const BACKEND_URL = getSanitizedBackendUrl();
+const API_BASE_URL = `${BACKEND_URL}/api`;
+
+console.log("🚀 KAOZ API initialized with BACKEND_URL:", BACKEND_URL);
 
 // === CATEGORIES ===
 export async function getCategories() {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/categories`)
+    const url = `${API_BASE_URL}/admin/categories`;
+    console.log(`📡 GET Categories from: ${url}`);
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`❌ HTTP Error ${response.status} fetching categories`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error("❌ Error fetching categories:", error);
+    return { success: false, error };
+  }
+}
+
+export async function getAdminCategories(tree = false) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/categories?tree=${tree}`)
     const data = await response.json()
+    
+    // Mapear _id para consistencia en el frontend
+    if (data.success && data.categories) {
+      const mapCat = (cat: any) => ({
+        ...cat,
+        _id: cat.id,
+        subcategories: cat.subcategories?.map(mapCat)
+      })
+      data.categories = data.categories.map(mapCat)
+    }
+    
     return data
   } catch (error: any) {
-    console.error("Error fetching categories:", error)
+    console.error("Error fetching admin categories:", error)
     return { success: false, error }
+  }
+}
+
+export async function createCategory(categoryData: any) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/categories`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(categoryData)
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error creating category:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+export async function updateCategory(id: string, categoryData: any) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(categoryData)
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error updating category:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+export async function deleteCategory(id: string, force = false) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/categories/${id}${force ? '?force=true' : ''}`, {
+      method: "DELETE"
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error deleting category:", error)
+    return { success: false, message: error.message }
   }
 }
 
@@ -247,10 +323,15 @@ const getAuthHeaders = async () => {
 export async function getCart() {
   try {
     const headers = await getAuthHeaders()
-    const response = await fetch(`${API_BASE_URL}/cart`, { headers })
+    const url = `${API_BASE_URL}/cart`;
+    console.log(`📡 GET Cart from: ${url}`);
+    const response = await fetch(url, { headers })
+    if (!response.ok) {
+      console.error(`❌ HTTP Error ${response.status} fetching cart`);
+    }
     return await response.json()
   } catch (error: any) {
-    console.error('Error in getCart:', error)
+    console.error('❌ Error in getCart:', error)
     return { success: false, message: error.message }
   }
 }
@@ -362,5 +443,9 @@ export const api = {
   updateCartItem,
   clearCart,
   getFilterOptions,
-  getAllCustomers
+  getAllCustomers,
+  getAdminCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory
 }

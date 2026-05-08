@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
-import { api } from "@/lib/api"
+import { api, cleanImageUrl } from "@/lib/api"
 import { ArrowRight } from "lucide-react"
+import { motion } from "framer-motion"
 
 interface CategorySectionProps {
   onCategoryClick?: (category: string) => void
@@ -19,10 +20,10 @@ export default function CategorySection({ onCategoryClick }: CategorySectionProp
         const result = await api.getCategories()
         
         if (isMounted && result.success) {
-          const activeCategories = result.categories.filter(
-            (cat: any) => cat.slug
+          const featuredCategories = result.categories.filter(
+            (cat: any) => cat.slug && cat.isFeatured
           )
-          setCategories(activeCategories)
+          setCategories(featuredCategories)
         }
       } catch (error) {
         console.error('Error loading categories:', error)
@@ -65,26 +66,49 @@ export default function CategorySection({ onCategoryClick }: CategorySectionProp
           Ver Todas
         </button>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {categories.slice(0, 5).map((category) => (
-          <div 
+      <div className={`grid gap-4 md:gap-6 ${
+        categories.length === 1 ? 'grid-cols-1' :
+        categories.length === 2 ? 'grid-cols-1 md:grid-cols-2' :
+        categories.length === 3 ? 'grid-cols-1 md:grid-cols-3' :
+        categories.length === 4 ? 'grid-cols-2 md:grid-cols-4' :
+        'grid-cols-2 md:grid-cols-5'
+      }`}>
+        {categories.slice(0, 5).map((category, index) => (
+          <motion.div 
             key={category.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
             onClick={() => onCategoryClick?.(category.slug)}
-            className="group relative rounded-xl overflow-hidden aspect-card cursor-pointer"
+            className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-500 ${
+              categories.length === 1 ? 'aspect-[21/9] md:aspect-[25/9]' : 'aspect-card'
+            }`}
           >
             <img 
               alt={category.name} 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-              src={category.image_url || "/placeholder.svg"} 
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+              src={cleanImageUrl(category.image) || "/placeholder.svg"} 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-6 flex flex-col justify-end text-white">
-              <h3 className="text-xl font-bold uppercase leading-tight">{category.name}</h3>
-              <p className="text-[10px] opacity-80">{category.description || "Descubre nuestra colección."}</p>
-              <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full border border-white flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors">
-                <ArrowRight className="w-4 h-4" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-6 md:p-8 flex flex-col justify-end text-white">
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: (index * 0.1) + 0.3 }}
+              >
+                <h3 className={`${categories.length === 1 ? 'text-3xl md:text-5xl' : 'text-xl md:text-2xl'} font-black uppercase leading-none tracking-tighter mb-2`}>
+                  {category.name}
+                </h3>
+                <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest opacity-70 group-hover:opacity-100 transition-opacity">
+                  {category.description || "Explorar Colección"}
+                </p>
+              </motion.div>
+              
+              <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/30 flex items-center justify-center group-hover:bg-kaosNeon group-hover:border-kaosNeon group-hover:text-black transition-all duration-500 group-hover:rotate-[-45deg]">
+                <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

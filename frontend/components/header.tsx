@@ -12,6 +12,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import AuthModal from "./auth-modal"
+import { api } from "@/lib/api"
+import { useEffect } from "react"
 
 interface HeaderProps {
   activeTab?: string
@@ -26,8 +28,32 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
   const { user, logout, isAdmin } = useAuth()
   const router = useRouter()
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [navCategories, setNavCategories] = useState<{name: string, key: string}[]>([])
   
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await api.getCategories()
+        if (result.success) {
+          // Filtrar por isFeatured y mapear al formato del nav
+          const featured = result.categories
+            .filter((c: any) => c.isFeatured)
+            .map((c: any) => ({
+              name: c.name,
+              key: c.slug
+            }))
+          
+          setNavCategories(featured.length > 0 ? featured : [{ name: "Tienda", key: "shop" }])
+        }
+      } catch (error) {
+        console.error("Error fetching categories for header:", error)
+        setNavCategories([{ name: "Tienda", key: "shop" }])
+      }
+    }
+    fetchCategories()
+  }, [])
 
   const handleNavClick = (key: string) => {
     if (setActiveTab) {
@@ -114,13 +140,7 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
         <nav className="max-w-[1440px] mx-auto px-4 md:px-10 h-20 flex justify-between items-center transition-all duration-300">
           {/* Left Nav */}
           <div className="hidden lg:flex gap-8 text-[11px] font-bold uppercase tracking-[0.15em] w-1/3 font-sans">
-            {[
-              { name: "Tienda", key: "shop" },
-              { name: "Hombre", key: "men" },
-              { name: "Mujer", key: "women" },
-              { name: "Kids", key: "kids" },
-              { name: "Accesorios", key: "accessories" },
-            ].map((item) => (
+            {navCategories.map((item) => (
               <button
                 key={item.key}
                 onClick={() => handleNavClick(item.key)}
@@ -175,13 +195,7 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
 
       {/* Mobile Nav */}
       <div className="lg:hidden flex overflow-x-auto gap-6 px-4 py-4 bg-white border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider no-scrollbar">
-        {[
-          { name: "Hombre", key: "men" },
-          { name: "Mujer", key: "women" },
-          { name: "Kids", key: "kids" },
-          { name: "Accesorios", key: "accessories" },
-          { name: "Nuevos", key: "sale" },
-        ].map((item) => (
+        {navCategories.map((item) => (
           <button
             key={item.key}
             onClick={() => handleNavClick(item.key)}
