@@ -13,14 +13,6 @@ exports.protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
     }
 
-    // BYPASS para desarrollo local si no hay token
-    if (!token && process.env.NODE_ENV === "development") {
-      console.warn("⚠️ Advertencia: Bypass de autenticación activo en desarrollo");
-      // Buscamos el primer admin para asignar a req.user o creamos un mock
-      req.user = await prisma.user.findFirst({ where: { role: "admin" } });
-      if (req.user) return next();
-    }
-
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -30,18 +22,36 @@ exports.protect = async (req, res, next) => {
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await prisma.user.findUnique({ where: { id: decoded.id } });
+      // Validar el token directamente con Supabase
+      const { supabase } = require("../config/supabase");
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
-      if (!req.user) {
+      if (authError || !user) {
+        console.error("❌ [AUTH] Error de validación Supabase:", authError?.message);
         return res.status(401).json({
           success: false,
-          message: "Usuario no encontrado",
-          code: "USER_NOT_FOUND",
+          message: "Token no válido o expirado",
+          code: "INVALID_TOKEN",
         });
       }
 
-      if (!req.user.isActive) {
+      // Buscar el usuario en nuestra base de datos local de Prisma para obtener el rol
+      const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+
+      if (!dbUser) {
+        // Si no existe en la DB local pero sí en Supabase, es un usuario nuevo o huérfano
+        // Podríamos crearlo aquí o simplemente usar los datos de Supabase
+        req.user = {
+          id: user.id,
+          email: user.email,
+          role: user.app_metadata?.role || "user", // Supabase suele guardar el rol aquí
+          isActive: true
+        };
+      } else {
+        req.user = dbUser;
+      }
+
+      if (req.user && !req.user.isActive) {
         return res.status(401).json({
           success: false,
           message: "Usuario inactivo",
@@ -50,16 +60,8 @@ exports.protect = async (req, res, next) => {
       }
 
       next();
-    } catch (jwtError) {
-      // Diferenciar entre token expirado y token inválido
-      if (jwtError.name === "TokenExpiredError") {
-        return res.status(401).json({
-          success: false,
-          message: "Token expirado. Por favor inicia sesión nuevamente",
-          code: "TOKEN_EXPIRED",
-        });
-      }
-
+    } catch (error) {
+      console.error("❌ [AUTH] Error interno en validación:", error.message);
       return res.status(401).json({
         success: false,
         message: "Token no válido",
@@ -98,8 +100,19 @@ exports.optional = async (req, res, next) => {
       req.headers.authorization.startsWith("Bearer")
     ) {
       token = req.headers.authorization.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await prisma.user.findUnique({ where: { id: decoded.id } });
+      
+      const { supabase } = require("../config/supabase");
+      const { data: { user } } = await supabase.auth.getUser(token);
+      
+      if (user) {
+        const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+        req.user = dbUser || {
+          id: user.id,
+          email: user.email,
+          role: user.app_metadata?.role || "user",
+          isActive: true
+        };
+      }
     }
 
     next();
