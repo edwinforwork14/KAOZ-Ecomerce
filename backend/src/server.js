@@ -58,12 +58,17 @@ const allowedOrigins = [
   'http://localhost:3000'
 ].filter(Boolean);
 
+app.use((req, res, next) => {
+  console.log(`📡 [BACKEND] ${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+  next();
+});
+
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1 || /\.vercel\.app$/.test(origin)) {
       callback(null, true);
     } else {
-      console.log('🚫 CORS bloqueado para:', origin);
+      console.log('🚫 [CORS] bloqueado para:', origin);
       callback(new Error('No permitido por CORS'));
     }
   },
@@ -133,23 +138,25 @@ if (process.env.NODE_ENV !== 'production') {
     }
   });
 
-// Inicialización del servidor (Solo para entornos que no sean Vercel Serverless, como Railway)
+// Inicialización del servidor (Solo para entornos que no sean Vercel Serverless)
 const PORT = process.env.PORT || 5010;
 
-if (process.env.NODE_ENV !== 'vercel') {
+// En Railway, process.env.PORT siempre está definido. 
+// En Vercel Serverless, no queremos correr app.listen()
+if (process.env.PORT && process.env.VERCEL !== '1') {
   const server = app.listen(PORT, () => {
     console.log(`
-🚀 KAOZ API Online
-📡 Puerto: ${PORT}
-🌍 Entorno: ${process.env.NODE_ENV}
+🚀 [SERVER] KAOZ API Online
+📡 [PORT] ${PORT}
+🌍 [ENV] ${process.env.NODE_ENV}
     `);
   });
 
   // Cierre gracioso (Graceful Shutdown)
   const shutdown = async () => {
-    console.log('🛑 Recibida señal de cierre. Cerrando servidor...');
+    console.log('🛑 [SERVER] Recibida señal de cierre. Cerrando...');
     server.close(() => {
-      console.log('📡 Servidor HTTP cerrado.');
+      console.log('📡 [SERVER] Servidor HTTP cerrado.');
       process.exit(0);
     });
   };

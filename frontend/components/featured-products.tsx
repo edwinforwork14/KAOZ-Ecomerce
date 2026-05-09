@@ -179,11 +179,14 @@ export default function FeaturedProducts({
         maxPrice: priceRange[1],
       }
 
+      console.log("📡 [SHOP] Cargando productos con parámetros:", params)
       const res = await api.getProducts(params)
+      console.log("✅ [SHOP] Productos cargados:", res.products?.length || 0, "de", res.total || 0)
+      
       setProducts(res.products || [])
       setTotalProducts(res.total || 0)
     } catch (error) {
-      console.error("Error loading products:", error)
+      console.error("❌ [SHOP] Error cargando productos:", error)
     } finally {
       setLoading(false)
     }
