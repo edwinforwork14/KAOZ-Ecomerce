@@ -24,16 +24,26 @@ exports.protect = async (req, res, next) => {
     try {
       // Validar el token directamente con Supabase
       const { supabase } = require("../config/supabase");
+      
+      console.log(`📡 [AUTH] Validando token con Supabase... (Token inicia con: ${token.substring(0, 15)}...)`);
+      
       const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
       if (authError || !user) {
-        console.error("❌ [AUTH] Error de validación Supabase:", authError?.message);
+        console.error("❌ [AUTH] Error de validación Supabase:", authError);
         return res.status(401).json({
           success: false,
-          message: "Token no válido o expirado",
+          message: authError?.message || "Token no válido o expirado (User es null)",
           code: "INVALID_TOKEN",
+          debug: {
+            tokenReceived: !!token,
+            errorType: authError?.name || "Unknown",
+            errorMessage: authError?.message || "No error message"
+          }
         });
       }
+      
+      console.log(`✅ [AUTH] Usuario validado: ${user.email} (${user.id})`);
 
       // Buscar el usuario en nuestra base de datos local de Prisma para obtener el rol
       const dbUser = await prisma.user.findUnique({ where: { id: user.id } });

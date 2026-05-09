@@ -6,6 +6,8 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABAS
 
 if (!supabaseUrl || !supabaseKey) {
   console.warn("⚠️ Advertencia: Credenciales de Supabase no encontradas.");
+} else {
+  console.log("📡 [SUPABASE] Cliente inicializado para:", supabaseUrl);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
