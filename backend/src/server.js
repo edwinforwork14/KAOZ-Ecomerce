@@ -133,12 +133,23 @@ if (process.env.NODE_ENV !== 'production') {
     }
   });
 
+// Inicialización del servidor (Solo para entornos que no sean Vercel Serverless, como Railway)
+const PORT = process.env.PORT || 5010;
+
+if (process.env.NODE_ENV !== 'vercel') {
+  const server = app.listen(PORT, () => {
+    console.log(`
+🚀 KAOZ API Online
+📡 Puerto: ${PORT}
+🌍 Entorno: ${process.env.NODE_ENV}
+    `);
+  });
+
   // Cierre gracioso (Graceful Shutdown)
   const shutdown = async () => {
     console.log('🛑 Recibida señal de cierre. Cerrando servidor...');
-    server.close(async () => {
+    server.close(() => {
       console.log('📡 Servidor HTTP cerrado.');
-      // Aquí podrías cerrar conexiones a DB si fuera necesario (Prisma lo hace solo usualmente)
       process.exit(0);
     });
   };
