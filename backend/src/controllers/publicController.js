@@ -122,7 +122,7 @@ exports.getCategories = async (req, res) => {
       where: { isActive: true },
       include: {
         _count: {
-          select: { products: true, subproducts: true }
+          select: { products: true, subProducts: true }
         }
       },
       orderBy: { order: 'asc' }
@@ -130,7 +130,7 @@ exports.getCategories = async (req, res) => {
 
     const result = categories.map(cat => ({
       ...cat,
-      productCount: cat._count.products + cat._count.subproducts
+      productCount: (cat._count.products || 0) + (cat._count.subProducts || 0)
     }));
 
     res.json({ success: true, categories: result });
@@ -146,7 +146,7 @@ exports.getCategory = async (req, res) => {
       where: { id },
       include: {
         _count: {
-          select: { products: true, subproducts: true }
+          select: { products: true, subProducts: true }
         }
       }
     });
@@ -159,7 +159,7 @@ exports.getCategory = async (req, res) => {
       success: true,
       category: {
         ...category,
-        productCount: category._count.products + category._count.subproducts
+        productCount: (category._count.products || 0) + (category._count.subProducts || 0)
       }
     });
   } catch (error) {

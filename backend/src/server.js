@@ -85,21 +85,9 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // Servir archivos estáticos (Nota: Vercel no persiste archivos en /uploads, usar Supabase Storage)
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// Rutas
+// Rutas Protegidas y Públicas
 app.use("/api/deployments", deploymentRoutes);
 app.use("/api/auth", authRoutes);
-
-// Ruta de prueba/salud
-app.get("/api", (req, res) => {
-  res.json({
-    success: true,
-    message: "YF E-commerce API (Vercel Serverless)",
-    version: "2.1.0",
-    environment: process.env.NODE_ENV
-  });
-});
-
-// Aplicar el "seguro" de implementación activa al resto de las rutas
 app.use("/api/products", checkDeploymentActive, productRoutes);
 app.use("/api/cart", checkDeploymentActive, cartRoutes);
 app.use("/api/orders", checkDeploymentActive, orderRoutes);
@@ -107,7 +95,6 @@ app.use("/api/admin", checkDeploymentActive, adminRoutes);
 app.use("/api/analytics", checkDeploymentActive, analyticsRoutes);
 app.use("/api/settings", checkDeploymentActive, settingsRoutes);
 app.use("/api/public", checkDeploymentActive, publicRoutes);
-app.use("/api", checkDeploymentActive, publicRoutes);
 
 // Manejo de errores
 app.use(errorHandler);

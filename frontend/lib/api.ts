@@ -63,9 +63,10 @@ export async function getAdminCategories(tree = false) {
 
 export async function createCategory(categoryData: any) {
   try {
+    const headers = await getAuthHeaders()
     const response = await fetch(`${API_BASE_URL}/admin/categories`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(categoryData)
     })
     return await response.json()
@@ -77,9 +78,10 @@ export async function createCategory(categoryData: any) {
 
 export async function updateCategory(id: string, categoryData: any) {
   try {
+    const headers = await getAuthHeaders()
     const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(categoryData)
     })
     return await response.json()
@@ -91,8 +93,10 @@ export async function updateCategory(id: string, categoryData: any) {
 
 export async function deleteCategory(id: string, force = false) {
   try {
+    const headers = await getAuthHeaders()
     const response = await fetch(`${API_BASE_URL}/admin/categories/${id}${force ? '?force=true' : ''}`, {
-      method: "DELETE"
+      method: "DELETE",
+      headers
     })
     return await response.json()
   } catch (error: any) {
@@ -217,10 +221,14 @@ export async function updateExchangeRate() { return { success: true } }
 // === ADMIN CRUD ===
 export async function createProduct(formData: FormData) {
   try {
+    const headers = await getAuthHeaders()
+    // Quitamos Content-Type para que el navegador ponga el boundary de multipart/form-data
+    const { 'Content-Type': _, ...authHeaders } = headers
+    
     const response = await fetch(`${API_BASE_URL}/admin/products`, {
       method: "POST",
+      headers: authHeaders,
       body: formData,
-      // Nota: No incluimos Content-Type para que el navegador ponga el boundary de multipart/form-data
     })
     const data = await response.json()
     return data
@@ -232,8 +240,12 @@ export async function createProduct(formData: FormData) {
 
 export async function updateProduct(id: string, formData: FormData) {
   try {
+    const headers = await getAuthHeaders()
+    const { 'Content-Type': _, ...authHeaders } = headers
+    
     const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
       method: "PUT",
+      headers: authHeaders,
       body: formData,
     })
     const data = await response.json()
@@ -246,8 +258,10 @@ export async function updateProduct(id: string, formData: FormData) {
 
 export async function deleteProduct(id: string) {
   try {
+    const headers = await getAuthHeaders()
     const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
       method: "DELETE",
+      headers
     })
     const data = await response.json()
     return data
@@ -259,8 +273,12 @@ export async function deleteProduct(id: string) {
 
 export async function uploadVariantImages(productId: string, variantIndex: number, formData: FormData) {
   try {
+    const headers = await getAuthHeaders()
+    const { 'Content-Type': _, ...authHeaders } = headers
+    
     const response = await fetch(`${API_BASE_URL}/admin/products/${productId}/variants/${variantIndex}/images`, {
       method: "POST",
+      headers: authHeaders,
       body: formData,
     })
     const data = await response.json()

@@ -525,7 +525,7 @@ exports.getCategories = async (req, res) => {
 
     let result = categories.map(cat => ({
       ...cat,
-      productCount: cat._count.products + cat._count.subproducts
+      productCount: cat._count.products + cat._count.subProducts
     }));
 
     if (tree === "true") {

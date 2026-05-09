@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const { prisma } = require("../config/database");
 
 exports.protect = async (req, res, next) => {
+  console.log(`🔐 [AUTH] Intentando proteger ruta: ${req.originalUrl}`);
   try {
     let token;
 
@@ -88,6 +89,7 @@ exports.authorize = (...roles) => {
 };
 
 exports.optional = async (req, res, next) => {
+  console.log(`🔓 [AUTH] Ruta opcional: ${req.originalUrl}`);
   try {
     let token;
 
