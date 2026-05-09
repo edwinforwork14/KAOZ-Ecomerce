@@ -10,7 +10,7 @@ exports.getCart = async (req, res) => {
       return res.status(400).json({ success: false, message: "Sesión no identificada" });
     }
 
-    let cart = await prisma.cart.findUnique({
+    let cart = await prisma.cart.findFirst({
       where: req.user ? { userId: req.user.id } : { sessionId: req.headers["x-session-id"] },
       include: {
         items: true
@@ -79,7 +79,7 @@ exports.addToCart = async (req, res) => {
       });
     }
 
-    let cart = await prisma.cart.findUnique({
+    let cart = await prisma.cart.findFirst({
       where: req.user ? { userId: req.user.id } : { sessionId: req.headers["x-session-id"] },
     });
 

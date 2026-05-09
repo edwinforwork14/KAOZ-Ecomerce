@@ -7,6 +7,10 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABAS
 if (!supabaseUrl || !supabaseKey) {
   console.warn("⚠️ [SUPABASE] ¡ATENCIÓN! Faltan credenciales críticas.");
 } else {
+  if (!supabaseUrl.includes(".supabase.co")) {
+    console.error("❌ [SUPABASE] ERROR CRÍTICO: La URL configurada no parece ser de Supabase. Revisa las variables en Railway.");
+    console.error(`👉 URL actual: "${supabaseUrl}"`);
+  }
   console.log(`📡 [SUPABASE] Usando URL: "${supabaseUrl}"`);
   console.log(`🔑 [SUPABASE] Key detectada: ${supabaseKey.substring(0, 10)}...`);
 }
