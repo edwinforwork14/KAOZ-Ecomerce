@@ -25,7 +25,7 @@ console.log("🚀 KAOZ API initialized with BACKEND_URL:", BACKEND_URL);
 // === CATEGORIES ===
 export async function getCategories() {
   try {
-    const url = `${API_BASE_URL}/admin/categories`;
+    const url = `${API_BASE_URL}/public/categories`;
     console.log(`📡 GET Categories from: ${url}`);
     const response = await fetch(url);
     if (!response.ok) {
