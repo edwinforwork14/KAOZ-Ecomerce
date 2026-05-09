@@ -120,36 +120,27 @@ app.use("*", (req, res) => {
   });
 });
 
-// Solo iniciar el servidor si no estamos en Vercel
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5010;
-  const server = app.listen(PORT, () => {
-    console.log(`🚀 Servidor local corriendo en puerto ${PORT}`);
-    console.log(`✅ Supabase (PostgreSQL) via Prisma conectado`);
-  });
-
-  // Manejo de errores del servidor (como EADDRINUSE)
-  server.on('error', (error) => {
-    if (error.code === 'EADDRINUSE') {
-      console.error(`❌ El puerto ${PORT} ya está en uso. Intenta cerrando otros procesos o usa otro puerto.`);
-      process.exit(1);
-    } else {
-      console.error('❌ Error en el servidor:', error);
-    }
-  });
-
-// Inicialización del servidor (Solo para entornos que no sean Vercel Serverless)
+// Inicialización del servidor
 const PORT = process.env.PORT || 5010;
 
-// En Railway, process.env.PORT siempre está definido. 
-// En Vercel Serverless, no queremos correr app.listen()
-if (process.env.PORT && process.env.VERCEL !== '1') {
+// Solo iniciar con app.listen si no estamos en Vercel Serverless
+if (process.env.VERCEL !== '1') {
   const server = app.listen(PORT, () => {
     console.log(`
 🚀 [SERVER] KAOZ API Online
 📡 [PORT] ${PORT}
-🌍 [ENV] ${process.env.NODE_ENV}
+🌍 [ENV] ${process.env.NODE_ENV || 'development'}
     `);
+  });
+
+  // Manejo de errores del servidor
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`❌ El puerto ${PORT} ya está en uso.`);
+      process.exit(1);
+    } else {
+      console.error('❌ Error en el servidor:', error);
+    }
   });
 
   // Cierre gracioso (Graceful Shutdown)
