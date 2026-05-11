@@ -41,7 +41,8 @@ export async function getCategories() {
 
 export async function getAdminCategories(tree = false) {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/categories?tree=${tree}`)
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/categories?tree=${tree}`, { headers })
     const data = await response.json()
     
     // Mapear _id para consistencia en el frontend
@@ -108,7 +109,8 @@ export async function deleteCategory(id: string, force = false) {
 // === CUSTOMERS ===
 export async function getAllCustomers() {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/customers`)
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/customers`, { headers })
     const data = await response.json()
     return data
   } catch (error: any) {
@@ -173,6 +175,7 @@ export async function createOrder(orderData: any) {
   const { data, error } = await supabase
     .from('Order')
     .insert([{
+      id: typeof crypto !== 'undefined' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
       orderNumber: orderNumber,
       customerInfo: orderData.customerInfo,
       shippingAddress: orderData.shippingAddress,
@@ -195,7 +198,8 @@ export async function updateOrderWhatsApp(orderId: string) {
 // === USER / AUTH ===
 export async function getMe() {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/me`)
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/auth/me`, { headers })
     const data = await response.json()
     return data
   } catch (error: any) {
@@ -207,7 +211,8 @@ export async function getMe() {
 // === DASHBOARD & STATS ===
 export async function getDashboardStats() {
   try {
-    const response = await fetch(`${API_BASE_URL}/analytics/dashboard`)
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/analytics/dashboard`, { headers })
     const data = await response.json()
     return data
   } catch (error: any) {

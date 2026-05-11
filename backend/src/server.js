@@ -84,6 +84,7 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Servir archivos estáticos (Nota: Vercel no persiste archivos en /uploads, usar Supabase Storage)
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/images", express.static(path.join(__dirname, "../uploads")));
 
 // Rutas Protegidas y Públicas
 app.use("/api/deployments", deploymentRoutes);
