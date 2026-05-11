@@ -25,6 +25,32 @@ exports.getCart = async (req, res) => {
         },
         include: { items: true }
       });
+    } else if (cart.items.length > 0) {
+      // AUTO-LIMPIEZA: Verificar si los productos aún existen
+      const validItems = [];
+      const ghostItems = [];
+
+      for (const item of cart.items) {
+        const productExists = await prisma.product.findUnique({
+          where: { id: item.productId },
+          select: { id: true }
+        });
+
+        if (productExists) {
+          validItems.push(item);
+        } else {
+          ghostItems.push(item.id);
+        }
+      }
+
+      // Si hay items fantasma, eliminarlos de la base de datos
+      if (ghostItems.length > 0) {
+        console.warn(`🧹 Limpiando ${ghostItems.length} productos inexistentes del carrito`);
+        await prisma.cartItem.deleteMany({
+          where: { id: { in: ghostItems } }
+        });
+        cart.items = validItems;
+      }
     }
 
     res.json({

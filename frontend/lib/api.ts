@@ -331,6 +331,10 @@ const getSessionId = () => {
   return sessionId
 }
 
+let cachedSession: any = null
+let lastSessionFetch = 0
+const SESSION_CACHE_TIME = 60 * 1000 // 1 minuto
+
 const getAuthHeaders = async () => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -341,9 +345,16 @@ const getAuthHeaders = async () => {
     headers['x-session-id'] = sessionId
   }
   
-  const { data: { session } } = await supabase.auth.getSession()
-  if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`
+  // Optimización: Cache de la sesión para evitar spam a Supabase (Rate Limit)
+  const now = Date.now()
+  if (!cachedSession || (now - lastSessionFetch > SESSION_CACHE_TIME)) {
+    const { data: { session } } = await supabase.auth.getSession()
+    cachedSession = session
+    lastSessionFetch = now
+  }
+
+  if (cachedSession?.access_token) {
+    headers['Authorization'] = `Bearer ${cachedSession.access_token}`
   }
   
   return headers
