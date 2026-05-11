@@ -5,11 +5,7 @@ const sharp = require("sharp");
 const heicConvert = require("heic-convert");
 const { supabase } = require("../config/supabase");
 
-// 1. Configuración de Directorios
-const uploadDir = path.join(__dirname, "../../uploads/products");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// 1. (Eliminado: Creación de directorio local no compatible con Vercel Serverless)
 
 // 2. Almacenamiento en MEMORIA (Crucial)
 const storage = multer.memoryStorage();

@@ -22,46 +22,23 @@ exports.protect = async (req, res, next) => {
     }
 
     try {
-      // Validar el token directamente con Supabase
-      const { supabase } = require("../config/supabase");
+      // Validar el token directamente de forma LOCAL usando la firma de JWT
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      console.log(`📡 [AUTH] Validando token con Supabase... (Token inicia con: ${token.substring(0, 15)}...)`);
-      
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      console.log(`✅ [AUTH] Token decodificado localmente para ID: ${decoded.id}`);
 
-      if (authError || !user) {
-        console.error("❌ [AUTH] Error de validación Supabase:", authError);
-        return res.status(401).json({
-          success: false,
-          message: authError?.message || "Token no válido o expirado (User es null)",
-          code: "INVALID_TOKEN",
-          debug: {
-            tokenReceived: !!token,
-            errorType: authError?.name || "Unknown",
-            errorMessage: authError?.message || "No error message"
-          }
-        });
-      }
-      
-      console.log(`✅ [AUTH] Usuario validado: ${user.email} (${user.id})`);
-
-      // Buscar el usuario en nuestra base de datos local de Prisma para obtener el rol
-      const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+      // Buscar el usuario en nuestra base de datos local de Prisma
+      const dbUser = await prisma.user.findUnique({ where: { id: decoded.id } });
 
       if (!dbUser) {
-        // Si no existe en la DB local pero sí en Supabase, es un usuario nuevo o huérfano
-        // Podríamos crearlo aquí o simplemente usar los datos de Supabase
-        req.user = {
-          id: user.id,
-          email: user.email,
-          role: user.app_metadata?.role || "user", // Supabase suele guardar el rol aquí
-          isActive: true
-        };
-      } else {
-        req.user = dbUser;
+        return res.status(401).json({
+          success: false,
+          message: "El usuario perteneciente a este token ya no existe.",
+          code: "USER_NOT_FOUND",
+        });
       }
 
-      if (req.user && !req.user.isActive) {
+      if (!dbUser.isActive) {
         return res.status(401).json({
           success: false,
           message: "Usuario inactivo",
@@ -69,9 +46,20 @@ exports.protect = async (req, res, next) => {
         });
       }
 
+      // Adjuntar usuario a la request
+      req.user = dbUser;
       next();
     } catch (error) {
-      console.error("❌ [AUTH] Error interno en validación:", error.message);
+      console.error("❌ [AUTH] Error interno en validación de token local:", error.message);
+      
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          message: "Token expirado",
+          code: "TOKEN_EXPIRED",
+        });
+      }
+
       return res.status(401).json({
         success: false,
         message: "Token no válido",
@@ -79,6 +67,7 @@ exports.protect = async (req, res, next) => {
       });
     }
   } catch (error) {
+    console.error("❌ [AUTH] Error fatal en middleware protect:", error);
     return res.status(500).json({
       success: false,
       message: "Error en autenticación",
