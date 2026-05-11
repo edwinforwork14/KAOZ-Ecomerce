@@ -28,7 +28,7 @@ exports.createOrder = async (req, res) => {
       ? { userId: req.user.id }
       : { sessionId: req.headers["x-session-id"] };
 
-    const cart = await prisma.cart.findUnique({
+    const cart = await prisma.cart.findFirst({
       where: req.user ? { userId: req.user.id } : { sessionId: req.headers["x-session-id"] },
       include: {
         items: true
