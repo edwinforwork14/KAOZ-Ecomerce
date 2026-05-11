@@ -22,7 +22,7 @@ model User {
   isActive  Boolean   @default(true)
   lastLogin DateTime?
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime  @updatedAt @default(now())
   carts     Cart[]
   orders    Order[]
 }
@@ -39,7 +39,7 @@ model Category {
   seo         Json?
   parentId    String?
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime   @updatedAt @default(now())
   isFeatured  Boolean    @default(false)
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
@@ -72,7 +72,7 @@ model Product {
   categoryId      String?
   subcategoryId   String?
   createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  updatedAt       DateTime         @updatedAt @default(now())
   category        Category?        @relation("MainCategory", fields: [categoryId], references: [id])
   subcategory     Category?        @relation("SubCategory", fields: [subcategoryId], references: [id])
   images          ProductImage[]
@@ -132,7 +132,7 @@ model Order {
   deletedAt       DateTime?
   deletedBy       String?
   createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  updatedAt       DateTime    @updatedAt @default(now())
   user            User?       @relation(fields: [userId], references: [id])
   items           OrderItem[]
 }
@@ -156,7 +156,7 @@ model Cart {
   userId    String?
   sessionId String?    @unique
   createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  updatedAt DateTime   @updatedAt @default(now())
   user      User?      @relation(fields: [userId], references: [id])
   items     CartItem[]
 }
@@ -179,7 +179,7 @@ model ExchangeRate {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
   usd       Float
   eur       Float
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @default(now())
   createdAt DateTime @default(now())
   date      String   @unique
 }
@@ -189,7 +189,7 @@ model Settings {
   currency           Json?
   shippingMethods    Json?
   paymentMethods     Json?
-  updatedAt          DateTime @updatedAt
+  updatedAt          DateTime @updatedAt @default(now())
   newProductDuration Int      @default(30)
 }
 
@@ -228,5 +228,5 @@ model Deployment {
   name        String?
   description String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @updatedAt @default(now())
 }

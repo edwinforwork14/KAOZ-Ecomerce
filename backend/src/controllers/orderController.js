@@ -208,19 +208,15 @@ exports.updateOrderWhatsApp = async (req, res) => {
   try {
     const { orderId } = req.params;
 
-    const order = await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        // Asumiendo que agregamos estos campos al esquema o los manejamos vía JSON en el futuro
-        // Por ahora, si no están en el esquema, fallará. 
-        // Viendo el esquema previo, no estaban whatsappSent.
-        // Los omitiré o deberías agregarlos al schema.prisma si son necesarios.
-      },
+    // Nota: El esquema actual no tiene un campo 'whatsappSent'. 
+    // Podrías agregarlo en el futuro. Por ahora solo confirmamos la acción.
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
     });
 
     res.json({
       success: true,
-      message: "Pedido actualizado",
+      message: "WhatsApp registrado (lógica de base de datos pendiente de esquema)",
       order,
     });
   } catch (error) {

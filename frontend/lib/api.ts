@@ -171,26 +171,31 @@ export async function getProduct(id: string) {
 
 // === ORDERS ===
 export async function createOrder(orderData: any) {
-  const orderNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`
-  const { data, error } = await supabase
-    .from('Order')
-    .insert([{
-      id: typeof crypto !== 'undefined' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
-      orderNumber: orderNumber,
-      customerInfo: orderData.customerInfo,
-      shippingAddress: orderData.shippingAddress,
-      shippingMethod: orderData.shippingMethod,
-      notes: orderData.notes,
-      orderStatus: 'pending',
-      subtotal: orderData.subtotal || orderData.total || 0,
-      shipping: orderData.shipping || 0,
-      total: orderData.total || 0
-    }])
-    .select()
-    .single()
-
-  if (error) return { success: false, message: error.message }
-  return { success: true, order: { ...data, _id: data.id, orderNumber: data.orderNumber } }
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/orders`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(orderData)
+    })
+    const data = await response.json()
+    
+    if (data.success) {
+      // Adaptar el formato para que el frontend siga funcionando
+      return { 
+        success: true, 
+        order: { 
+          ...data.order, 
+          _id: data.order.id, 
+          orderNumber: data.order.orderNumber 
+        } 
+      }
+    }
+    return { success: false, message: data.message || 'Error al crear pedido' }
+  } catch (error: any) {
+    console.error('Error in createOrder:', error)
+    return { success: false, message: error.message }
+  }
 }
 
 export async function updateOrderWhatsApp(orderId: string) {
