@@ -22,48 +22,75 @@ exports.protect = async (req, res, next) => {
     }
 
     try {
-      // Validar el token directamente de forma LOCAL usando la firma de JWT
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // 1. Intentar validar con Supabase (Prioridad: es lo que usa el Frontend)
+      const { supabase } = require("../config/supabase");
+      console.log(`📡 [AUTH] Validando token con Supabase...`);
       
-      console.log(`✅ [AUTH] Token decodificado localmente para ID: ${decoded.id}`);
+      const { data: { user: supabaseUser }, error: supabaseError } = await supabase.auth.getUser(token);
 
-      // Buscar el usuario en nuestra base de datos local de Prisma
-      const dbUser = await prisma.user.findUnique({ where: { id: decoded.id } });
-
-      if (!dbUser) {
-        return res.status(401).json({
-          success: false,
-          message: "El usuario perteneciente a este token ya no existe.",
-          code: "USER_NOT_FOUND",
-        });
+      if (!supabaseError && supabaseUser) {
+        console.log(`✅ [AUTH] Usuario validado vía Supabase: ${supabaseUser.email}`);
+        
+        // Buscar el usuario en nuestra DB local para obtener el rol y otros campos
+        const dbUser = await prisma.user.findUnique({ where: { id: supabaseUser.id } });
+        
+        if (!dbUser) {
+          req.user = {
+            id: supabaseUser.id,
+            email: supabaseUser.email,
+            role: supabaseUser.app_metadata?.role || "user",
+            isActive: true
+          };
+        } else {
+          req.user = dbUser;
+        }
+        
+        return next();
       }
 
-      if (!dbUser.isActive) {
+      // Si llegamos aquí, Supabase falló. Vamos a loguear POR QUÉ.
+      console.warn(`⚠️ [AUTH] Supabase no pudo validar el token. Error: ${supabaseError?.message || 'Usuario no encontrado'}`);
+
+      // 2. Si falla Supabase, intentar validación LOCAL
+      console.log(`🔍 [AUTH] Intentando validación local como fallback...`);
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log(`✅ [AUTH] Token decodificado localmente para ID: ${decoded.id}`);
+
+        const dbUser = await prisma.user.findUnique({ where: { id: decoded.id } });
+
+        if (!dbUser) {
+          return res.status(401).json({
+            success: false,
+            message: "El usuario ya no existe.",
+            code: "USER_NOT_FOUND",
+          });
+        }
+
+        req.user = dbUser;
+        return next();
+      } catch (localError) {
+        console.error("❌ [AUTH] Error en ambas validaciones (Supabase y Local).");
+        
+        const message = localError.name === 'TokenExpiredError' ? "Token expirado" : "Token no válido";
+        const code = localError.name === 'TokenExpiredError' ? "TOKEN_EXPIRED" : "INVALID_TOKEN";
+
         return res.status(401).json({
           success: false,
-          message: "Usuario inactivo",
-          code: "USER_INACTIVE",
+          message,
+          code,
+          debug: {
+            supabaseError: supabaseError?.message,
+            localError: localError.message
+          }
         });
       }
-
-      // Adjuntar usuario a la request
-      req.user = dbUser;
-      next();
     } catch (error) {
-      console.error("❌ [AUTH] Error interno en validación de token local:", error.message);
-      
-      if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({
-          success: false,
-          message: "Token expirado",
-          code: "TOKEN_EXPIRED",
-        });
-      }
-
-      return res.status(401).json({
+      console.error("❌ [AUTH] Error fatal en middleware protect:", error.message);
+      return res.status(500).json({
         success: false,
-        message: "Token no válido",
-        code: "INVALID_TOKEN",
+        message: "Error en autenticación",
+        code: "AUTH_ERROR",
       });
     }
   } catch (error) {
