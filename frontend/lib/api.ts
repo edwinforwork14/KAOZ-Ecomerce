@@ -182,6 +182,8 @@ export async function createOrder(orderData: any) {
       shippingMethod: orderData.shippingMethod,
       notes: orderData.notes,
       orderStatus: 'pending',
+      subtotal: orderData.subtotal || orderData.total || 0,
+      shipping: orderData.shipping || 0,
       total: orderData.total || 0
     }])
     .select()
