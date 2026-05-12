@@ -2,36 +2,39 @@ const { prisma } = require("../config/database");
 
 const getSettings = async () => {
   try {
-    console.log("🔍 [SETTINGS SERVICE] Buscando configuración 'global'...");
-    let settings = await prisma.settings.findUnique({
+    const settings = await prisma.settings.findUnique({
       where: { id: "global" }
     });
 
-    console.log("📊 [SETTINGS SERVICE] Resultado de DB:", settings ? "Encontrado" : "No encontrado (null)");
+    console.log("📊 [SETTINGS SERVICE] Raw DB Settings:", settings ? "Existe" : "Null");
     
     if (settings) {
-      console.log("✅ [SETTINGS SERVICE] Métodos encontrados:", {
-        payment: settings.paymentMethods?.length || 0,
-        shipping: settings.shippingMethods?.length || 0
-      });
+      // Forzar conversión a array si es necesario y contar
+      const pMethods = Array.isArray(settings.paymentMethods) ? settings.paymentMethods : [];
+      const sMethods = Array.isArray(settings.shippingMethods) ? settings.shippingMethods : [];
+      
+      console.log(`✅ [SETTINGS SERVICE] Métodos en DB: Payment=${pMethods.length}, Shipping=${sMethods.length}`);
 
-      // Auto-reparar si los métodos están vacíos (esto pasa si se creó el registro incompleto)
-      if (!settings.paymentMethods || settings.paymentMethods.length === 0 || 
-          !settings.shippingMethods || settings.shippingMethods.length === 0) {
+      if (pMethods.length === 0 || sMethods.length === 0) {
         console.log("🛠️ [SETTINGS SERVICE] Detectados métodos vacíos. Auto-reparando...");
-        settings = await prisma.settings.update({
-          where: { id: "global" },
-          data: {
-            paymentMethods: settings.paymentMethods?.length ? settings.paymentMethods : [
-              { id: "whatsapp", name: "WhatsApp Pay / Transferencia", isActive: true, icon: "whatsapp" },
-              { id: "zelle", name: "Zelle", isActive: true, icon: "zelle" }
-            ],
-            shippingMethods: settings.shippingMethods?.length ? settings.shippingMethods : [
-              { id: "standard", name: "Envío Estándar", isActive: true, type: "standard", additionalCost: 5 },
-              { id: "pickup", name: "Retiro en Tienda", isActive: true, type: "pickup", additionalCost: 0 }
-            ]
-          }
-        });
+        try {
+          const repaired = await prisma.settings.update({
+            where: { id: "global" },
+            data: {
+              paymentMethods: pMethods.length > 0 ? pMethods : [
+                { id: "whatsapp", name: "WhatsApp Pay / Transferencia", isActive: true, icon: "whatsapp", order: 1 },
+                { id: "zelle", name: "Zelle", isActive: true, icon: "zelle", order: 2 }
+              ],
+              shippingMethods: sMethods.length > 0 ? sMethods : [
+                { id: "standard", name: "Envío Estándar", isActive: true, type: "standard", additionalCost: 5, order: 1 },
+                { id: "pickup", name: "Retiro en Tienda", isActive: true, type: "pickup", additionalCost: 0, order: 2 }
+              ]
+            }
+          });
+          return repaired;
+        } catch (updateErr) {
+          console.error("❌ Error en auto-reparación:", updateErr.message);
+        }
       }
     }
 

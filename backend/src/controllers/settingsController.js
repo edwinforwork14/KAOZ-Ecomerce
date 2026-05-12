@@ -246,13 +246,20 @@ exports.getPublicSettings = async (req, res) => {
     const exchangeRate = await ExchangeRate.getCurrentRate();
 
     console.log("🌐 [SETTINGS CONTROLLER] Generando respuesta pública...");
+    const paymentMethods = (settings.paymentMethods || []).filter(m => m.isActive);
+    const shippingMethods = (settings.shippingMethods || []).filter(m => m.isActive);
+
     const response = {
       success: true,
       settings: {
         currency: settings.currency || { symbol: "$", code: "USD" },
         cashDiscount: settings.cashDiscount || 0,
-        paymentMethods: (settings.paymentMethods || []).filter(m => m.isActive),
-        shippingMethods: (settings.shippingMethods || []).filter(m => m.isActive),
+        paymentMethods: paymentMethods.length > 0 ? paymentMethods : [
+          { id: "whatsapp", name: "WhatsApp Pay (Default)", isActive: true, icon: "whatsapp" }
+        ],
+        shippingMethods: shippingMethods.length > 0 ? shippingMethods : [
+          { id: "pickup", name: "Retiro en Tienda (Default)", isActive: true, type: "pickup", additionalCost: 0 }
+        ],
         business: settings.business || {},
         whatsapp: settings.whatsapp || ""
       },
