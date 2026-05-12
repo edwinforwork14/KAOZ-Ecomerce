@@ -34,10 +34,15 @@ const registerDeployment = async (version, environment = "production") => {
 };
 
 const getActiveDeployment = async () => {
-  return await prisma.deployment.findFirst({
-    where: { isActive: true },
-    orderBy: { deployedAt: 'desc' }
-  });
+  try {
+    return await prisma.deployment.findFirst({
+      where: { isActive: true },
+      orderBy: { deployedAt: 'desc' }
+    });
+  } catch (error) {
+    console.error("❌ Error al obtener implementación activa de Prisma:", error.message);
+    return { id: "fallback-active", isActive: true, version: "fallback" };
+  }
 };
 
 const toggleDeployment = async (id, isActive) => {

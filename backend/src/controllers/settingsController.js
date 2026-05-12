@@ -239,22 +239,33 @@ exports.updateNewProductStatus = async (req, res) => {
 // ===== PUBLIC SETTINGS =====
 exports.getPublicSettings = async (req, res) => {
   try {
-    const settings = await Settings.getSettings();
+    const settings = await Settings.getSettings() || {
+      currency: { symbol: "$", code: "USD", showBsPrice: true },
+      paymentMethods: [],
+      shippingMethods: [],
+      business: {},
+      whatsapp: ""
+    };
     const exchangeRate = await ExchangeRate.getCurrentRate();
 
     res.json({
       success: true,
       settings: {
-        currency: settings.currency,
-        cashDiscount: settings.cashDiscount,
+        currency: settings.currency || { symbol: "$", code: "USD" },
+        cashDiscount: settings.cashDiscount || 0,
         paymentMethods: (settings.paymentMethods || []).filter(m => m.isActive),
         shippingMethods: (settings.shippingMethods || []).filter(m => m.isActive),
-        business: settings.business,
-        whatsapp: settings.whatsapp
+        business: settings.business || {},
+        whatsapp: settings.whatsapp || ""
       },
-      exchangeRate
+      exchangeRate: exchangeRate || { usd: 1, eur: 1 }
     });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("❌ Error en getPublicSettings:", error.message);
+    res.status(500).json({ 
+      success: false, 
+      message: "Error al cargar configuraciones",
+      error: error.message 
+    });
   }
 };
