@@ -242,6 +242,12 @@ export default function Checkout() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    console.log(`🎯 [CHECKOUT] Cambio detectado: ${name} = ${value}`);
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleMethodSelect = (name: string, value: string) => {
+    console.log(`🖱️ [CHECKOUT] Selección manual: ${name} = ${value}`);
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
@@ -402,8 +408,12 @@ export default function Checkout() {
                   const isFree = method.freeFrom > 0 && total >= method.freeFrom
                   const Icon = shippingIcons[method.type] || Truck
                   return (
-                    <label key={method.id} className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer ${isSelected ? 'border-kaosNeon bg-white shadow-sm' : 'border-transparent bg-white hover:border-gray-200'}`}>
-                      <input type="radio" name="shippingMethod" value={method.id} checked={isSelected} onChange={handleInputChange} className="sr-only" />
+                    <label 
+                      key={method.id} 
+                      onClick={() => handleMethodSelect('shippingMethod', method.id)}
+                      className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer ${isSelected ? 'border-kaosNeon bg-white shadow-sm' : 'border-transparent bg-white hover:border-gray-200'}`}
+                    >
+                      <input type="radio" name="shippingMethod" value={method.id} checked={isSelected} readOnly className="sr-only" />
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSelected ? 'bg-kaosNeon' : 'bg-gray-100'}`}><Icon className="w-4 h-4" /></div>
                       <div className="flex-1">
                         <div className="flex justify-between items-baseline">
@@ -457,9 +467,13 @@ export default function Checkout() {
                   const isSelected = formData.paymentMethod === method.id
                   const Icon = paymentIcons[method.id] || CreditCard
                   return (
-                    <label key={method.id} className={`block p-5 rounded-2xl border-2 transition-all cursor-pointer ${isSelected ? 'border-kaosNeon bg-white shadow-sm' : 'border-transparent bg-white hover:border-gray-200'}`}>
+                    <label 
+                      key={method.id} 
+                      onClick={() => handleMethodSelect('paymentMethod', method.id)}
+                      className={`block p-5 rounded-2xl border-2 transition-all cursor-pointer ${isSelected ? 'border-kaosNeon bg-white shadow-sm' : 'border-transparent bg-white hover:border-gray-200'}`}
+                    >
                       <div className="flex items-center gap-4">
-                        <input type="radio" name="paymentMethod" value={method.id} checked={isSelected} onChange={handleInputChange} className="sr-only" />
+                        <input type="radio" name="paymentMethod" value={method.id} checked={isSelected} readOnly className="sr-only" />
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSelected ? 'bg-kaosNeon' : 'bg-gray-100'}`}><Icon className="w-4 h-4" /></div>
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
