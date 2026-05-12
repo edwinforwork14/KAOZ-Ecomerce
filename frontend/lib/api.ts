@@ -344,6 +344,101 @@ export async function uploadVariantImages(productId: string, variantIndex: numbe
   }
 }
 
+// === ADMIN ORDERS ===
+export async function getAllOrders() {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/orders`, { headers })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error fetching all orders:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+export async function updateOrderStatus(id: string, status: string) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/orders/${id}/status`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ status })
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error updating order status:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+// === ADMIN CUSTOMERS ===
+export async function getAllCustomers() {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/customers`, { headers })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error fetching all customers:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+// === ADMIN CATEGORIES ===
+export async function getAdminCategories() {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/categories`, { headers })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error fetching admin categories:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+export async function createCategory(categoryData: any) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/categories`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(categoryData)
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error creating category:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+export async function updateCategory(id: string, categoryData: any) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(categoryData)
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error updating category:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+export async function deleteCategory(id: string) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+      method: 'DELETE',
+      headers
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error deleting category:", error)
+    return { success: false, message: error.message }
+  }
+}
+
 // === SETTINGS ===
 export async function getPublicSettings() {
   const url = `${API_BASE_URL}/settings/public`;
@@ -673,6 +768,7 @@ export const api = {
   updateCartItem,
   clearCart,
   getFilterOptions,
+  getAllOrders,
   getAllCustomers,
   getAdminCategories,
   createCategory,
