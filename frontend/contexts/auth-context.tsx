@@ -110,7 +110,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Login de ADMIN directo al backend (no depende de Supabase)
   const adminLogin = async (email: string, password: string) => {
-    const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+    const url = `${BACKEND_URL}/api/auth/login`;
+    console.log(`🔌 [AUTH CONTEXT] Petición a: ${url}`);
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })

@@ -43,27 +43,32 @@ function LoginFormContent() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("🚀 [LOGIN] Iniciando handleSubmit...");
     e.preventDefault()
     setError("")
     setEmailError("")
 
+    console.log("📧 [LOGIN] Email a validar:", formData.email);
     if (!validateEmail(formData.email)) {
+      console.error("❌ [LOGIN] Email inválido detectado");
       setEmailError("Por favor ingresa un email válido")
       return
     }
 
     setLoading(true)
+    console.log("📡 [LOGIN] Intentando adminLogin...");
 
     try {
-      // 1. Intentar login de admin directo al backend (JWT propio, independiente de Supabase)
+      // 1. Intentar login de admin directo al backend
       try {
+        console.log("🔗 [LOGIN] Llamando a adminLogin con URL de backend...");
         const result = await adminLogin(formData.email, formData.password)
-        // Login de admin exitoso
+        console.log("✅ [LOGIN] adminLogin exitoso:", result);
         const redirectTo = searchParams?.get('redirect') || '/admin/dashboard'
         setTimeout(() => router.push(redirectTo), 300)
         return
       } catch (adminErr: any) {
-        // Si el error es de credenciales incorrectas, no intentar Supabase
+        console.warn("⚠️ [LOGIN] adminLogin falló, intentando fallback de Supabase:", adminErr.message);
         if (adminErr.message?.includes('Credenciales') || adminErr.message?.includes('inválidas')) {
           // Puede ser un usuario cliente — intentar Supabase
         } else if (adminErr.message?.includes('permisos de administrador')) {
