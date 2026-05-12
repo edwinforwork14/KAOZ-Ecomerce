@@ -55,45 +55,20 @@ function LoginFormContent() {
       return
     }
 
-    setLoading(true)
-    console.log("📡 [LOGIN] Intentando adminLogin...");
-
     try {
-      // 1. Intentar login de admin directo al backend
-      try {
-        console.log("🔗 [LOGIN] Llamando a adminLogin con URL de backend...");
-        const result = await adminLogin(formData.email, formData.password)
-        console.log("✅ [LOGIN] adminLogin exitoso:", result);
-        const redirectTo = searchParams?.get('redirect') || '/admin/dashboard'
-        setTimeout(() => router.push(redirectTo), 300)
-        return
-      } catch (adminErr: any) {
-        console.warn("⚠️ [LOGIN] adminLogin falló, intentando fallback de Supabase:", adminErr.message);
-        if (adminErr.message?.includes('Credenciales') || adminErr.message?.includes('inválidas')) {
-          // Puede ser un usuario cliente — intentar Supabase
-        } else if (adminErr.message?.includes('permisos de administrador')) {
-          // Es usuario válido pero no admin — ir a tienda
-          try {
-            await login(formData.email, formData.password)
-          } catch {}
-          router.push(searchParams?.get('redirect') || '/')
-          return
-        }
-      }
-
-      // 2. Fallback: Login de Supabase para clientes regulares
-      const result = await login(formData.email, formData.password)
-      const redirectTo = searchParams?.get('redirect') || '/'
-      setTimeout(() => router.push(redirectTo), 300)
+      console.log("🔗 [LOGIN] Enviando credenciales al backend...");
+      const result = await adminLogin(formData.email, formData.password)
+      console.log("✅ [LOGIN] Backend respondió con éxito!");
       
+      const redirectTo = searchParams?.get('redirect') || '/admin/dashboard'
+      setTimeout(() => router.push(redirectTo), 300)
     } catch (err: any) {
-      const msg = err?.message || ""
-      if (msg.includes("Invalid login credentials") || msg.includes("invalid_credentials")) {
-        setError("Email o contraseña incorrectos")
-      } else if (msg.includes("Email not confirmed")) {
-        setError("Por favor verifica tu email antes de iniciar sesión")
+      console.error("❌ [LOGIN] Error en el flujo del backend:", err);
+      
+      if (err.message?.includes('fetch') || err.message?.includes('Network')) {
+        setError("No se pudo conectar con el servidor (puerto 5010). Verifica que el backend esté encendido.");
       } else {
-        setError("Error al iniciar sesión. Intenta nuevamente.")
+        setError(err.message || "Email o contraseña incorrectos en la base de datos.");
       }
     } finally {
       setLoading(false)

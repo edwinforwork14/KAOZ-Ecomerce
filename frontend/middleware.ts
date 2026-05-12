@@ -1,8 +1,10 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/utils/supabase/middleware";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  // En la nueva arquitectura, la protección de rutas se puede manejar 
+  // mediante cookies si es necesario, o validando el token en el cliente/servidor.
+  // Por ahora, permitimos el paso y dejamos que el Backend valide los tokens.
+  return NextResponse.next();
 }
 
 export const config = {

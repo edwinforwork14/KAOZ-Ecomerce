@@ -1,6 +1,4 @@
-import { createClient } from "@/utils/supabase/client"
-
-const supabase = createClient()
+// const BACKEND_URL = ... (ya definido abajo)
 
 // Helper para limpiar URLs de imágenes
 export const cleanImageUrl = (url: string) => {
@@ -537,30 +535,12 @@ const getAuthHeaders = async () => {
     headers['x-session-id'] = sessionId
   }
 
-  // 1. Prioridad: Token de admin del backend (JWT propio, independiente de Supabase)
+  // Token de admin del backend (JWT propio, independiente de Supabase)
   if (typeof window !== 'undefined') {
     const adminToken = localStorage.getItem(ADMIN_TOKEN_KEY)
     if (adminToken) {
       headers['Authorization'] = `Bearer ${adminToken}`
-      return headers
     }
-  }
-
-  // 2. Fallback: Sesión de Supabase (para clientes regulares)
-  // Cache de sesión para evitar spam de requests
-  const now = Date.now()
-  if (!cachedSession || (now - lastSessionFetch > SESSION_CACHE_TIME)) {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      cachedSession = session
-      lastSessionFetch = now
-    } catch (e) {
-      // Supabase no disponible, continuar sin token
-    }
-  }
-
-  if (cachedSession?.access_token) {
-    headers['Authorization'] = `Bearer ${cachedSession.access_token}`
   }
   
   return headers

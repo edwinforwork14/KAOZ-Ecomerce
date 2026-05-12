@@ -1,77 +1,54 @@
 'use server';
 
-import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
+
+const BACKEND_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5010").replace(/\/$/, "");
 
 export async function getProducts(params?: {
   category?: string;
   search?: string;
   limit?: number;
 }) {
-  const supabase = await createClient();
-  
-  let query = supabase
-    .from('products')
-    .select(`
-      *,
-      categories (name, slug),
-      product_variants (
-        *,
-        product_sizes (*)
-      ),
-      product_images (*)
-    `)
-    .eq('is_active', true);
+  try {
+    const queryParams = new URLSearchParams();
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
 
-  if (params?.category) {
-    query = query.eq('category_id', params.category);
-  }
+    const response = await fetch(`${BACKEND_URL}/api/products?${queryParams.toString()}`);
+    const data = await response.json();
 
-  if (params?.search) {
-    query = query.ilike('name', `%${params.search}%`);
-  }
+    if (!data.success) {
+      return { success: false, error: data.message || 'Error fetching products' };
+    }
 
-  if (params?.limit) {
-    query = query.limit(params.limit);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching products:', error);
+    return { success: true, data: data.products };
+  } catch (error: any) {
+    console.error('Error in getProducts action:', error);
     return { success: false, error: error.message };
   }
-
-  return { success: true, data };
 }
 
 export async function createOrder(orderData: any) {
-  const supabase = await createClient();
-  
-  // 1. Create Order
-  const { data: order, error: orderError } = await supabase
-    .from('orders')
-    .insert([{
-      ...orderData.main,
-      order_number: `YF-${Date.now()}`
-    }])
-    .select()
-    .single();
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderData)
+    });
+    
+    const data = await response.json();
 
-  if (orderError) return { success: false, error: orderError.message };
+    if (!data.success) {
+      return { success: false, error: data.message || 'Error al crear pedido' };
+    }
 
-  // 2. Create Order Items
-  const items = orderData.items.map((item: any) => ({
-    order_id: order.id,
-    ...item
-  }));
-
-  const { error: itemsError } = await supabase
-    .from('order_items')
-    .insert(items);
-
-  if (itemsError) return { success: false, error: itemsError.message };
-
-  revalidatePath('/admin/orders');
-  return { success: true, orderNumber: order.order_number };
+    revalidatePath('/admin/orders');
+    return { success: true, orderNumber: data.order.orderNumber };
+  } catch (error: any) {
+    console.error('Error in createOrder action:', error);
+    return { success: false, error: error.message };
+  }
 }
