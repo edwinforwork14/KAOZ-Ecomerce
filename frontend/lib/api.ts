@@ -1,4 +1,11 @@
-// const BACKEND_URL = ... (ya definido abajo)
+// Sanitizar BACKEND_URL para evitar dobles slashes
+const getSanitizedBackendUrl = () => {
+  const url = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5010";
+  return url.replace(/\/$/, ''); // Remueve el slash al final si existe
+}
+
+const BACKEND_URL = getSanitizedBackendUrl();
+const API_BASE_URL = `${BACKEND_URL}/api`;
 
 // Helper para limpiar URLs de imágenes
 export const cleanImageUrl = (url: string) => {
@@ -9,14 +16,6 @@ export const cleanImageUrl = (url: string) => {
   return `${base}/uploads/${url}`
 }
 
-// Sanitizar BACKEND_URL para evitar dobles slashes
-const getSanitizedBackendUrl = () => {
-  const url = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5010";
-  return url.replace(/\/$/, ''); // Remueve el slash al final si existe
-}
-
-const BACKEND_URL = getSanitizedBackendUrl();
-const API_BASE_URL = `${BACKEND_URL}/api`;
 
 console.log("🚀 KAOZ API initialized with BACKEND_URL:", BACKEND_URL);
 
