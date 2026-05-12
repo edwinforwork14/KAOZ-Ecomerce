@@ -14,6 +14,25 @@ const getSettings = async () => {
         payment: settings.paymentMethods?.length || 0,
         shipping: settings.shippingMethods?.length || 0
       });
+
+      // Auto-reparar si los métodos están vacíos (esto pasa si se creó el registro incompleto)
+      if (!settings.paymentMethods || settings.paymentMethods.length === 0 || 
+          !settings.shippingMethods || settings.shippingMethods.length === 0) {
+        console.log("🛠️ [SETTINGS SERVICE] Detectados métodos vacíos. Auto-reparando...");
+        settings = await prisma.settings.update({
+          where: { id: "global" },
+          data: {
+            paymentMethods: settings.paymentMethods?.length ? settings.paymentMethods : [
+              { id: "whatsapp", name: "WhatsApp Pay / Transferencia", isActive: true, icon: "whatsapp" },
+              { id: "zelle", name: "Zelle", isActive: true, icon: "zelle" }
+            ],
+            shippingMethods: settings.shippingMethods?.length ? settings.shippingMethods : [
+              { id: "standard", name: "Envío Estándar", isActive: true, type: "standard", additionalCost: 5 },
+              { id: "pickup", name: "Retiro en Tienda", isActive: true, type: "pickup", additionalCost: 0 }
+            ]
+          }
+        });
+      }
     }
 
     if (!settings) {
