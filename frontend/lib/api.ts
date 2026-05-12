@@ -240,7 +240,7 @@ export async function getDashboardStats() {
 export async function updateExchangeRate() { 
   try {
     const headers = await getAuthHeaders()
-    const response = await fetch(`${API_BASE_URL}/admin/settings/exchange-rate`, {
+    const response = await fetch(`${API_BASE_URL}/settings/exchange-rate/update`, {
       method: 'POST',
       headers
     })
@@ -324,7 +324,7 @@ export async function uploadVariantImages(productId: string, variantIndex: numbe
 // === SETTINGS ===
 export async function getPublicSettings() {
   try {
-    const response = await fetch(`${API_BASE_URL}/public/settings`)
+    const response = await fetch(`${API_BASE_URL}/settings/public`)
     const data = await response.json()
     return data
   } catch (error: any) {
