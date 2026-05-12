@@ -181,7 +181,6 @@ export async function createOrder(orderData: any) {
     const data = await response.json()
     
     if (data.success) {
-      // Adaptar el formato para que el frontend siga funcionando
       return { 
         success: true, 
         order: { 
@@ -199,7 +198,17 @@ export async function createOrder(orderData: any) {
 }
 
 export async function updateOrderWhatsApp(orderId: string) {
-  return { success: true }
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}/whatsapp`, {
+      method: 'PUT',
+      headers
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error('Error in updateOrderWhatsApp:', error)
+    return { success: false, message: error.message }
+  }
 }
 
 // === USER / AUTH ===
@@ -228,13 +237,24 @@ export async function getDashboardStats() {
   }
 }
 
-export async function updateExchangeRate() { return { success: true } }
+export async function updateExchangeRate() { 
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/settings/exchange-rate`, {
+      method: 'POST',
+      headers
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error updating exchange rate:", error)
+    return { success: false, error: error.message }
+  }
+}
 
 // === ADMIN CRUD ===
 export async function createProduct(formData: FormData) {
   try {
     const headers = await getAuthHeaders()
-    // Quitamos Content-Type para que el navegador ponga el boundary de multipart/form-data
     const { 'Content-Type': _, ...authHeaders } = headers
     
     const response = await fetch(`${API_BASE_URL}/admin/products`, {
@@ -303,20 +323,21 @@ export async function uploadVariantImages(productId: string, variantIndex: numbe
 
 // === SETTINGS ===
 export async function getPublicSettings() {
-  return {
-    success: true,
-    settings: { 
-      currency: { symbol: '$', code: 'USD', showBsPrice: false },
-      exchangeRate: { usd: 1, eur: 1, date: new Date().toISOString() },
-      shippingMethods: [
-        { id: 'standard', name: 'Envío Estándar', type: 'standard', additionalCost: 5, freeFrom: 100, requiresAddress: true },
-        { id: 'pickup', name: 'Retiro en Tienda', type: 'pickup', additionalCost: 0, requiresAddress: false, pickupData: { address: 'Calle Principal #123', schedule: 'Lun-Vie 9am-6pm' } }
-      ],
-      paymentMethods: [
-        { id: 'whatsapp', name: 'WhatsApp Pay / Transferencia', icon: 'whatsapp', isActive: true, whatsappMessage: 'Hola, quiero concretar mi pago.' }
-      ]
-    },
-    exchangeRate: { usd: 1, eur: 1 }
+  try {
+    const response = await fetch(`${API_BASE_URL}/public/settings`)
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error fetching settings:", error)
+    // Fallback básico para evitar que la UI se rompa
+    return {
+      success: true,
+      settings: { 
+        currency: { symbol: '$', code: 'USD', showBsPrice: false },
+        shippingMethods: [],
+        paymentMethods: []
+      }
+    }
   }
 }
 

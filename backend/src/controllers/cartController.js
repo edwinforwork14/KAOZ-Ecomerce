@@ -26,29 +26,47 @@ exports.getCart = async (req, res) => {
         include: { items: true }
       });
     } else if (cart.items.length > 0) {
-      // AUTO-LIMPIEZA: Verificar si los productos aún existen
+      // AUTO-LIMPIEZA AVANZADA
       const validItems = [];
-      const ghostItems = [];
+      const itemsToDelete = [];
+      const itemsToUpdate = [];
 
       for (const item of cart.items) {
-        const productExists = await prisma.product.findUnique({
+        const product = await prisma.product.findUnique({
           where: { id: item.productId },
-          select: { id: true }
+          select: { id: true, price: true, isActive: true, name: true }
         });
 
-        if (productExists) {
-          validItems.push(item);
+        // 1. Si no existe o no está activo -> Eliminar
+        if (!product || !product.isActive) {
+          itemsToDelete.push(item.id);
+          continue;
+        }
+
+        // 2. Si el precio cambió -> Actualizar
+        if (product.price !== item.price) {
+          console.log(`💰 Precio de "${product.name}" cambió de ${item.price} a ${product.price}. Actualizando carrito...`);
+          const updatedItem = await prisma.cartItem.update({
+            where: { id: item.id },
+            data: { 
+              price: product.price,
+              subtotal: item.quantity * product.price
+            }
+          });
+          validItems.push(updatedItem);
         } else {
-          ghostItems.push(item.id);
+          validItems.push(item);
         }
       }
 
-      // Si hay items fantasma, eliminarlos de la base de datos
-      if (ghostItems.length > 0) {
-        console.warn(`🧹 Limpiando ${ghostItems.length} productos inexistentes del carrito`);
+      // Eliminar items inválidos de la DB
+      if (itemsToDelete.length > 0) {
+        console.warn(`🧹 Limpiando ${itemsToDelete.length} productos no disponibles del carrito`);
         await prisma.cartItem.deleteMany({
-          where: { id: { in: ghostItems } }
+          where: { id: { in: itemsToDelete } }
         });
+        cart.items = validItems;
+      } else {
         cart.items = validItems;
       }
     }
