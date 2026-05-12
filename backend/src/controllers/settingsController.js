@@ -16,7 +16,6 @@ exports.updateSettings = async (req, res) => {
   try {
     const updateData = req.body;
 
-    // Prisma update for settings record
     const settings = await prisma.settings.update({
       where: { id: "global" },
       data: updateData
@@ -216,8 +215,6 @@ exports.getExchangeRateHistory = async (req, res) => {
 
 exports.syncExchangeRateHistory = async (req, res) => {
   try {
-    // Lógica para sincronizar historial (ej. desde una API externa o regenerar desde logs)
-    // Por ahora solo llamamos al update actual
     const result = await ExchangeRate.updateFromAPI();
     res.json(result);
   } catch (error) {
@@ -248,7 +245,8 @@ exports.getPublicSettings = async (req, res) => {
     };
     const exchangeRate = await ExchangeRate.getCurrentRate();
 
-    res.json({
+    console.log("🌐 [SETTINGS CONTROLLER] Generando respuesta pública...");
+    const response = {
       success: true,
       settings: {
         currency: settings.currency || { symbol: "$", code: "USD" },
@@ -259,7 +257,14 @@ exports.getPublicSettings = async (req, res) => {
         whatsapp: settings.whatsapp || ""
       },
       exchangeRate: exchangeRate || { usd: 1, eur: 1 }
+    };
+
+    console.log("📤 [SETTINGS CONTROLLER] Enviando métodos:", {
+      payment: response.settings.paymentMethods.length,
+      shipping: response.settings.shippingMethods.length
     });
+
+    res.json(response);
   } catch (error) {
     console.error("❌ Error en getPublicSettings:", error.message);
     res.status(500).json({ 

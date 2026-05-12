@@ -2,9 +2,19 @@ const { prisma } = require("../config/database");
 
 const getSettings = async () => {
   try {
+    console.log("🔍 [SETTINGS SERVICE] Buscando configuración 'global'...");
     let settings = await prisma.settings.findUnique({
       where: { id: "global" }
     });
+
+    console.log("📊 [SETTINGS SERVICE] Resultado de DB:", settings ? "Encontrado" : "No encontrado (null)");
+    
+    if (settings) {
+      console.log("✅ [SETTINGS SERVICE] Métodos encontrados:", {
+        payment: settings.paymentMethods?.length || 0,
+        shipping: settings.shippingMethods?.length || 0
+      });
+    }
 
     if (!settings) {
       console.log("⚠️ No se encontró la configuración 'global'. Creándola...");
