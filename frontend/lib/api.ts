@@ -323,12 +323,15 @@ export async function uploadVariantImages(productId: string, variantIndex: numbe
 
 // === SETTINGS ===
 export async function getPublicSettings() {
+  const url = `${API_BASE_URL}/settings/public`;
+  console.log(`🌐 [API] Fetching public settings from: ${url}`);
   try {
-    const response = await fetch(`${API_BASE_URL}/settings/public`)
+    const response = await fetch(url)
+    console.log(`📡 [API] Response status: ${response.status}`);
     const data = await response.json()
     return data
   } catch (error: any) {
-    console.error("Error fetching settings:", error)
+    console.error("❌ [API] Error fetching settings:", error)
     // Fallback básico para evitar que la UI se rompa
     return {
       success: true,

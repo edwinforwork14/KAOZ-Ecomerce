@@ -108,20 +108,30 @@ export default function Checkout() {
   }, [user])
 
   const loadSettings = async () => {
+    console.log('📡 [CHECKOUT] Iniciando carga de configuraciones...');
     try {
       const result = await api.getPublicSettings()
+      console.log('📊 [CHECKOUT] Resultado API:', result);
       if (result.success) {
         setSettings(result.settings)
         setExchangeRate(result.exchangeRate)
+        
+        console.log('🛠️ [CHECKOUT] Métodos recibidos:', {
+          shipping: result.settings.shippingMethods?.length || 0,
+          payment: result.settings.paymentMethods?.length || 0
+        });
+
         if (result.settings.shippingMethods?.length > 0) {
           setFormData(prev => ({ ...prev, shippingMethod: result.settings.shippingMethods[0].id }))
         }
         if (result.settings.paymentMethods?.length > 0) {
           setFormData(prev => ({ ...prev, paymentMethod: result.settings.paymentMethods[0].id }))
         }
+      } else {
+        console.warn('⚠️ [CHECKOUT] API reportó éxito false:', result.message);
       }
     } catch (error) {
-      console.error('Error loading settings:', error)
+      console.error('❌ [CHECKOUT] Error fatal cargando settings:', error)
     } finally {
       setLoading(false)
     }
