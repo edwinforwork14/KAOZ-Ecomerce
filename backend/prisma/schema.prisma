@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(dbgenerated("gen_random_uuid()"))
+  id        String    @id @default(uuid())
   firstName String
   lastName  String
   email     String    @unique
@@ -30,7 +30,7 @@ model User {
 }
 
 model Category {
-  id          String     @id @default(dbgenerated("gen_random_uuid()"))
+  id          String     @id @default(uuid())
   name        String
   slug        String
   description String?
@@ -54,7 +54,7 @@ model Category {
 }
 
 model Product {
-  id              String           @id @default(dbgenerated("gen_random_uuid()"))
+  id              String           @id @default(uuid())
   name            String
   description     String
   price           Float
@@ -89,7 +89,7 @@ model Product {
 }
 
 model ProductImage {
-  id        String          @id @default(dbgenerated("gen_random_uuid()"))
+  id        String          @id @default(uuid())
   url       String
   alt       String?
   isMain    Boolean         @default(false)
@@ -103,7 +103,7 @@ model ProductImage {
 }
 
 model ProductVariant {
-  id        String         @id @default(dbgenerated("gen_random_uuid()"))
+  id        String         @id @default(uuid())
   color     String         @default("N/A")
   colorHex  String?
   productId String
@@ -115,7 +115,7 @@ model ProductVariant {
 }
 
 model ProductSize {
-  id        String         @id @default(dbgenerated("gen_random_uuid()"))
+  id        String         @id @default(uuid())
   size      String
   stock     Int            @default(0)
   sku       String?        @unique
@@ -127,7 +127,7 @@ model ProductSize {
 }
 
 model Order {
-  id              String      @id @default(dbgenerated("gen_random_uuid()"))
+  id              String      @id @default(uuid())
   orderNumber     String      @unique
   userId          String?
   customerInfo    Json
@@ -159,7 +159,7 @@ model Order {
 }
 
 model OrderItem {
-  id        String  @id @default(dbgenerated("gen_random_uuid()"))
+  id        String  @id @default(uuid())
   orderId   String
   productId String
   name      String
@@ -176,7 +176,7 @@ model OrderItem {
 }
 
 model Cart {
-  id        String     @id @default(dbgenerated("gen_random_uuid()"))
+  id        String     @id @default(uuid())
   userId    String?    @unique
   sessionId String?    @unique
   createdAt DateTime   @default(now())
@@ -189,7 +189,7 @@ model Cart {
 }
 
 model CartItem {
-  id        String  @id @default(dbgenerated("gen_random_uuid()"))
+  id        String  @id @default(uuid())
   cartId    String
   productId String
   name      String
@@ -206,7 +206,7 @@ model CartItem {
 }
 
 model ExchangeRate {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  id        String   @id @default(uuid())
   usd       Float
   eur       Float
   updatedAt DateTime @updatedAt @default(now())
@@ -226,7 +226,7 @@ model Settings {
 }
 
 model CartHistory {
-  id            String   @id @default(dbgenerated("gen_random_uuid()"))
+  id            String   @id @default(uuid())
   userId        String?
   sessionId     String?
   productId     String
@@ -244,7 +244,7 @@ model CartHistory {
 }
 
 model ProductView {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  id        String   @id @default(uuid())
   productId String
   userId    String?
   sessionId String?
@@ -259,7 +259,7 @@ model ProductView {
 }
 
 model Deployment {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  id          String   @id @default(uuid())
   version     String   @unique
   isActive    Boolean  @default(true)
   deployedAt  DateTime @default(now())
