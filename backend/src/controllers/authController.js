@@ -24,8 +24,10 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const crypto = require("crypto");
     const user = await prisma.user.create({
       data: {
+        id: crypto.randomUUID(),
         firstName,
         lastName,
         email,

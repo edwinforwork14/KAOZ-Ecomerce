@@ -49,17 +49,21 @@ describe("Auth Middleware - protect", () => {
   });
 
   it("should fallback to local JWT if Supabase fails", async () => {
-    const mockToken = jwt.sign({ id: "local-user-id" }, process.env.JWT_SECRET || "secret");
+    const originalSecret = process.env.JWT_SECRET;
+    process.env.JWT_SECRET = "test-secret";
+    
+    const mockToken = jwt.sign({ id: "local-user-id" }, process.env.JWT_SECRET);
     req.headers.authorization = `Bearer ${mockToken}`;
     
     supabase.auth.getUser.mockResolvedValue({ data: { user: null }, error: { message: "Invalid token" } });
     prisma.user.findUnique.mockResolvedValue({ id: "local-user-id", role: "admin", email: "admin@kaoz.com" });
 
-    process.env.JWT_SECRET = "secret";
     await protect(req, res, next);
 
     expect(req.user.role).toBe("admin");
     expect(next).toHaveBeenCalled();
+    
+    process.env.JWT_SECRET = originalSecret;
   });
 
   it("should return 401 if both validations fail", async () => {

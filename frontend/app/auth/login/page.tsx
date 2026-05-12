@@ -16,7 +16,7 @@ import { brandConfig } from "@/lib/config"
 // Componente separado que usa useSearchParams
 function LoginFormContent() {
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, adminLogin } = useAuth()
   const searchParams = useSearchParams()
   
   const [formData, setFormData] = useState({
@@ -47,7 +47,6 @@ function LoginFormContent() {
     setError("")
     setEmailError("")
 
-    // Validar email antes de enviar
     if (!validateEmail(formData.email)) {
       setEmailError("Por favor ingresa un email válido")
       return
@@ -56,20 +55,41 @@ function LoginFormContent() {
     setLoading(true)
 
     try {
-      const result = await login(formData.email, formData.password)
-      
-      if (result.success) {
-        // Verificar si hay un redirect parameter
-        const redirectTo = searchParams?.get('redirect') || (result.user.role === 'admin' ? '/admin/dashboard' : '/')
-        
-        setTimeout(() => {
-          router.push(redirectTo)
-        }, 500)
-      } else {
-        setError(result.message || "Credenciales incorrectas")
+      // 1. Intentar login de admin directo al backend (JWT propio, independiente de Supabase)
+      try {
+        const result = await adminLogin(formData.email, formData.password)
+        // Login de admin exitoso
+        const redirectTo = searchParams?.get('redirect') || '/admin/dashboard'
+        setTimeout(() => router.push(redirectTo), 300)
+        return
+      } catch (adminErr: any) {
+        // Si el error es de credenciales incorrectas, no intentar Supabase
+        if (adminErr.message?.includes('Credenciales') || adminErr.message?.includes('inválidas')) {
+          // Puede ser un usuario cliente — intentar Supabase
+        } else if (adminErr.message?.includes('permisos de administrador')) {
+          // Es usuario válido pero no admin — ir a tienda
+          try {
+            await login(formData.email, formData.password)
+          } catch {}
+          router.push(searchParams?.get('redirect') || '/')
+          return
+        }
       }
-    } catch (err) {
-      setError("Error de conexión. Por favor intenta de nuevo.")
+
+      // 2. Fallback: Login de Supabase para clientes regulares
+      const result = await login(formData.email, formData.password)
+      const redirectTo = searchParams?.get('redirect') || '/'
+      setTimeout(() => router.push(redirectTo), 300)
+      
+    } catch (err: any) {
+      const msg = err?.message || ""
+      if (msg.includes("Invalid login credentials") || msg.includes("invalid_credentials")) {
+        setError("Email o contraseña incorrectos")
+      } else if (msg.includes("Email not confirmed")) {
+        setError("Por favor verifica tu email antes de iniciar sesión")
+      } else {
+        setError("Error al iniciar sesión. Intenta nuevamente.")
+      }
     } finally {
       setLoading(false)
     }

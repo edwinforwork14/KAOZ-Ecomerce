@@ -194,7 +194,8 @@ exports.getExchangeRate = async (req, res) => {
 
 exports.updateExchangeRate = async (req, res) => {
   try {
-    const result = await ExchangeRate.updateFromAPI();
+    const { usd, eur } = req.body;
+    const result = await ExchangeRate.updateFromAPI(usd ? { usd, eur } : null);
     res.json(result);
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

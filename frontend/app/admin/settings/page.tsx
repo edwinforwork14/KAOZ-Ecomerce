@@ -205,6 +205,7 @@ export default function AdminSettingsPage() {
   const [updatingRate, setUpdatingRate] = useState(false)
   const [rateHistory, setRateHistory] = useState<Array<{ date: string; usd: number; eur: number }>>([])
   const [showHistory, setShowHistory] = useState(false)
+  const [manualRate, setManualRate] = useState({ usd: "" })
 
   useEffect(() => {
     loadAll()
@@ -271,23 +272,26 @@ export default function AdminSettingsPage() {
   }
 
   // Exchange Rate
-  const updateExchangeRate = async () => {
+  const updateExchangeRate = async (manualData?: { usd: number, eur?: number }) => {
     setUpdatingRate(true)
     try {
-      const result = await api.updateExchangeRate()
+      const result = await api.updateExchangeRate(manualData)
       if (result?.success) {
-        if (result.rate) setExchangeRate(result.rate as ExchangeRate)
+        // El backend devuelve { success: true, current: ... } para ExchangeRate
+        if (result.current) setExchangeRate(result.current as ExchangeRate)
         toast({
-          title: "Actualizado",
+          title: manualData ? "Tasa Fijada" : "Actualizado",
           description: "Tasa de cambio actualizada correctamente",
         })
+        if (manualData) setManualRate({ usd: "" })
+        await loadRateHistory() // Actualizar historial
       } else {
         throw new Error(result?.message || "updateExchangeRate failed")
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Error al actualizar tasa de cambio",
+        description: error.message || "Error al actualizar tasa de cambio",
         variant: "destructive",
       })
     } finally {
@@ -598,39 +602,35 @@ export default function AdminSettingsPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div className="flex items-center justify-between p-6 border border-gray-800 bg-gray-900">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white">Eliminación Destructiva</p>
-                  <p className="text-[9px] text-gray-500 uppercase mt-1">Permitir purga manual de registros</p>
-                </div>
-                <Switch
-                  checked={!!settings.orders?.allowDelete}
-                  onCheckedChange={(checked) => {
-                    saveSettings({ orders: { ...settings.orders, allowDelete: checked } })
-                  }}
-                  className="data-[state=checked]:bg-white data-[state=unchecked]:bg-gray-700"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Prefijo de Manifiesto</label>
-                <div className="flex gap-2">
-                  <Input
-                    value={settings.orders?.prefix ?? ""}
-                    onChange={(e) => setSettings({ ...settings, orders: { ...settings.orders, prefix: e.target.value } })}
-                    placeholder="EJ: KAOZ"
-                    className="h-14 rounded-none border-gray-800 bg-gray-900 text-white focus:ring-0 font-black uppercase tracking-widest"
+               <div className="flex items-center justify-between p-6 border border-gray-800 bg-gray-900/50">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-black uppercase tracking-widest text-white">Borrado de Pedidos</Label>
+                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Permitir eliminación física de registros</p>
+                  </div>
+                  <Switch
+                    checked={!!settings.orders?.allowDelete}
+                    onCheckedChange={(checked) => {
+                      saveSettings({ orders: { ...settings.orders, allowDelete: checked } })
+                    }}
+                    className="data-[state=checked]:bg-kaosNeon"
                   />
-                  <Button 
-                    variant="outline" 
-                    onClick={() => saveSettings({ orders: settings.orders })} 
-                    disabled={saving}
-                    className="h-14 rounded-none border-gray-800 text-white hover:bg-white hover:text-black font-black uppercase text-[10px] tracking-widest"
-                  >
-                    <Save className="h-4 w-4 mr-2" /> ACTUALIZAR
-                  </Button>
-                </div>
-              </div>
+               </div>
+               <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Prefijo de Orden</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={settings.orders?.prefix || "KAOZ"}
+                      onChange={(e) => setSettings({ ...settings, orders: { ...settings.orders, prefix: e.target.value.toUpperCase() } })}
+                      className="h-14 rounded-none border-gray-800 bg-gray-900 text-white focus:ring-0 font-black text-center tracking-widest uppercase"
+                    />
+                    <Button
+                      onClick={() => saveSettings({ orders: { ...settings.orders, prefix: settings.orders?.prefix || "KAOZ" } })}
+                      className="h-14 rounded-none bg-white text-black px-8 font-black uppercase text-[10px] tracking-widest"
+                    >
+                      <Save className="h-4 w-4 mr-2" /> FIJAR
+                    </Button>
+                  </div>
+               </div>
             </div>
           </div>
         </TabsContent>
@@ -639,25 +639,21 @@ export default function AdminSettingsPage() {
             TAB: PAYMENT
         ========================== */}
         <TabsContent value="payment" className="m-0 space-y-12">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-2 border-black pb-6">
+          <div className="flex items-center justify-between border-b-2 border-black pb-6">
             <div>
-              <h3 className="text-3xl font-black uppercase tracking-tighter">Terminales de Recepción</h3>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Configuración de Pasarelas Activas</p>
+              <h3 className="text-3xl font-black uppercase tracking-tighter">Pasarelas de Pago</h3>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Canales de Recepción de Fondos</p>
             </div>
             <Button
               onClick={() => {
                 setEditingPayment({
                   id: "",
                   name: "",
-                  description: "",
                   isActive: true,
                   requiresProof: true,
-                  whatsappMessage: "",
                   hasDiscount: false,
                   discountPercentage: 0,
-                  order: (settings.paymentMethods?.length ?? 0) + 1,
-                  accountData: {},
-                  instructions: "",
+                  order: settings.paymentMethods.length + 1
                 })
                 setShowPaymentForm(true)
               }}
@@ -669,7 +665,7 @@ export default function AdminSettingsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {sortedPayments.map((method) => {
-              const Icon = paymentIconFor(method.id || method.name)
+              const Icon = paymentIconFor(method.id)
               return (
                 <div key={method._id ?? method.id} className="industrial-card p-6 bg-white border border-black flex items-center justify-between group hover:bg-gray-50 transition-all">
                   <div className="flex items-center gap-6">
@@ -680,15 +676,10 @@ export default function AdminSettingsPage() {
                       <div className="flex items-center gap-3">
                         <span className="text-lg font-black uppercase tracking-tight">{method.name}</span>
                         {!method.isActive && (
-                          <span className="text-[8px] font-black uppercase tracking-widest bg-gray-200 text-gray-500 px-1">OFFLINE</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest bg-gray-200 text-gray-500 px-1">INACTIVO</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 mt-1">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">ORDEN: {method.order}</span>
-                        {method.hasDiscount && (
-                          <span className="text-[9px] font-black uppercase text-green-600 tracking-widest">PROMO: -{method.discountPercentage}%</span>
-                        )}
-                      </div>
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{method.description || "Sin descripción"}</p>
                     </div>
                   </div>
 
@@ -698,10 +689,7 @@ export default function AdminSettingsPage() {
                       size="sm"
                       className="rounded-none h-10 w-10 border border-black hover:bg-black hover:text-white"
                       onClick={() => {
-                        setEditingPayment({
-                          ...method,
-                          accountData: { ...(method.accountData || {}) },
-                        })
+                        setEditingPayment({ ...method })
                         setShowPaymentForm(true)
                       }}
                     >
@@ -726,24 +714,22 @@ export default function AdminSettingsPage() {
             TAB: SHIPPING
         ========================== */}
         <TabsContent value="shipping" className="m-0 space-y-12">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-2 border-black pb-6">
+          <div className="flex items-center justify-between border-b-2 border-black pb-6">
             <div>
-              <h3 className="text-3xl font-black uppercase tracking-tighter">Red de Distribución</h3>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gestión de Logística y Despacho</p>
+              <h3 className="text-3xl font-black uppercase tracking-tighter">Logística y Rutas</h3>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sistemas de Distribución y Entrega</p>
             </div>
             <Button
               onClick={() => {
                 setEditingShipping({
                   id: "",
                   name: "",
-                  description: "",
                   isActive: true,
                   type: "delivery",
                   additionalCost: 0,
-                  freeFrom: 0,
+                  freeFrom: 100,
                   requiresAddress: true,
-                  order: (settings.shippingMethods?.length ?? 0) + 1,
-                  pickupData: {},
+                  order: settings.shippingMethods.length + 1
                 })
                 setShowShippingForm(true)
               }}
@@ -826,14 +812,37 @@ export default function AdminSettingsPage() {
                   ÚLTIMA SINCRONIZACIÓN: {exchangeRate?.date ? new Date(exchangeRate.date).toLocaleString() : "N/A"}
                 </p>
                 
-                <div className="pt-6">
+                <div className="pt-8 space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Fijar Tasa Manual (Bs)"
+                      value={manualRate.usd}
+                      onChange={(e) => setManualRate({ usd: e.target.value })}
+                      className="h-14 rounded-none border-gray-800 bg-gray-900 text-white focus:ring-0 font-black text-center tracking-widest"
+                    />
+                    <Button
+                      onClick={() => updateExchangeRate({ usd: parseFloat(manualRate.usd) })}
+                      disabled={updatingRate || !manualRate.usd}
+                      className="h-14 rounded-none bg-kaosNeon text-black px-8 font-black uppercase text-[10px] tracking-widest hover:bg-white"
+                    >
+                      <Save className="h-4 w-4 mr-2" /> FIJAR
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 py-2">
+                    <div className="h-[1px] flex-1 bg-gray-800"></div>
+                    <span className="text-[9px] font-black uppercase text-gray-600">ó</span>
+                    <div className="h-[1px] flex-1 bg-gray-800"></div>
+                  </div>
+
                   <Button
-                    onClick={updateExchangeRate}
+                    onClick={() => updateExchangeRate()}
                     disabled={updatingRate}
                     className="w-full h-14 rounded-none bg-white text-black hover:bg-gray-200 font-black uppercase text-xs tracking-widest transition-all shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
                   >
                     {updatingRate ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                    FORZAR REFRESCO BCV
+                    FORZAR REFRESCO BCV (AUTO)
                   </Button>
                 </div>
               </div>
@@ -1044,4 +1053,4 @@ export default function AdminSettingsPage() {
       )}
     </div>
   )
-}
+}

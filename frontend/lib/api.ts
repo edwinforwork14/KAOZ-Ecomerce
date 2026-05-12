@@ -237,16 +237,39 @@ export async function getDashboardStats() {
   }
 }
 
-export async function updateExchangeRate() { 
+export async function updateExchangeRate(data?: { usd: number, eur?: number }) { 
   try {
     const headers = await getAuthHeaders()
     const response = await fetch(`${API_BASE_URL}/settings/exchange-rate/update`, {
       method: 'POST',
-      headers
+      headers,
+      body: data ? JSON.stringify(data) : undefined
     })
     return await response.json()
   } catch (error: any) {
     console.error("Error updating exchange rate:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function getExchangeRate() {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings/exchange-rate`, { headers })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error fetching exchange rate:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function getExchangeRateHistory(limit: number = 30) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings/exchange-rate/history?limit=${limit}`, { headers })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error fetching exchange rate history:", error)
     return { success: false, error: error.message }
   }
 }
@@ -344,6 +367,122 @@ export async function getPublicSettings() {
   }
 }
 
+export async function getSettings() {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings`, { headers })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error fetching admin settings:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function updateSettings(updates: any) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(updates)
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error updating settings:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Payment Methods
+export async function addPaymentMethod(methodData: any) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings/payment-methods`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(methodData)
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error adding payment method:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function updatePaymentMethod(id: string, methodData: any) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings/payment-methods/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(methodData)
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error updating payment method:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function deletePaymentMethod(id: string) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings/payment-methods/${id}`, {
+      method: 'DELETE',
+      headers
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error deleting payment method:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Shipping Methods
+export async function addShippingMethod(methodData: any) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings/shipping-methods`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(methodData)
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error adding shipping method:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function updateShippingMethod(id: string, methodData: any) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings/shipping-methods/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(methodData)
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error updating shipping method:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function deleteShippingMethod(id: string) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/settings/shipping-methods/${id}`, {
+      method: 'DELETE',
+      headers
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error deleting shipping method:", error)
+    return { success: false, error: error.message }
+  }
+}
+
 // === CART HELPERS ===
 const getSessionId = () => {
   if (typeof window === 'undefined') return null
@@ -359,6 +498,8 @@ let cachedSession: any = null
 let lastSessionFetch = 0
 const SESSION_CACHE_TIME = 60 * 1000 // 1 minuto
 
+const ADMIN_TOKEN_KEY = "kaoz_admin_token"
+
 const getAuthHeaders = async () => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -368,13 +509,27 @@ const getAuthHeaders = async () => {
   if (sessionId) {
     headers['x-session-id'] = sessionId
   }
-  
-  // Optimización: Cache de la sesión para evitar spam a Supabase (Rate Limit)
+
+  // 1. Prioridad: Token de admin del backend (JWT propio, independiente de Supabase)
+  if (typeof window !== 'undefined') {
+    const adminToken = localStorage.getItem(ADMIN_TOKEN_KEY)
+    if (adminToken) {
+      headers['Authorization'] = `Bearer ${adminToken}`
+      return headers
+    }
+  }
+
+  // 2. Fallback: Sesión de Supabase (para clientes regulares)
+  // Cache de sesión para evitar spam de requests
   const now = Date.now()
   if (!cachedSession || (now - lastSessionFetch > SESSION_CACHE_TIME)) {
-    const { data: { session } } = await supabase.auth.getSession()
-    cachedSession = session
-    lastSessionFetch = now
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      cachedSession = session
+      lastSessionFetch = now
+    } catch (e) {
+      // Supabase no disponible, continuar sin token
+    }
   }
 
   if (cachedSession?.access_token) {
@@ -383,6 +538,7 @@ const getAuthHeaders = async () => {
   
   return headers
 }
+
 
 // === CART ===
 export async function getCart() {
@@ -495,13 +651,22 @@ export const api = {
   updateOrderWhatsApp,
   getMe,
   getDashboardStats,
+  getExchangeRate,
+  getExchangeRateHistory,
   updateExchangeRate,
   createProduct,
   updateProduct,
   deleteProduct,
   uploadVariantImages,
   getPublicSettings,
-  getSettings: getPublicSettings,
+  getSettings,
+  updateSettings,
+  addPaymentMethod,
+  updatePaymentMethod,
+  deletePaymentMethod,
+  addShippingMethod,
+  updateShippingMethod,
+  deleteShippingMethod,
   getCart,
   addToCart,
   removeFromCart,

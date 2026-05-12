@@ -13,7 +13,7 @@
     "kill-port": "npx kill-port 5010",
     "prisma:generate": "prisma generate",
     "postinstall": "prisma generate",
-    "test": "jest --detectOpenHandles --forceExit"
+    "test": "jest --setupFilesAfterEnv=./tests/setup.js --detectOpenHandles --forceExit"
   },
   "dependencies": {
     "@prisma/client": "^5.12.1",

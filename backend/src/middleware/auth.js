@@ -16,21 +16,55 @@ const normalizeUser = async (user) => {
     return user;
   }
 
-  // Si viene de Supabase, buscarlo en nuestra DB o crear un perfil temporal
-  const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+  // Si viene de Supabase, buscarlo en nuestra DB o crear un perfil local
+  let dbUser = await prisma.user.findUnique({ where: { id: user.id } });
   
-  if (dbUser) return dbUser;
+  if (!dbUser && user.email) {
+    console.log(`🔍 [AUTH] ID no encontrado (${user.id}), buscando por email: ${user.email}`);
+    dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+    
+    if (dbUser) {
+      // Sincronizar ID de Supabase si encontramos por email
+      console.log(`🔄 [AUTH] Sincronizando ID de Supabase para ${user.email}`);
+      dbUser = await prisma.user.update({
+        where: { email: user.email },
+        data: { id: user.id }
+      });
+    }
+  }
 
-  // Fallback: Usuario de Supabase no sincronizado aún
-  return {
-    id: user.id,
-    email: user.email,
-    role: user.app_metadata?.role || "user",
-    isActive: true,
-    firstName: user.user_metadata?.firstName || "",
-    lastName: user.user_metadata?.lastName || "",
-    phone: user.phone || ""
-  };
+  // Si después de buscar no existe, lo creamos para mantener integridad
+  if (!dbUser) {
+    console.log(`✨ [AUTH] Creando nuevo usuario local para: ${user.email}`);
+    try {
+      dbUser = await prisma.user.create({
+        data: {
+          id: user.id,
+          email: user.email,
+          firstName: user.user_metadata?.firstName || user.email.split('@')[0],
+          lastName: user.user_metadata?.lastName || "",
+          password: "supabase-auth-user", // Placeholder, no se usa para login de Supabase
+          role: user.app_metadata?.role || "user",
+          isActive: true,
+          phone: user.phone || ""
+        }
+      });
+    } catch (createError) {
+      console.error("❌ [AUTH] Error al crear usuario en sync:", createError.message);
+      // Fallback a objeto volátil si falla la creación
+      return {
+        id: user.id,
+        email: user.email,
+        role: user.app_metadata?.role || "user",
+        isActive: true,
+        firstName: user.user_metadata?.firstName || "",
+        lastName: user.user_metadata?.lastName || "",
+        phone: user.phone || ""
+      };
+    }
+  }
+
+  return dbUser;
 };
 
 exports.protect = async (req, res, next) => {

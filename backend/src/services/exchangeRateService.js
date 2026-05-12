@@ -11,8 +11,25 @@ const getCurrentRate = async () => {
   }
 };
 
-const updateFromAPI = async () => {
+const updateFromAPI = async (manualRate = null) => {
   try {
+    // Si se proporciona una tasa manual, usarla directamente
+    if (manualRate && manualRate.usd) {
+      const updatedRate = await prisma.exchangeRate.upsert({
+        where: { date: new Date().toISOString().split('T')[0] },
+        update: {
+          usd: parseFloat(manualRate.usd),
+          eur: parseFloat(manualRate.eur || manualRate.usd),
+        },
+        create: {
+          date: new Date().toISOString().split('T')[0],
+          usd: parseFloat(manualRate.usd),
+          eur: parseFloat(manualRate.eur || manualRate.usd),
+        }
+      });
+      return { success: true, current: updatedRate, manual: true };
+    }
+
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     
     const response = await fetch(
@@ -48,9 +65,9 @@ const updateFromAPI = async () => {
       };
     }
 
-    return { success: false, message: "Estructura de datos inesperada" };
+    return { success: false, message: "Estructura de datos inesperada o API desactualizada" };
   } catch (error) {
-    console.error("❌ Error al actualizar tasa de cambio en Prisma:", error.message);
+    console.error("❌ Error al actualizar tasa de cambio:", error.message);
     return { success: false, message: error.message };
   }
 };

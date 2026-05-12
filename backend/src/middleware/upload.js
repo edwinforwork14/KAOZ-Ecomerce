@@ -48,7 +48,6 @@ const processImage = async (req, res, next) => {
       files.map(async (file) => {
         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
         const filename = `product-${uniqueSuffix}.webp`;
-        const outputPath = path.join(uploadDir, filename);
 
         let inputBuffer = file.buffer;
 

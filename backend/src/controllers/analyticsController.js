@@ -6,11 +6,15 @@ exports.getDashboardStats = async (req, res) => {
     const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+    // Ingresos confirmados (excluyendo cancelados)
     const validRevenueStatuses = ["confirmed", "processing", "shipped", "delivered"];
+    // Para conteos totales incluimos pendientes también
+    const allActiveStatuses = ["pending", "confirmed", "processing", "shipped", "delivered"];
 
     const [
       totalOrders,
       revenueResult,
+      pendingRevenueResult,
       totalCustomers,
       totalProducts,
       currentMonthRevenueResult,
@@ -22,9 +26,16 @@ exports.getDashboardStats = async (req, res) => {
       totalViewsResult,
       paymentMethodStats,
     ] = await Promise.all([
-      prisma.order.count({ where: { orderStatus: { in: validRevenueStatuses }, isDeleted: false } }),
+      // Total de pedidos activos (incluyendo pending)
+      prisma.order.count({ where: { orderStatus: { in: allActiveStatuses }, isDeleted: false } }),
+      // Ingresos de pedidos confirmados
       prisma.order.aggregate({
         where: { orderStatus: { in: validRevenueStatuses }, isDeleted: false },
+        _sum: { total: true }
+      }),
+      // Ingresos de pedidos pendientes (para mostrar como "potencial")
+      prisma.order.aggregate({
+        where: { orderStatus: "pending", isDeleted: false },
         _sum: { total: true }
       }),
       prisma.user.count({ where: { role: "user", isActive: true } }),
@@ -32,7 +43,7 @@ exports.getDashboardStats = async (req, res) => {
       prisma.order.aggregate({
         where: {
           createdAt: { gte: startOfCurrentMonth },
-          orderStatus: { in: validRevenueStatuses },
+          orderStatus: { in: allActiveStatuses },
           isDeleted: false
         },
         _sum: { total: true }
@@ -40,7 +51,7 @@ exports.getDashboardStats = async (req, res) => {
       prisma.order.count({
         where: {
           createdAt: { gte: thirtyDaysAgo },
-          orderStatus: { in: validRevenueStatuses },
+          orderStatus: { in: allActiveStatuses },
           isDeleted: false
         }
       }),
@@ -63,15 +74,16 @@ exports.getDashboardStats = async (req, res) => {
       }),
       prisma.order.groupBy({
         by: ['paymentMethod'],
-        where: { orderStatus: { in: validRevenueStatuses }, isDeleted: false },
+        where: { orderStatus: { in: allActiveStatuses }, isDeleted: false },
         _count: { _all: true },
         _sum: { total: true }
       })
     ]);
 
     const totalRevenue = revenueResult._sum.total || 0;
-    const aov = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const totalViews = totalViewsResult._sum.viewCount || 1; // Evitar división por cero
+    const pendingRevenue = pendingRevenueResult._sum.total || 0;
+    const aov = totalOrders > 0 ? (totalRevenue + pendingRevenue) / totalOrders : 0;
+    const totalViews = totalViewsResult._sum.viewCount || 1;
     const conversionRate = (totalOrders / totalViews) * 100;
 
     // Productos con bajo stock
@@ -180,6 +192,8 @@ exports.getDashboardStats = async (req, res) => {
       stats: {
         totalOrders,
         totalRevenue,
+        pendingRevenue,
+        totalCombinedRevenue: totalRevenue + pendingRevenue,
         totalCustomers,
         totalProducts,
         currentMonthRevenue: currentMonthRevenueResult._sum.total || 0,
