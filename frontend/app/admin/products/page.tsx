@@ -32,10 +32,15 @@ import {
   ChevronRight,
   Grid3x3,
   List,
+  Filter,
+  BarChart4,
+  LayoutGrid,
+  Trello
 } from "lucide-react"
 import { api } from "@/lib/api"
 import { brandConfig } from "@/lib/config"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 interface ExistingImage {
   _id: string
@@ -78,10 +83,6 @@ function ensurePriceConfig(pc: any): PriceConfig {
   }
 }
 
-function safeLower(v: unknown) {
-  return String(v ?? "").toLowerCase()
-}
-
 export default function ProductsPage() {
   const router = useRouter()
   const { toast } = useToast()
@@ -105,29 +106,8 @@ export default function ProductsPage() {
   // Vista
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
-  // Images state
-  const [generalImages, setGeneralImages] = useState<ExistingImage[]>([])
-  const [newGeneralImages, setNewGeneralImages] = useState<File[]>([])
-  const [variantNewImages, setVariantNewImages] = useState<{ [key: number]: File[] }>({})
-
   // Form data
-  const [formData, setFormData] = useState<{
-    name: string
-    description: string
-    price: string
-    originalPrice: string
-    category: string
-    subcategory: string
-    brand: string
-    isNew: boolean
-    isFeatured: boolean
-    isActive: boolean
-    newDurationDays: string
-    tags: string
-    features: string
-    priceConfig: PriceConfig
-    variants: Variant[]
-  }>({
+  const [formData, setFormData] = useState<any>({
     name: "",
     description: "",
     price: "",
@@ -142,19 +122,7 @@ export default function ProductsPage() {
     tags: "",
     features: "",
     priceConfig: { mode: "fixed", percentage: 0, basePrice: 0 },
-    variants: [
-      {
-        color: "",
-        colorHex: "#000000",
-        images: [],
-        sizes: [
-          { size: "S", stock: 0 },
-          { size: "M", stock: 0 },
-          { size: "L", stock: 0 },
-          { size: "XL", stock: 0 },
-        ],
-      },
-    ],
+    variants: [],
   })
 
   useEffect(() => {
@@ -164,14 +132,8 @@ export default function ProductsPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const params: any = {
-        page: currentPage,
-        limit: itemsPerPage,
-      }
-
-      if (search.trim()) {
-        params.search = search.trim()
-      }
+      const params: any = { page: currentPage, limit: itemsPerPage }
+      if (search.trim()) params.search = search.trim()
 
       const [productsResult, categoriesResult, settingsResult] = await Promise.all([
         api.getProducts(params),
@@ -188,294 +150,30 @@ export default function ProductsPage() {
       if (settingsResult?.success) setSettings(settingsResult.settings || null)
     } catch (error) {
       console.error("Error loading data:", error)
-      toast({
-        title: "Error",
-        description: "Error al cargar datos",
-        variant: "destructive",
-      })
     } finally {
       setLoading(false)
     }
   }
 
-  const calculatePrice = useCallback(() => {
-    const pc = ensurePriceConfig(formData.priceConfig)
-    if (pc.mode === "fixed") return toNumber(formData.price, 0)
-    if (pc.basePrice <= 0) return 0
-    if (pc.mode === "markup") return pc.basePrice * (1 + pc.percentage / 100)
-    return pc.basePrice * (1 - pc.percentage / 100)
-  }, [formData.priceConfig, formData.price])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
-
-    try {
-      const formDataToSend = new FormData()
-
-      newGeneralImages.forEach((image) => {
-        formDataToSend.append("images", image)
-      })
-
-      const variantsToSend = formData.variants.map((variant) => ({
-        ...variant,
-        images: variant.images || [],
-      }))
-
-      const pc = ensurePriceConfig(formData.priceConfig)
-      let finalPrice = toNumber(formData.price, 0)
-      let finalOriginalPrice: number | undefined =
-        formData.originalPrice !== "" ? toNumber(formData.originalPrice, undefined as any) : undefined
-
-      if (pc.mode === "markup" && pc.basePrice > 0) {
-        finalPrice = pc.basePrice * (1 + pc.percentage / 100)
-      } else if (pc.mode === "discount" && pc.basePrice > 0) {
-        finalOriginalPrice = pc.basePrice
-        finalPrice = pc.basePrice * (1 - pc.percentage / 100)
-      }
-
-      const dataToSend = {
-        name: formData.name,
-        description: formData.description,
-        price: finalPrice,
-        originalPrice: finalOriginalPrice,
-        categoryId: formData.category,
-        subcategoryId: formData.subcategory || undefined,
-        brand: formData.brand,
-        isNew: formData.isNew,
-        isFeatured: formData.isFeatured,
-        isActive: formData.isActive,
-        newDurationDays: formData.newDurationDays ? parseInt(formData.newDurationDays, 10) : undefined,
-        tags: formData.tags ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
-        features: formData.features ? formData.features.split(",").map((f) => f.trim()).filter(Boolean) : [],
-        priceConfig: pc,
-        variants: variantsToSend,
-        images: generalImages,
-      }
-
-      formDataToSend.append("data", JSON.stringify(dataToSend))
-
-      let result
-      if (editingProduct) {
-        result = await api.updateProduct(editingProduct.id || editingProduct._id, formDataToSend)
-      } else {
-        result = await api.createProduct(formDataToSend)
-      }
-
-      if (result?.success) {
-        const productId = result.product?.id || result.product?._id
-        if (productId) {
-          for (const [variantIndex, files] of Object.entries(variantNewImages)) {
-            if (files.length > 0) {
-              const variantFormData = new FormData()
-              files.forEach((file) => variantFormData.append("images", file))
-              await api.uploadVariantImages(productId, parseInt(variantIndex, 10), variantFormData)
-            }
-          }
-        }
-
-        toast({
-          title: "Éxito",
-          description: editingProduct ? "Producto actualizado" : "Producto creado",
-        })
-        setIsDialogOpen(false)
-        await loadData()
-        resetForm()
-      } else {
-        toast({
-          title: "Error",
-          description: result?.message || "Error al guardar",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Error saving product:", error)
-      toast({
-        title: "Error",
-        description: "Error al guardar producto",
-        variant: "destructive",
-      })
-    } finally {
-      setSaving(false)
-    }
-  }
-
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este producto?")) return
-
+    if (!confirm("¿EJECUTAR PROTOCOLO DE ELIMINACIÓN?")) return
     try {
       const result = await api.deleteProduct(id)
       if (result?.success) {
-        toast({ title: "Eliminado", description: "Producto eliminado correctamente" })
+        toast({ title: "ELIMINADO", description: "REGISTRO REMOVIDO DEL CATÁLOGO" })
         loadData()
-      } else {
-        toast({
-          title: "Error",
-          description: result?.message || "No se pudo eliminar",
-          variant: "destructive",
-        })
       }
     } catch (error) {
       console.error("Error deleting product:", error)
-      toast({
-        title: "Error",
-        description: "Error al eliminar producto",
-        variant: "destructive",
-      })
     }
   }
 
   const handleEdit = (product: any) => {
-    const productPriceConfig = ensurePriceConfig(product?.priceConfig)
-
     setEditingProduct(product)
-    setFormData({
-      name: String(product?.name ?? ""),
-      description: String(product?.description ?? ""),
-      price: String(product?.price ?? ""),
-      originalPrice: product?.originalPrice != null ? String(product.originalPrice) : "",
-      category: String(product?.categoryId || product?.category?.id || product?.category?._id || (typeof product?.category === 'string' ? product.category : "")),
-      subcategory: String(product?.subcategoryId || product?.subcategory?.id || product?.subcategory?._id || (typeof product?.subcategory === 'string' ? product.subcategory : "")),
-      brand: String(product?.brand ?? ""),
-      isNew: !!product?.isNew,
-      isFeatured: !!product?.isFeatured,
-      isActive: product?.isActive !== false,
-      newDurationDays: product?.newDurationDays != null ? String(product.newDurationDays) : "",
-      tags: Array.isArray(product?.tags) ? product.tags.join(", ") : "",
-      features: Array.isArray(product?.features) ? product.features.join(", ") : "",
-      priceConfig: productPriceConfig,
-      variants: Array.isArray(product?.variants)
-        ? product.variants.map((v: any) => ({
-            color: String(v?.color ?? ""),
-            colorHex: String(v?.colorHex ?? "#000000"),
-            images: Array.isArray(v?.images) ? v.images : [],
-            sizes: Array.isArray(v?.sizes)
-              ? v.sizes.map((s: any) => ({
-                  size: String(s?.size ?? ""),
-                  stock: toNumber(s?.stock, 0),
-                  sku: s?.sku,
-                }))
-              : [
-                  { size: "S", stock: 0 },
-                  { size: "M", stock: 0 },
-                  { size: "L", stock: 0 },
-                  { size: "XL", stock: 0 },
-                ],
-          }))
-        : [
-            {
-              color: "",
-              colorHex: "#000000",
-              images: [],
-              sizes: [
-                { size: "S", stock: 0 },
-                { size: "M", stock: 0 },
-                { size: "L", stock: 0 },
-                { size: "XL", stock: 0 },
-              ],
-            },
-          ],
-    })
-
-    setGeneralImages(Array.isArray(product?.images) ? product.images : [])
-    setNewGeneralImages([])
-    setVariantNewImages({})
-    setActiveTab("basic")
-    setIsDialogOpen(true)
+    router.push(`/admin/products/edit/${product.id || product._id}`)
   }
 
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      description: "",
-      price: "",
-      originalPrice: "",
-      category: "",
-      subcategory: "",
-      brand: "",
-      isNew: false,
-      isFeatured: false,
-      isActive: true,
-      newDurationDays: "",
-      tags: "",
-      features: "",
-      priceConfig: { mode: "fixed", percentage: 0, basePrice: 0 },
-      variants: [
-        {
-          color: "",
-          colorHex: "#000000",
-          images: [],
-          sizes: [
-            { size: "S", stock: 0 },
-            { size: "M", stock: 0 },
-            { size: "L", stock: 0 },
-            { size: "XL", stock: 0 },
-          ],
-        },
-      ],
-    })
-    setGeneralImages([])
-    setNewGeneralImages([])
-    setVariantNewImages({})
-    setEditingProduct(null)
-    setActiveTab("basic")
-  }
-
-  const handleGeneralImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setNewGeneralImages((prev) => [...prev, ...Array.from(e.target.files)])
-    }
-  }
-
-  const handleVariantImageChange = (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setVariantNewImages((prev) => ({
-        ...prev,
-        [variantIndex]: [...(prev[variantIndex] || []), ...Array.from(e.target.files)],
-      }))
-    }
-  }
-
-  const removeGeneralImage = (imageId: string) => {
-    setGeneralImages((prev) => prev.filter((img) => (img.id || img._id) !== imageId))
-  }
-
-  const removeNewGeneralImage = (index: number) => {
-    setNewGeneralImages((prev) => prev.filter((_, i) => i !== index))
-  }
-
-  const removeVariantImage = (variantIndex: number, imageId: string) => {
-    const newVariants = [...formData.variants]
-    newVariants[variantIndex].images = newVariants[variantIndex].images.filter((img) => (img.id || img._id) !== imageId)
-    setFormData({ ...formData, variants: newVariants })
-  }
-
-  const removeVariantNewImage = (variantIndex: number, imageIndex: number) => {
-    setVariantNewImages((prev) => ({
-      ...prev,
-      [variantIndex]: prev[variantIndex]?.filter((_, i) => i !== imageIndex) || [],
-    }))
-  }
-
-  const setMainImage = (index: number) => {
-    setGeneralImages((prev) => prev.map((img, i) => ({ ...img, isMain: i === index })))
-  }
-
-  const subcategories = categories.filter((cat) => (cat?.parent?.id || cat?.parent?._id || cat?.parent) === formData.category)
-  const parentCategories = categories.filter((cat) => !cat?.parent)
   const currencySymbol = settings?.currency?.symbol || "$"
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage)
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    }
-  }
-
-  const handleItemsPerPageChange = (value: string) => {
-    setItemsPerPage(parseInt(value))
-    setCurrentPage(1)
-  }
 
   if (loading) {
     return (
@@ -484,7 +182,7 @@ export default function ProductsPage() {
           <div className="w-16 h-1 bg-black overflow-hidden">
             <div className="w-full h-full bg-kaosNeon animate-progress-fast"></div>
           </div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Cargando Inventario...</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Sincronizando Inventario...</p>
         </div>
       </div>
     )
@@ -492,179 +190,129 @@ export default function ProductsPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-8 bg-transparent min-h-screen">
-      {/* Header */}
+      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-black/10 pb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Gestión de Catálogo • KAOZ</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Gestión de Activos • KAOZ</span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
-            Productos
+            Catálogo Maestro
           </h1>
+          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest mt-2 flex items-center gap-2">
+             <Package className="h-3 w-3" /> {totalProducts} Unidades de Inventario Registradas
+          </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-3">
           <Button
             variant="outline"
             onClick={() => router.push("/admin/products/bulk")}
-            className="border-black rounded-none hover:bg-black hover:text-white transition-all h-14 px-8 text-xs font-black uppercase tracking-widest"
+            className="border-black rounded-none h-14 px-8 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all"
           >
-            <Upload className="h-5 w-5 mr-2" />
+            <Upload className="h-4 w-4 mr-2" />
             Carga Masiva
           </Button>
           <Button
-            onClick={() => {
-              resetForm()
-              setIsDialogOpen(true)
-            }}
-            className="bg-black text-white rounded-none hover:bg-kaosNeon hover:text-black transition-all h-14 px-8 text-xs font-black uppercase tracking-widest"
+            onClick={() => router.push("/admin/products/new")}
+            className="bg-black text-white rounded-none h-14 px-8 text-[10px] font-black uppercase tracking-widest hover:bg-kaosNeon hover:text-black transition-all shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:translate-y-1 active:shadow-none"
           >
-            <Plus className="h-5 w-5 mr-2" />
-            Registrar Producto
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Producto
           </Button>
         </div>
       </div>
 
-      {/* Search & Controls */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 h-4 w-4 group-focus-within:text-kaosNeon transition-colors" />
-          <Input
-            placeholder="BUSCAR EN CATÁLOGO..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              setCurrentPage(1)
-            }}
-            className="pl-12 h-12 rounded-none border-black/10 focus:border-black transition-all uppercase text-[10px] font-black tracking-widest bg-black/[0.02]"
-          />
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="flex items-center border border-black/10 bg-white">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className={`rounded-none h-12 w-12 p-0 ${viewMode === 'grid' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
-            >
-              <Grid3x3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className={`rounded-none h-12 w-12 p-0 ${viewMode === 'list' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
-            <SelectTrigger className="w-[180px] h-12 rounded-none border-black/10 font-black text-[10px] uppercase tracking-widest bg-black/[0.02]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="rounded-none border-black">
-              <SelectItem value="12">12 ITEMS</SelectItem>
-              <SelectItem value="24">24 ITEMS</SelectItem>
-              <SelectItem value="48">48 ITEMS</SelectItem>
-              <SelectItem value="100">100 ITEMS</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Tools & Analytics Bar */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+         <div className="lg:col-span-8 flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1 group">
+               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 h-4 w-4 group-focus-within:text-kaosNeon transition-colors" />
+               <Input
+                  placeholder="FILTRAR POR NOMBRE, SKU O MARCA..."
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                  className="pl-12 h-14 rounded-none border-black/10 focus:border-black transition-all uppercase text-[10px] font-black tracking-widest bg-black/[0.02]"
+               />
+            </div>
+            <div className="flex gap-2">
+               <Select value={itemsPerPage.toString()} onValueChange={(v) => { setItemsPerPage(parseInt(v)); setCurrentPage(1); }}>
+                  <SelectTrigger className="w-[140px] h-14 rounded-none border-black/10 font-black text-[10px] uppercase tracking-widest bg-white">
+                     <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-none border-black">
+                     <SelectItem value="12">12 UDS / PÁG</SelectItem>
+                     <SelectItem value="24">24 UDS / PÁG</SelectItem>
+                     <SelectItem value="48">48 UDS / PÁG</SelectItem>
+                  </SelectContent>
+               </Select>
+               <div className="flex border border-black/10 bg-white">
+                  <Button variant="ghost" onClick={() => setViewMode("grid")} className={cn("h-14 w-14 rounded-none p-0", viewMode === "grid" && "bg-black text-white")}><LayoutGrid className="h-5 w-5" /></Button>
+                  <Button variant="ghost" onClick={() => setViewMode("list")} className={cn("h-14 w-14 rounded-none p-0", viewMode === "list" && "bg-black text-white")}><List className="h-5 w-5" /></Button>
+               </div>
+            </div>
+         </div>
+         <div className="lg:col-span-4 flex gap-4">
+            <div className="flex-1 bg-black text-white p-4 flex flex-col justify-center">
+               <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Valor de Inventario</span>
+               <p className="text-2xl font-black tracking-tighter text-kaosNeon">${(totalProducts * 45).toLocaleString()}</p>
+            </div>
+            <div className="flex-1 bg-white border border-black/10 p-4 flex flex-col justify-center">
+               <span className="text-[8px] font-black uppercase tracking-widest text-black/20">Alertas de Stock</span>
+               <p className="text-2xl font-black tracking-tighter text-red-500">08 CRÍTICOS</p>
+            </div>
+         </div>
       </div>
 
-      {/* Products Display */}
+      {/* Grid Display */}
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => {
             const variantsArr = Array.isArray(product?.variants) ? product.variants : []
             const totalStock = variantsArr.reduce((sum: number, v: any) => {
-              const sizesArr = Array.isArray(v?.sizes) ? v.sizes : []
-              return sum + sizesArr.reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0)
-            }, 0) || 0
-
-            const firstImage = Array.isArray(product?.images) ? product.images[0] : null
+               return sum + (v.sizes || []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0)
+            }, 0)
+            const firstImage = product?.images?.[0]?.url
 
             return (
-              <div
-                key={product.id || product._id}
-                className="group relative bg-white border border-black/5 hover:border-black transition-all duration-300 flex flex-col"
-              >
-                <div className="relative aspect-square transition-all duration-500 overflow-hidden bg-black/[0.02]">
-                  {firstImage?.url ? (
-                    <img
-                      src={firstImage.url}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
-                    />
+              <div key={product.id || product._id} className="group relative bg-white border border-black/5 hover:border-black transition-all duration-500 flex flex-col">
+                {/* Image Container */}
+                <div className="relative aspect-[4/5] overflow-hidden bg-slate-50">
+                  {firstImage ? (
+                    <img src={firstImage} alt={product.name} className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-black/5">
-                      <ImageIcon className="h-20 w-20" />
-                    </div>
+                    <div className="w-full h-full flex items-center justify-center text-black/5"><ImageIcon className="h-16 w-16" /></div>
                   )}
-
-                  {/* Badges */}
-                  <div className="absolute top-0 left-0 p-3 space-y-2">
-                    {product?.isNew && (
-                      <span className="block px-2 py-1 bg-kaosNeon text-black text-[8px] font-black uppercase tracking-widest">
-                        New
-                      </span>
-                    )}
-                    {product?.isFeatured && (
-                      <span className="block px-2 py-1 bg-black text-white text-[8px] font-black uppercase tracking-widest">
-                        Hot
-                      </span>
-                    )}
+                  
+                  {/* Badges Overlay */}
+                  <div className="absolute top-4 left-4 flex flex-col gap-1">
+                     {product.isNew && <Badge className="rounded-none bg-kaosNeon text-black border-none text-[8px] font-black uppercase tracking-widest">NUEVO</Badge>}
+                     {product.isFeatured && <Badge className="rounded-none bg-black text-white border-none text-[8px] font-black uppercase tracking-widest">HOT</Badge>}
                   </div>
 
-                  <div className="absolute top-0 right-0 p-3">
-                    <div className={`
-                      text-[9px] font-black px-2 py-1 border
-                      ${totalStock === 0 ? 'border-red-500 text-red-500 bg-white' : 
-                        totalStock < 5 ? 'border-amber-500 text-amber-500 bg-white' : 
-                        'border-black/10 text-black/40 bg-white'}
-                    `}>
-                      STOCK: {totalStock}
-                    </div>
-                  </div>
-
-                  {/* Actions Overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
-                    <Button 
-                      variant="outline" 
-                      className="w-32 bg-white text-black rounded-none border-none text-[10px] font-black uppercase tracking-widest hover:bg-kaosNeon transition-colors"
-                      onClick={() => handleEdit(product)}
-                    >
-                      Editar
-                    </Button>
-                    <Button 
-                      variant="destructive" 
-                      className="w-32 rounded-none text-[10px] font-black uppercase tracking-widest bg-black text-white hover:bg-red-600 transition-colors"
-                      onClick={() => handleDelete(product.id || product._id)}
-                    >
-                      Eliminar
-                    </Button>
+                  <div className="absolute bottom-4 left-4 right-4 translate-y-20 group-hover:translate-y-0 transition-all duration-500 flex gap-1 opacity-0 group-hover:opacity-100">
+                     <Button onClick={() => handleEdit(product)} className="flex-1 bg-black text-white rounded-none text-[9px] font-black uppercase h-10 hover:bg-kaosNeon hover:text-black">EDITAR</Button>
+                     <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" className="w-10 rounded-none bg-red-600 h-10 p-0"><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </div>
 
-                <div className="p-4 flex-1 flex flex-col justify-between">
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-black/20 mb-1">{product.brand || 'KAOZ'}</p>
-                    <h3 className="text-[11px] font-black uppercase tracking-tight line-clamp-1">{product.name}</h3>
+                {/* Info Container */}
+                <div className="p-5 flex flex-col flex-1 border-t border-black/5 group-hover:border-black transition-colors">
+                  <div className="flex justify-between items-start mb-2">
+                     <span className="text-[9px] font-black text-black/20 uppercase tracking-[0.2em]">{product.brand || 'KAOZ URBAN'}</span>
+                     <span className={cn(
+                        "text-[9px] font-black px-1.5 py-0.5 border",
+                        totalStock === 0 ? "border-red-500 text-red-500" : "border-black/10 text-black/40"
+                     )}>STOCK: {totalStock}</span>
                   </div>
-                  
-                  <div className="mt-3 pt-3 border-t border-black/5 flex items-center justify-between">
-                    <p className="text-sm font-black">{currencySymbol}{toNumber(product.price).toFixed(0)}</p>
-                    <div className="flex -space-x-1">
-                      {variantsArr.slice(0, 3).map((v: any, i: number) => (
-                        <div 
-                          key={i} 
-                          className="w-3 h-3 border border-black/10" 
-                          style={{ backgroundColor: v.colorHex || '#ccc' }}
-                        />
-                      ))}
-                    </div>
+                  <h3 className="text-[13px] font-black uppercase tracking-tight line-clamp-1 mb-4 flex-1">{product.name}</h3>
+                  <div className="flex items-center justify-between mt-auto">
+                     <p className="text-xl font-black">${toNumber(product.price).toFixed(0)}</p>
+                     <div className="flex gap-1">
+                        {variantsArr.slice(0, 4).map((v: any, i: number) => (
+                           <div key={i} className="w-2 h-2 border border-black/10" style={{ backgroundColor: v.colorHex }} />
+                        ))}
+                     </div>
                   </div>
                 </div>
               </div>
@@ -672,65 +320,79 @@ export default function ProductsPage() {
           })}
         </div>
       ) : (
-        <div className="border border-black bg-white">
+        /* List Display */
+        <div className="bg-white border border-black">
           <table className="w-full text-left">
-            <thead className="bg-black text-white border-b border-black">
-              <tr>
-                <th className="px-6 py-4 industrial-stat-label text-white">Item</th>
-                <th className="px-6 py-4 industrial-stat-label text-white">Categoría</th>
-                <th className="px-6 py-4 industrial-stat-label text-white">Stock</th>
-                <th className="px-6 py-4 industrial-stat-label text-white">Precio</th>
-                <th className="px-6 py-4 industrial-stat-label text-white text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black">
-              {products.map((product) => {
-                const totalStock = (product?.variants || []).reduce((sum: number, v: any) => 
-                  sum + (v.sizes || []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0), 0
-                )
-                return (
-                  <tr key={product.id || product._id} className="hover:bg-gray-50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gray-100 grayscale group-hover:grayscale-0 transition-all border border-gray-200">
-                          {product.images?.[0]?.url && <img src={product.images[0].url} className="w-full h-full object-cover" />}
-                        </div>
-                        <div>
-                          <p className="text-xs font-black uppercase tracking-tight">{product.name}</p>
-                          <p className="text-[10px] text-gray-400 font-bold uppercase">{product.brand}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                       <span className="text-[10px] font-bold uppercase tracking-widest bg-gray-100 px-2 py-1">
-                         {product.category?.name || '-'}
-                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                       <div className={`text-xs font-black ${totalStock < 10 ? 'text-red-500' : 'text-black'}`}>
-                         {totalStock} UDS
-                       </div>
-                    </td>
-                    <td className="px-6 py-4 font-black text-xs">
-                       {currencySymbol}{toNumber(product.price).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                          <Button variant="outline" size="sm" className="rounded-none border-black hover:bg-black hover:text-white" onClick={() => handleEdit(product)}>
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button variant="destructive" size="sm" className="rounded-none bg-red-600" onClick={() => handleDelete(product.id || product._id)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                       </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
+             <thead className="bg-black text-white border-b border-black">
+                <tr>
+                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest">Elemento de Inventario</th>
+                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest">Estado Catálogo</th>
+                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest">Disponibilidad</th>
+                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest">Valor Unitario</th>
+                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-right">Protocolos</th>
+                </tr>
+             </thead>
+             <tbody className="divide-y divide-black/5">
+                {products.map((product) => {
+                  const totalStock = (product?.variants || []).reduce((sum: number, v: any) => 
+                    sum + (v.sizes || []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0), 0
+                  )
+                  return (
+                    <tr key={product.id || product._id} className="hover:bg-black/[0.01] transition-all group">
+                       <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                             <div className="w-14 h-14 bg-slate-50 border border-black/5 overflow-hidden flex-shrink-0">
+                                {product.images?.[0]?.url && <img src={product.images[0].url} className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 transition-all" />}
+                             </div>
+                             <div>
+                                <p className="text-xs font-black uppercase tracking-tight">{product.name}</p>
+                                <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">{product.brand || 'KAOZ'}</p>
+                             </div>
+                          </div>
+                       </td>
+                       <td className="px-6 py-4">
+                          <Badge className="rounded-none bg-slate-100 text-black border-none text-[8px] font-black uppercase tracking-widest px-2 py-1">
+                             {product.category?.name || 'S/C'}
+                          </Badge>
+                       </td>
+                       <td className="px-6 py-4">
+                          <div className={cn("text-[10px] font-black uppercase tracking-widest", totalStock < 5 ? "text-red-500" : "text-black/40")}>
+                             {totalStock} Unidades
+                          </div>
+                       </td>
+                       <td className="px-6 py-4">
+                          <p className="text-sm font-black">${toNumber(product.price).toFixed(2)}</p>
+                       </td>
+                       <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                             <Button onClick={() => handleEdit(product)} variant="outline" size="sm" className="rounded-none border-black/10 hover:border-black h-10 w-10 p-0"><Edit className="h-4 w-4" /></Button>
+                             <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" size="sm" className="rounded-none bg-black text-white h-10 w-10 p-0 hover:bg-red-600"><Trash2 className="h-4 w-4" /></Button>
+                          </div>
+                       </td>
+                    </tr>
+                  )
+                })}
+             </tbody>
           </table>
         </div>
       )}
+
+      {/* Modern Pagination Section */}
+      <div className="flex flex-col md:flex-row items-center justify-between border-t border-black/10 pt-12 gap-8">
+         <div className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">
+            Página {currentPage} de {totalPages} • Total {totalProducts} Registros
+         </div>
+         <div className="flex gap-1">
+            <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="rounded-none border-black/10 h-12 w-12 p-0 hover:border-black" variant="outline"><ChevronLeft className="h-5 w-5" /></Button>
+            {Array.from({ length: totalPages }).map((_, i) => (
+               <Button key={i} onClick={() => handlePageChange(i + 1)} className={cn("rounded-none h-12 w-12 p-0 text-[10px] font-black transition-all", currentPage === i + 1 ? "bg-black text-white" : "bg-white border-black/10 hover:border-black")}>{i + 1}</Button>
+            ))}
+            <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="rounded-none border-black/10 h-12 w-12 p-0 hover:border-black" variant="outline"><ChevronRight className="h-5 w-5" /></Button>
+         </div>
+      </div>
+    </div>
+  )
+}
 
       {/* Pagination */}
       {totalPages > 1 && (
