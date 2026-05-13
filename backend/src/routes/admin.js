@@ -17,6 +17,10 @@ const {
   getAllExpenses,
   createExpense,
   deleteExpense,
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
 } = require("../controllers/adminController");
 const {
   initSession,
