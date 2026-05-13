@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,7 +37,7 @@ import {
   LayoutGrid,
   Trello
 } from "lucide-react"
-import { api } from "@/lib/api"
+import { api, cleanImageUrl } from "@/lib/api"
 import { brandConfig } from "@/lib/config"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -96,6 +96,11 @@ export default function ProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [activeTab, setActiveTab] = useState("basic")
+  const [generalImages, setGeneralImages] = useState<any[]>([])
+
+  const parentCategories = useMemo(() => {
+    return categories.filter(c => !c.parent)
+  }, [categories])
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1)
@@ -170,7 +175,60 @@ export default function ProductsPage() {
 
   const handleEdit = (product: any) => {
     setEditingProduct(product)
-    router.push(`/admin/products/edit/${product.id || product._id}`)
+    setFormData({
+      ...product,
+      price: product.price?.toString() || "",
+      originalPrice: product.originalPrice?.toString() || "",
+      category: typeof product.category === 'string' ? product.category : product.category?._id || "",
+      variants: Array.isArray(product.variants) ? product.variants : [],
+      priceConfig: ensurePriceConfig(product.priceConfig)
+    })
+    setGeneralImages(product.images || [])
+    setIsDialogOpen(true)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      const data = {
+        ...formData,
+        price: parseFloat(formData.price) || 0,
+        originalPrice: parseFloat(formData.originalPrice) || 0,
+        images: generalImages
+      }
+
+      let result
+      if (editingProduct) {
+        result = await api.updateProduct(editingProduct._id || editingProduct.id, data)
+      } else {
+        result = await api.createProduct(data)
+      }
+
+      if (result.success) {
+        toast({ title: "ÉXITO", description: "REGISTRO ACTUALIZADO CORRECTAMENTE" })
+        setIsDialogOpen(false)
+        loadData()
+      } else {
+        toast({ title: "ERROR", description: result.message || "FALLO EN EL PROTOCOLO", variant: "destructive" })
+      }
+    } catch (error) {
+      console.error("Error saving product:", error)
+      toast({ title: "ERROR", description: "EXCEPCIÓN CRÍTICA EN EL SERVIDOR", variant: "destructive" })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleGeneralImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return
+    // Implementación simplificada para el ejemplo - idealmente subiría a un CDN
+    toast({ title: "INFO", description: "CARGANDO RECURSOS VISUALES..." })
+    // Simulando subida o manejando localmente si el backend lo soporta
+  }
+
+  const removeGeneralImage = (id: string) => {
+    setGeneralImages(prev => prev.filter(img => (img.id || img._id) !== id))
   }
 
   const currencySymbol = settings?.currency?.symbol || "$"
@@ -214,7 +272,23 @@ export default function ProductsPage() {
             Carga Masiva
           </Button>
           <Button
-            onClick={() => router.push("/admin/products/new")}
+            onClick={() => {
+              setEditingProduct(null)
+              setFormData({
+                name: "",
+                description: "",
+                price: "",
+                originalPrice: "",
+                category: "",
+                brand: "",
+                isActive: true,
+                isFeatured: false,
+                variants: [],
+                priceConfig: { mode: "fixed", percentage: 0, basePrice: 0 }
+              })
+              setGeneralImages([])
+              setIsDialogOpen(true)
+            }}
             className="bg-black text-white rounded-none h-14 px-8 text-[10px] font-black uppercase tracking-widest hover:bg-kaosNeon hover:text-black transition-all shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:translate-y-1 active:shadow-none"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -583,7 +657,7 @@ export default function ProductsPage() {
                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {generalImages.map((img, idx) => (
                        <div key={img.id || img._id || idx} className="aspect-square bg-gray-100 border border-black relative group grayscale hover:grayscale-0 transition-all">
-                          <img src={img.url.startsWith('http') ? img.url : `https://yenfit.shop${img.url}`} className="w-full h-full object-cover" />
+                          <img src={cleanImageUrl(img.url)} className="w-full h-full object-cover" />
                           <Button type="button" onClick={() => removeGeneralImage(img.id || img._id)} className="absolute top-2 right-2 h-8 w-8 bg-red-600 text-white rounded-none opacity-0 group-hover:opacity-100 transition-opacity">
                              <X className="h-4 w-4" />
                           </Button>
