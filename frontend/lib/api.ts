@@ -353,13 +353,13 @@ export async function getAllOrders() {
   }
 }
 
-export async function updateOrderStatus(id: string, status: string) {
+export async function updateOrderStatus(id: string, updateData: { orderStatus?: string, paymentStatus?: string, note?: string, adminNotes?: string }) {
   try {
     const headers = await getAuthHeaders()
     const response = await fetch(`${API_BASE_URL}/admin/orders/${id}/status`, {
       method: 'PUT',
       headers,
-      body: JSON.stringify({ status })
+      body: JSON.stringify(updateData)
     })
     return await response.json()
   } catch (error: any) {

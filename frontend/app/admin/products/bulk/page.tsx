@@ -271,12 +271,13 @@ export default function BulkUploadPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-[80px]">Imagen</TableHead>
-                    <TableHead className="w-[300px]">Nombre del Producto</TableHead>
+                    <TableHead className="w-[60px]">Status</TableHead>
+                    <TableHead className="w-[300px]">Nombre</TableHead>
                     <TableHead>Categoría</TableHead>
-                    <TableHead className="w-[120px]">Precio ($)</TableHead>
-                    <TableHead className="w-[100px]">Stock</TableHead>
-                    <TableHead className="w-[200px]">Tags</TableHead>
+                    <TableHead className="w-[100px]">Precio ($)</TableHead>
+                    <TableHead className="w-[100px]">Oferta ($)</TableHead>
+                    <TableHead className="w-[150px]">Tallas (S:10,M:5)</TableHead>
+                    <TableHead className="w-[150px]">Marca</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -284,29 +285,38 @@ export default function BulkUploadPage() {
                   {drafts.map((draft) => (
                     <TableRow key={draft.id} className="group">
                       <TableCell>
-                        <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden border border-slate-200">
-                          {draft.images?.[0] ? (
-                            <img src={draft.images[0].url} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-300">
-                              <ImageIcon className="h-5 w-5" />
-                            </div>
-                          )}
+                        <div className="flex items-center justify-center">
+                           {draft.status === "valid" ? (
+                             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Válido" />
+                           ) : (
+                             <div className="w-2 h-2 bg-red-500 rounded-full" title={draft.errors?.join(", ")} />
+                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Input 
-                          value={draft.name} 
-                          onChange={(e) => updateDraftField(draft.id, "name", e.target.value)}
-                          className="border-transparent hover:border-slate-200 focus:border-black transition-all bg-transparent rounded-none"
-                        />
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
+                            {draft.images?.[0] ? (
+                              <img src={draft.images[0].url} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                <ImageIcon className="h-4 w-4" />
+                              </div>
+                            )}
+                          </div>
+                          <Input 
+                            value={draft.name} 
+                            onChange={(e) => updateDraftField(draft.id, "name", e.target.value)}
+                            className="h-8 border-transparent hover:border-slate-200 focus:border-black transition-all bg-transparent rounded-none p-0 text-sm font-bold"
+                          />
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Select 
                           value={draft.categoryId} 
                           onValueChange={(val) => updateDraftField(draft.id, "categoryId", val)}
                         >
-                          <SelectTrigger className="border-transparent hover:border-slate-200 bg-transparent">
+                          <SelectTrigger className="h-8 border-transparent hover:border-slate-200 bg-transparent p-0 text-xs">
                             <SelectValue placeholder="Seleccionar..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -320,31 +330,46 @@ export default function BulkUploadPage() {
                         <Input 
                           type="number"
                           value={draft.price} 
-                          onChange={(e) => updateDraftField(draft.id, "price", e.target.value)}
-                          className="border-transparent hover:border-slate-200 focus:border-black transition-all bg-transparent"
+                          onChange={(e) => updateDraftField(draft.id, "price", parseFloat(e.target.value))}
+                          className="h-8 border-transparent hover:border-slate-200 focus:border-black transition-all bg-transparent p-0 text-sm"
                         />
                       </TableCell>
                       <TableCell>
                         <Input 
                           type="number"
-                          value={draft.stock} 
-                          onChange={(e) => updateDraftField(draft.id, "stock", e.target.value)}
-                          className="border-transparent hover:border-slate-200 focus:border-black transition-all bg-transparent"
+                          value={draft.originalPrice || ""} 
+                          placeholder="---"
+                          onChange={(e) => updateDraftField(draft.id, "originalPrice", parseFloat(e.target.value))}
+                          className="h-8 border-transparent hover:border-slate-200 focus:border-black transition-all bg-transparent p-0 text-sm text-slate-400"
                         />
                       </TableCell>
                       <TableCell>
                         <Input 
-                          value={draft.tags?.join(", ")} 
-                          onChange={(e) => updateDraftField(draft.id, "tags", e.target.value.split(",").map((t: string) => t.trim()))}
-                          className="border-transparent hover:border-slate-200 focus:border-black transition-all bg-transparent text-xs"
-                          placeholder="tag1, tag2..."
+                          placeholder="Talla:Stock"
+                          value={draft.variants?.[0]?.sizes?.map((s: any) => `${s.size}:${s.stock}`).join(", ") || ""} 
+                          onChange={(e) => {
+                            const val = e.target.value
+                            const sizes = val.split(",").map(item => {
+                              const [size, stock] = item.split(":").map(s => s.trim())
+                              return { size: size || "Única", stock: parseInt(stock) || 0 }
+                            })
+                            updateDraftField(draft.id, "variants", [{ color: "N/A", sizes }])
+                          }}
+                          className="h-8 border-transparent hover:border-slate-200 focus:border-black transition-all bg-transparent p-0 text-xs font-mono"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          value={draft.brand} 
+                          onChange={(e) => updateDraftField(draft.id, "brand", e.target.value)}
+                          className="h-8 border-transparent hover:border-slate-200 focus:border-black transition-all bg-transparent p-0 text-xs uppercase"
                         />
                       </TableCell>
                       <TableCell>
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500"
                           onClick={() => setDrafts(prev => prev.filter(d => d.id !== draft.id))}
                         >
                           <Trash2 className="h-4 w-4" />

@@ -112,12 +112,13 @@ class BulkProductService {
         id: uuidv4(),
         name: cleanName,
         slug: this.generateSlug(cleanName),
-        description: "",
+        description: `Producto de alta calidad: ${cleanName}`,
         price: 0,
+        originalPrice: null,
         stock: 0,
         categoryId: null,
         subcategoryId: null,
-        brand: "Genérico",
+        brand: "KAOZ",
         isNew: true,
         isActive: false, // Por defecto inactivo hasta revisión
         images: images.map((img, idx) => ({
@@ -125,7 +126,14 @@ class BulkProductService {
           isMain: idx === 0,
           originalName: img.originalName
         })),
-        variants: [], // Se pueden añadir manualmente o deducir más tarde
+        variants: [
+          {
+            color: "N/A",
+            sizes: [
+              { size: "Única", stock: 0 }
+            ]
+          }
+        ],
         tags: [],
         status: "incomplete",
         errors: ["Precio es requerido", "Falta categoría"]
@@ -197,7 +205,7 @@ class BulkProductService {
             isActive: draft.isActive,
             isNew: draft.isNew,
             markedAsNewAt: draft.isNew ? new Date() : null,
-            brand: draft.brand || "Genérico",
+            brand: draft.brand || "KAOZ",
             tags: draft.tags || [],
             images: {
               create: draft.images.map(img => ({
@@ -206,7 +214,17 @@ class BulkProductService {
                 isMain: img.isMain
               }))
             },
-            // Si hay variantes, se podrían crear aquí también
+            variants: {
+              create: (draft.variants || []).map(v => ({
+                color: v.color || "N/A",
+                sizes: {
+                  create: (v.sizes || []).map(s => ({
+                    size: s.size,
+                    stock: parseInt(s.stock) || 0
+                  }))
+                }
+              }))
+            }
           }
         });
         results.created++;

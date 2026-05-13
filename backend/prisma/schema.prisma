@@ -221,6 +221,10 @@ model Settings {
   currency           Json?
   shippingMethods    Json?
   paymentMethods     Json?
+  orders             Json?
+  business           Json?
+  whatsapp           Json?
+  theme              String?  @default("light")
   updatedAt          DateTime @updatedAt @default(now())
   newProductDuration Int      @default(30)
 }

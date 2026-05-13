@@ -50,6 +50,18 @@ const getSettings = async () => {
               code: "USD",
               showBsPrice: true
             },
+            orders: {
+              prefix: "KAOZ",
+              allowDelete: false
+            },
+            business: {
+              name: "KAOZ Urban Athletics",
+              email: "contacto@kaoz.com"
+            },
+            whatsapp: {
+              number: "584120000000",
+              defaultMessage: "Hola! Me interesa este producto: "
+            },
             paymentMethods: [
               { id: "whatsapp", name: "WhatsApp Pay / Transferencia", isActive: true, icon: "whatsapp" },
               { id: "zelle", name: "Zelle", isActive: true, icon: "zelle" }
@@ -64,6 +76,22 @@ const getSettings = async () => {
         console.error("❌ Error al crear configuración inicial:", createError.message);
       }
     }
+
+    // Auto-reparar si faltan campos nuevos
+    if (settings && (!settings.orders || !settings.business || !settings.whatsapp)) {
+      console.log("🛠️ [SETTINGS SERVICE] Detectados campos faltantes. Actualizando...");
+      await prisma.settings.update({
+        where: { id: "global" },
+        data: {
+          orders: settings.orders || { prefix: "KAOZ", allowDelete: false },
+          business: settings.business || { name: "KAOZ Urban Athletics" },
+          whatsapp: settings.whatsapp || { number: "584120000000" },
+          theme: settings.theme || "light"
+        }
+      });
+      return await prisma.settings.findUnique({ where: { id: "global" } });
+    }
+
     return settings;
   } catch (error) {
     console.error("❌ Error crítico al obtener configuraciones:", error.message);
