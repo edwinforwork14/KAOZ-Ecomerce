@@ -604,11 +604,6 @@ export default function AdminSettingsPage() {
            </div>
         </TabsContent>
 
-        {/* ... (Continuation of other tabs would follow same pattern) */}
-      </Tabs>
-    </div>
-  )
-}
 
         {/* =========================
             TAB: SHIPPING (LOGÍSTICA)
