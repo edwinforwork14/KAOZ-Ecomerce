@@ -266,7 +266,7 @@ export default function ProductsPage() {
           <Button
             variant="outline"
             onClick={() => router.push("/admin/products/bulk")}
-            className="border-black rounded-none h-14 px-8 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all"
+            className="border-black rounded-none h-14 px-8 text-[10px] font-black uppercase tracking-widest bg-white text-black hover:bg-black hover:text-white transition-all shadow-[4px_4px_0_rgba(0,0,0,0.1)]"
           >
             <Upload className="h-4 w-4 mr-2" />
             Carga Masiva
@@ -470,26 +470,30 @@ export default function ProductsPage() {
 
       {/* Product Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col rounded-none border-black bg-white dark:bg-slate-950 text-black dark:text-white">
-          <DialogHeader className="border-b border-black/10 pb-4">
-            <DialogTitle className="text-2xl font-black uppercase tracking-tighter text-black dark:text-white">
-              {editingProduct ? "Editar Registro" : "Nuevo Registro"}
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col rounded-none border-black bg-white dark:bg-slate-950 text-black dark:text-white shadow-[20px_20px_0_rgba(0,0,0,1)] dark:shadow-[20px_20px_0_rgba(255,255,255,0.05)] p-0">
+          <DialogHeader className="bg-black text-white p-8">
+            <div className="flex items-center gap-3 mb-2">
+               <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
+               <span className="text-[10px] font-black uppercase tracking-widest text-white/40">PROTOCOLO DE REGISTRO • KAOZ</span>
+            </div>
+            <DialogTitle className="text-5xl font-black uppercase tracking-tighter leading-none">
+              {editingProduct ? "MODIFICAR ACTIVO" : "NUEVO REGISTRO"}
             </DialogTitle>
           </DialogHeader>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col pt-4">
-            <TabsList className="grid w-full grid-cols-4 mb-8 bg-gray-100 rounded-none p-1">
-              <TabsTrigger value="basic" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white">
-                Básico
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col p-8">
+            <TabsList className="grid w-full grid-cols-4 mb-10 bg-slate-100 dark:bg-white/5 rounded-none p-1">
+              <TabsTrigger value="basic" className="rounded-none font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-kaosNeon dark:data-[state=active]:text-black transition-all">
+                01. Básico
               </TabsTrigger>
-              <TabsTrigger value="pricing" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white">
-                Precio
+              <TabsTrigger value="pricing" className="rounded-none font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-kaosNeon dark:data-[state=active]:text-black transition-all">
+                02. Precio
               </TabsTrigger>
-              <TabsTrigger value="variants" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white">
-                Variantes
+              <TabsTrigger value="variants" className="rounded-none font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-kaosNeon dark:data-[state=active]:text-black transition-all">
+                03. Variantes
               </TabsTrigger>
-              <TabsTrigger value="images" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white">
-                Imágenes
+              <TabsTrigger value="images" className="rounded-none font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-kaosNeon dark:data-[state=active]:text-black transition-all">
+                04. Imágenes
               </TabsTrigger>
             </TabsList>
 
@@ -672,10 +676,12 @@ export default function ProductsPage() {
               </TabsContent>
             </form>
 
-            <DialogFooter className="border-t border-black pt-6 mt-8">
-              <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="rounded-none industrial-heading">Cerrar</Button>
-              <Button onClick={handleSubmit} disabled={saving} className="rounded-none bg-black text-white h-12 px-12 industrial-heading hover:bg-gray-800">
-                 {saving ? 'Guardando...' : editingProduct ? 'Actualizar Registro' : 'Confirmar Registro'}
+            <DialogFooter className="bg-slate-50 dark:bg-white/5 p-8 mt-auto flex flex-col md:flex-row gap-4 border-t border-black/10">
+              <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="rounded-none font-black uppercase text-[10px] tracking-[0.2em] h-14 px-8 hover:bg-black hover:text-white transition-all">
+                 CANCELAR PROTOCOLO
+              </Button>
+              <Button onClick={handleSubmit} disabled={saving} className="rounded-none bg-black text-white dark:bg-kaosNeon dark:text-black h-14 px-12 font-black uppercase text-[10px] tracking-[0.2em] hover:bg-gray-800 dark:hover:bg-white transition-all shadow-[8px_8px_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none">
+                 {saving ? 'PROCESANDO...' : editingProduct ? 'ACTUALIZAR REGISTRO' : 'CONFIRMAR REGISTRO'}
               </Button>
             </DialogFooter>
           </Tabs>

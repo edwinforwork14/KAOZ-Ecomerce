@@ -78,7 +78,7 @@ export default function DashboardPage() {
           <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest mt-2">Última actualización: {new Date().toLocaleTimeString()}</p>
         </div>
         <div className="flex gap-2">
-           <Button onClick={loadData} variant="outline" className="rounded-none border-black h-12 font-black uppercase text-[10px] tracking-widest px-6 hover:bg-black hover:text-white transition-all">
+           <Button onClick={loadData} variant="outline" className="rounded-none border-black h-12 font-black uppercase text-[10px] tracking-widest px-6 bg-white text-black hover:bg-black hover:text-white transition-all">
              <RefreshCw className="h-4 w-4 mr-2" /> Actualizar
            </Button>
         </div>

@@ -172,7 +172,7 @@ export default function OrdersPage() {
           <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest mt-2">Control centralizado de operaciones comerciales</p>
         </div>
         <div className="flex gap-2">
-           <Button onClick={loadOrders} variant="outline" className="rounded-none border-black h-12 font-black uppercase text-[10px] tracking-widest px-6 hover:bg-black hover:text-white transition-all">
+           <Button onClick={loadOrders} variant="outline" className="rounded-none border-black h-12 font-black uppercase text-[10px] tracking-widest px-6 bg-white text-black hover:bg-black hover:text-white transition-all">
              <RefreshCw className="h-4 w-4 mr-2" /> Actualizar
            </Button>
         </div>
@@ -334,7 +334,7 @@ export default function OrdersPage() {
 
       {/* Order Details Modal (Same Industrial Style) */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent className="max-w-4xl rounded-none border-black p-0 overflow-hidden bg-white dark:bg-slate-950">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-none border-black p-0 bg-white dark:bg-slate-950">
           <DialogHeader className="bg-black text-white p-8">
             <div className="flex flex-col md:flex-row justify-between items-start gap-6">
               <div>
@@ -394,11 +394,11 @@ export default function OrdersPage() {
                 </h4>
                 <div className="flex flex-col gap-3">
                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border border-black/5">
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40">MÉTODO</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest">{selectedOrder?.paymentMethod?.name || 'DESCONOCIDO'}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40 text-black dark:text-white">MÉTODO</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-black dark:text-white">{selectedOrder?.paymentMethod?.name || 'DESCONOCIDO'}</span>
                    </div>
                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border border-black/5">
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40">ESTADO PAGO</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40 text-black dark:text-white">ESTADO PAGO</span>
                       <Badge className={cn(
                         "rounded-none border-none text-[9px] font-black uppercase tracking-widest h-6 px-3",
                         selectedOrder?.paymentStatus === 'paid' ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'

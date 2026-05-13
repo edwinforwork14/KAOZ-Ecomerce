@@ -479,25 +479,28 @@ export default function AdminCategoriesPage() {
       {/* Modal de edición Industrial */}
       {showForm && editingCategory && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-xl bg-white dark:bg-slate-950 border border-black dark:border-white/20 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.05)]">
-            <div className="p-8 bg-black text-white flex justify-between items-center">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest bg-white text-black px-2 py-0.5 mb-2 inline-block">MÓDULO DE ARQUITECTURA</span>
-                <h2 className="text-3xl font-black uppercase tracking-tighter">
-                  {editingCategory._id ? "Modificar" : "Crear"} Rama
-                </h2>
+           <div className="w-full max-w-xl bg-white dark:bg-slate-950 border border-black dark:border-white/20 shadow-[20px_20px_0_rgba(0,0,0,1)] dark:shadow-[20px_20px_0_rgba(255,255,255,0.05)] overflow-hidden">
+            <div className="p-8 bg-black text-white">
+              <div className="flex items-center gap-3 mb-2">
+                 <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40">ESTRUCTURA DE DATOS • KAOZ</span>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => {
-                  setShowForm(false)
-                  setEditingCategory(null)
-                }}
-                className="h-12 w-12 rounded-none hover:bg-white hover:text-black transition-all"
-              >
-                <X className="h-6 w-6" />
-              </Button>
+              <div className="flex justify-between items-center">
+                <h2 className="text-4xl font-black uppercase tracking-tighter leading-none">
+                  {editingCategory._id ? "MODIFICAR RAMA" : "NUEVA RAMA"}
+                </h2>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => {
+                    setShowForm(false)
+                    setEditingCategory(null)
+                  }}
+                  className="h-12 w-12 rounded-none hover:bg-kaosNeon hover:text-black transition-all"
+                >
+                  <X className="h-6 w-6" />
+                </Button>
+              </div>
             </div>
 
             <div className="p-8 space-y-6">
@@ -555,16 +558,23 @@ export default function AdminCategoriesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Recurso Visual (URL)</label>
-                  <Input
-                    value={editingCategory.image || ""}
-                    onChange={(e) => setEditingCategory({
-                      ...editingCategory,
-                      image: e.target.value
-                    })}
-                    placeholder="https://static.kaoz.com/..."
-                    className="h-14 rounded-none border-black focus:ring-0 text-[10px] font-bold"
-                  />
+                  <label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Recurso Multimedia (URL)</label>
+                  <div className="flex gap-4">
+                    <Input
+                      value={editingCategory.image || ""}
+                      onChange={(e) => setEditingCategory({
+                        ...editingCategory,
+                        image: e.target.value
+                      })}
+                      placeholder="https://..."
+                      className="h-14 rounded-none border-black dark:border-white/10 focus:border-kaosNeon focus:ring-0 text-[10px] font-bold bg-transparent"
+                    />
+                    {editingCategory.image && (
+                      <div className="h-14 w-14 border border-black overflow-hidden flex-shrink-0 grayscale hover:grayscale-0 transition-all">
+                        <img src={editingCategory.image} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

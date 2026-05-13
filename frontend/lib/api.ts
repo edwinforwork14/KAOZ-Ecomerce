@@ -680,6 +680,7 @@ export const api = {
   clearCart,
   getFilterOptions,
   getAllOrders,
+  updateOrderStatus,
   getAllCustomers,
   getAdminCategories,
   createCategory,
