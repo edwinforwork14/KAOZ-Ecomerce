@@ -13,11 +13,10 @@ const {
   getAllCustomers,
   getCustomerDetails,
   getCustomerCartHistory,
-  createCategory,
-  updateCategory,
-  deleteCategory,
-  getCategories,
   reorderCategories,
+  getAllExpenses,
+  createExpense,
+  deleteExpense,
 } = require("../controllers/adminController");
 const {
   initSession,
@@ -80,5 +79,10 @@ router.post("/categories", createCategory);
 router.put("/categories/:id", updateCategory);
 router.delete("/categories/:id", deleteCategory);
 router.post("/categories/reorder", reorderCategories);
+
+// Expenses
+router.get("/expenses", getAllExpenses);
+router.post("/expenses", createExpense);
+router.delete("/expenses/:id", deleteExpense);
 
 module.exports = router;

@@ -144,6 +144,7 @@ interface Settings {
     defaultMessage?: string
   }
   theme?: "light" | "dark"
+  expenses?: any[]
 }
 
 interface ExchangeRate {
@@ -402,6 +403,7 @@ export default function AdminSettingsPage() {
             { id: "payment", label: "FINANZAS", icon: CreditCard },
             { id: "shipping", label: "LOGÍSTICA", icon: Truck },
             { id: "exchange", label: "DIVISAS", icon: DollarSign },
+            { id: "gastos", label: "GASTOS", icon: Banknote },
             { id: "business", label: "IDENTIDAD", icon: Building },
           ].map(tab => (
             <TabsTrigger 

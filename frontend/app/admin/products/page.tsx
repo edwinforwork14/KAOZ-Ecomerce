@@ -470,9 +470,9 @@ export default function ProductsPage() {
 
       {/* Product Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col rounded-none border-black">
-          <DialogHeader className="border-b border-black pb-4">
-            <DialogTitle className="text-2xl font-black uppercase tracking-tighter">
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col rounded-none border-black bg-white dark:bg-slate-950 text-black dark:text-white">
+          <DialogHeader className="border-b border-black/10 pb-4">
+            <DialogTitle className="text-2xl font-black uppercase tracking-tighter text-black dark:text-white">
               {editingProduct ? "Editar Registro" : "Nuevo Registro"}
             </DialogTitle>
           </DialogHeader>
@@ -498,32 +498,32 @@ export default function ProductsPage() {
               <TabsContent value="basic" className="space-y-6 mt-0">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="industrial-stat-label">Nombre del Producto</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Nombre del Producto</Label>
                     <Input
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="rounded-none border-gray-200 focus:border-black font-bold uppercase text-xs"
+                      className="rounded-none border-black/10 focus:border-black dark:border-white/10 dark:focus:border-kaosNeon font-bold uppercase text-xs bg-transparent text-black dark:text-white"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="industrial-stat-label">Marca</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Marca</Label>
                     <Input
                       value={formData.brand}
                       onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                      className="rounded-none border-gray-200 focus:border-black font-bold uppercase text-xs"
+                      className="rounded-none border-black/10 focus:border-black dark:border-white/10 dark:focus:border-kaosNeon font-bold uppercase text-xs bg-transparent text-black dark:text-white"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="industrial-stat-label">Descripción Técnica</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Descripción Técnica</Label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={4}
-                    className="rounded-none border-gray-200 focus:border-black text-xs font-medium"
+                    className="rounded-none border-black/10 focus:border-black dark:border-white/10 dark:focus:border-kaosNeon text-xs font-medium bg-transparent text-black dark:text-white"
                     required
                   />
                 </div>
@@ -559,13 +559,13 @@ export default function ProductsPage() {
               <TabsContent value="pricing" className="space-y-8 mt-0">
                  <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <Label className="industrial-stat-label text-black">Precio de Venta ({currencySymbol})</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-black/60 dark:text-white/60">Precio de Venta ({currencySymbol})</Label>
                       <Input
                         type="number"
                         step="0.01"
                         value={formData.price}
                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                        className="rounded-none border-black h-16 text-3xl font-black"
+                        className="rounded-none border-black dark:border-kaosNeon h-20 text-4xl font-black bg-transparent text-black dark:text-white"
                         required
                       />
                     </div>

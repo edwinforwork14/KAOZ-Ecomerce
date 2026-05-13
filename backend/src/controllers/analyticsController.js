@@ -75,8 +75,19 @@ exports.getDashboardStats = async (req, res) => {
       prisma.order.groupBy({
         by: ['paymentMethod'],
         where: { orderStatus: { in: allActiveStatuses }, isDeleted: false },
-        _count: { _all: true },
+        _count: { _count: true },
         _sum: { total: true }
+      }),
+      // Órdenes recientes
+      prisma.order.findMany({
+        where: { isDeleted: false },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        include: { items: true }
+      }),
+      // Gastos totales
+      prisma.expense.aggregate({
+        _sum: { amount: true }
       })
     ]);
 
@@ -187,6 +198,34 @@ exports.getDashboardStats = async (req, res) => {
       .sort((a, b) => b.totalQuantity - a.totalQuantity)
       .slice(0, 10);
 
+    // Revenue History (last 6 months)
+    const revenueHistory = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthName = d.toLocaleString('es-ES', { month: 'short' }).toUpperCase();
+      const nextMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+      
+      const monthRevenue = await prisma.order.aggregate({
+        where: {
+          createdAt: { gte: d, lt: nextMonth },
+          orderStatus: { in: validRevenueStatuses },
+          isDeleted: false
+        },
+        _sum: { total: true }
+      });
+      
+      revenueHistory.push({
+        date: monthName,
+        revenue: monthRevenue._sum.total || 0,
+        orders: await prisma.order.count({
+          where: {
+            createdAt: { gte: d, lt: nextMonth },
+            isDeleted: false
+          }
+        })
+      });
+    }
+
     res.json({
       success: true,
       stats: {
@@ -215,6 +254,9 @@ exports.getDashboardStats = async (req, res) => {
           total: p._sum.total
         })),
         topProducts,
+        recentOrders: recentOrders || [],
+        revenueHistory,
+        totalExpenses: totalExpensesResult._sum.amount || 0,
       },
     });
   } catch (error) {

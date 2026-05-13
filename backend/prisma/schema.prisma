@@ -289,3 +289,18 @@ model BulkUploadSession {
 
   @@index([userId])
 }
+
+model Expense {
+  id          String   @id @default(uuid())
+  title       String
+  amount      Float
+  category    String   @default("General")
+  date        DateTime @default(now())
+  description String?
+  isRecurring Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt @default(now())
+
+  @@index([date])
+  @@index([category])
+}

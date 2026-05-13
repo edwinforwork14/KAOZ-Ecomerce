@@ -750,6 +750,43 @@ export const api = {
       console.error("Error publishing bulk session:", error)
       return { success: false, error: error.message }
     }
+  },
+  // === EXPENSES ===
+  getAllExpenses: async () => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/admin/expenses`, { headers })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error fetching expenses:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  createExpense: async (expenseData: any) => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/admin/expenses`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(expenseData)
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error creating expense:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  deleteExpense: async (id: string) => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/admin/expenses/${id}`, {
+        method: 'DELETE',
+        headers
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error deleting expense:", error)
+      return { success: false, error: error.message }
+    }
   }
-
 }

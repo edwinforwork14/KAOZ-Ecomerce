@@ -202,6 +202,22 @@ export default function DashboardPage() {
               <span className="text-[10px] font-black uppercase tracking-widest text-red-500">{stats?.outOfStockCount || 0} sin inventario</span>
            </div>
         </div>
+
+        {/* Expenses (Gastos) - Added KPI */}
+        <div className="bg-black text-white p-8 group hover:bg-kaosNeon hover:text-black transition-all">
+           <div className="flex justify-between items-start">
+              <div>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-white/40 group-hover:text-black/40 mb-2">Gastos Operativos</p>
+                 <h2 className="text-5xl font-black tracking-tighter">{currencySymbol}{(stats?.totalExpenses || 0).toLocaleString()}</h2>
+              </div>
+              <div className="p-4 bg-white/10 group-hover:bg-black/10 transition-colors">
+                 <TrendingDown className="h-6 w-6" />
+              </div>
+           </div>
+           <div className="mt-4 flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Balance Neto: {currencySymbol}{(stats?.totalRevenue - stats?.totalExpenses || 0).toLocaleString()}</span>
+           </div>
+        </div>
       </div>
 
       {/* SECONDARY METRICS BAR */}
@@ -209,7 +225,7 @@ export default function DashboardPage() {
          {[
            { label: 'Ticket Promedio', value: `${currencySymbol}${stats?.aov?.toFixed(0) || 0}`, icon: Target, color: 'text-pink-500' },
            { label: 'Tasa Conversión', value: `${(stats?.conversionRate || 0).toFixed(2)}%`, icon: Activity, color: 'text-blue-500' },
-           { label: 'Ingreso/Cliente', value: `${currencySymbol}${(stats?.totalRevenue / stats?.totalCustomers || 0).toFixed(0)}`, icon: Award, color: 'text-indigo-500' },
+           { label: 'Margen Bruto', value: `${(((stats?.totalRevenue - stats?.totalExpenses) / Math.max(stats?.totalRevenue, 1)) * 100).toFixed(1)}%`, icon: Award, color: 'text-indigo-500' },
            { label: 'Retención', value: '12.5%', icon: UserCheck, color: 'text-emerald-500' },
            { label: 'Abandono Carrito', value: '64.2%', icon: ShoppingBasket, color: 'text-amber-500' },
          ].map((m, i) => (
@@ -238,32 +254,38 @@ export default function DashboardPage() {
          </div>
 
          {/* CHART: ORDER PIPELINE (Podium style) */}
-         <div className="lg:col-span-4 bg-slate-50 dark:bg-slate-900 border border-black/10 dark:border-white/10 p-8">
+         <div className="lg:col-span-4 bg-black text-white p-8">
             <div className="flex items-center justify-between mb-12">
                <h3 className="text-sm font-black uppercase tracking-widest text-kaosNeon">Flujo de Pedidos</h3>
-               <button className="text-[9px] font-black uppercase tracking-widest bg-black dark:bg-white text-white dark:text-black px-3 py-1 hover:bg-kaosNeon hover:text-black transition-all">Gestionar</button>
+               <button className="text-[9px] font-black uppercase tracking-widest bg-white text-black px-3 py-1 hover:bg-kaosNeon hover:text-black transition-all">Gestionar</button>
             </div>
             
             <div className="relative h-[250px] flex items-end justify-between gap-2 px-4">
                {/* Podium Bars representing statuses */}
                <div className="flex-1 flex flex-col items-center gap-4">
-                  <span className="text-xl font-black text-black/40 dark:text-white/40">2</span>
+                  <span className="text-xl font-black text-white/40">{stats?.ordersByStatus?.find((s: any) => s._id === 'pending')?.count || 0}</span>
                   <div className="w-full bg-amber-500 h-[60%] relative group">
-                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-amber-500">2</div>
+                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-amber-500">
+                        {stats?.ordersByStatus?.find((s: any) => s._id === 'pending')?.count || 0}
+                     </div>
                   </div>
                   <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Pendiente</span>
                </div>
                <div className="flex-1 flex flex-col items-center gap-4">
-                  <span className="text-xl font-black text-kaosNeon">1</span>
+                  <span className="text-xl font-black text-kaosNeon">{stats?.ordersByStatus?.find((s: any) => s._id === 'confirmed')?.count || 0}</span>
                   <div className="w-full bg-blue-500 h-[90%] relative">
-                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-blue-500">3</div>
+                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-blue-500">
+                        {stats?.ordersByStatus?.find((s: any) => s._id === 'confirmed')?.count || 0}
+                     </div>
                   </div>
                   <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Confirmado</span>
                </div>
                <div className="flex-1 flex flex-col items-center gap-4">
-                  <span className="text-xl font-black text-white/40">3</span>
+                  <span className="text-xl font-black text-white/40">{stats?.ordersByStatus?.find((s: any) => s._id === 'shipped')?.count || 0}</span>
                   <div className="w-full bg-slate-700 h-[30%] relative">
-                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-slate-500">0</div>
+                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-slate-500">
+                        {stats?.ordersByStatus?.find((s: any) => s._id === 'shipped')?.count || 0}
+                     </div>
                   </div>
                   <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Enviado</span>
                </div>

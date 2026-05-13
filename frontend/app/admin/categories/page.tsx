@@ -479,7 +479,7 @@ export default function AdminCategoriesPage() {
       {/* Modal de edición Industrial */}
       {showForm && editingCategory && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-xl bg-white border border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
+          <div className="w-full max-w-xl bg-white dark:bg-slate-950 border border-black dark:border-white/20 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,0.05)]">
             <div className="p-8 bg-black text-white flex justify-between items-center">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest bg-white text-black px-2 py-0.5 mb-2 inline-block">MÓDULO DE ARQUITECTURA</span>
@@ -502,7 +502,7 @@ export default function AdminCategoriesPage() {
 
             <div className="p-8 space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Nomenclatura Obligatoria</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Nomenclatura Obligatoria</label>
                 <Input
                   value={editingCategory.name || ""}
                   onChange={(e) => setEditingCategory({
@@ -510,12 +510,12 @@ export default function AdminCategoriesPage() {
                     name: e.target.value
                   })}
                   placeholder="NOMBRE DE LA CATEGORÍA..."
-                  className="h-14 rounded-none border-black focus:ring-0 uppercase font-bold text-xs tracking-widest"
+                  className="h-14 rounded-none border-black dark:border-white/10 focus:border-black dark:focus:border-kaosNeon focus:ring-0 uppercase font-bold text-xs tracking-widest bg-transparent text-black dark:text-white"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Descripción del Segmento</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Descripción del Segmento</label>
                 <Textarea
                   value={editingCategory.description || ""}
                   onChange={(e) => setEditingCategory({
@@ -523,7 +523,7 @@ export default function AdminCategoriesPage() {
                     description: e.target.value
                   })}
                   placeholder="DETALLES TÉCNICOS O DESCRIPCIÓN..."
-                  className="rounded-none border-black focus:ring-0 uppercase font-bold text-xs tracking-widest min-h-[100px]"
+                  className="rounded-none border-black dark:border-white/10 focus:border-black dark:focus:border-kaosNeon focus:ring-0 uppercase font-bold text-xs tracking-widest min-h-[100px] bg-transparent text-black dark:text-white"
                   rows={3}
                 />
               </div>

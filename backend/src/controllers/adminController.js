@@ -638,3 +638,42 @@ exports.reorderCategories = async (req, res) => {
     });
   }
 };
+
+exports.getAllExpenses = async (req, res) => {
+  try {
+    const expenses = await prisma.expense.findMany({
+      orderBy: { date: 'desc' }
+    });
+    res.json({ success: true, expenses });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.createExpense = async (req, res) => {
+  try {
+    const { title, amount, category, date, description } = req.body;
+    const expense = await prisma.expense.create({
+      data: {
+        title,
+        amount: parseFloat(amount),
+        category,
+        date: date ? new Date(date) : new Date(),
+        description
+      }
+    });
+    res.json({ success: true, expense });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.deleteExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.expense.delete({ where: { id } });
+    res.json({ success: true, message: "Gasto eliminado" });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

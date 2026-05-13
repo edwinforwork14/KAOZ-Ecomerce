@@ -61,6 +61,11 @@ const menuGroups: MenuGroup[] = [
         icon: ShoppingCart,
         badge: "NUEVO",
         badgeColor: "bg-kaosNeon text-black"
+      },
+      {
+        title: "Gastos",
+        href: "/admin/expenses",
+        icon: Banknote
       }
     ]
   },

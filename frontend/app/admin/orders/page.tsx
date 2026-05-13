@@ -180,20 +180,20 @@ export default function OrdersPage() {
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
          {[
-           { label: 'Total', value: stats.total, icon: Package, color: 'bg-blue-500' },
-           { label: 'Pendientes', value: stats.pending, icon: Clock, color: 'bg-amber-500' },
-           { label: 'Entregados', value: stats.delivered, icon: CheckCircle2, color: 'bg-green-500' },
-           { label: 'Cancelados', value: stats.cancelled, icon: XCircle, color: 'bg-red-500' },
-           { label: 'Ingresos', value: `$${stats.totalRevenue.toLocaleString()}`, icon: Banknote, color: 'bg-kaosNeon', textColor: 'text-black' },
+           { label: 'Total', value: stats.total, icon: Package, color: 'bg-black text-white' },
+           { label: 'Pendientes', value: stats.pending, icon: Clock, color: 'bg-amber-500 text-white' },
+           { label: 'Entregados', value: stats.delivered, icon: CheckCircle2, color: 'bg-green-600 text-white' },
+           { label: 'Cancelados', value: stats.cancelled, icon: XCircle, color: 'bg-red-600 text-white' },
+           { label: 'Ingresos', value: `${currencySymbol}${stats.totalRevenue.toLocaleString()}`, icon: Banknote, color: 'bg-kaosNeon text-black border-none' },
          ].map((s, i) => (
-           <div key={i} className="bg-white dark:bg-slate-950 border border-black/10 p-4 shadow-sm hover:border-black transition-all group">
-              <div className="flex items-center gap-3">
-                 <div className={cn("p-2 rounded-none text-white", s.color, s.textColor)}>
-                    <s.icon className="h-4 w-4" />
+           <div key={i} className={cn("border border-black p-5 shadow-sm transition-all group", s.color)}>
+              <div className="flex items-center gap-4">
+                 <div className="p-3 bg-white/10">
+                    <s.icon className="h-5 w-5" />
                  </div>
                  <div>
-                    <p className="text-2xl font-black tracking-tighter">{s.value}</p>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-black/40">{s.label}</p>
+                    <p className="text-2xl font-black tracking-tighter leading-none mb-1">{s.value}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest opacity-60">{s.label}</p>
                  </div>
               </div>
            </div>
@@ -201,24 +201,24 @@ export default function OrdersPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white dark:bg-slate-950 border border-black/10 p-4 flex flex-col lg:flex-row gap-4 items-center">
-         <div className="relative flex-1 w-full lg:w-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/20" />
+      <div className="bg-black text-white p-6 flex flex-col lg:flex-row gap-6 items-center border-b border-kaosNeon/30">
+         <div className="relative flex-1 w-full lg:w-auto group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 group-focus-within:text-kaosNeon transition-colors" />
             <Input 
               placeholder="BUSCAR POR # O CLIENTE..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 h-12 w-full rounded-none border-black/10 focus:border-black transition-all font-bold uppercase text-[10px] tracking-widest"
+              className="pl-12 h-14 w-full rounded-none border-white/10 bg-white/5 focus:border-kaosNeon transition-all font-black uppercase text-[10px] tracking-widest text-white placeholder:text-white/20"
             />
          </div>
 
-         <div className="flex flex-wrap gap-2 w-full lg:w-auto">
+         <div className="flex flex-wrap gap-3 w-full lg:w-auto">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="h-12 w-[180px] rounded-none border-black/10 font-bold uppercase text-[10px] tracking-widest">
-                <Filter className="h-3 w-3 mr-2" />
+              <SelectTrigger className="h-14 w-[200px] rounded-none border-white/10 bg-white/5 font-black uppercase text-[10px] tracking-widest text-white">
+                <Filter className="h-3 w-3 mr-2 text-kaosNeon" />
                 <SelectValue placeholder="Estado Pedido" />
               </SelectTrigger>
-              <SelectContent className="rounded-none border-black">
+              <SelectContent className="rounded-none border-black bg-black text-white">
                 <SelectItem value="all">TODOS LOS ESTADOS</SelectItem>
                 <SelectItem value="pending">PENDIENTES</SelectItem>
                 <SelectItem value="confirmed">CONFIRMADOS</SelectItem>
@@ -230,11 +230,11 @@ export default function OrdersPage() {
             </Select>
 
             <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
-              <SelectTrigger className="h-12 w-[180px] rounded-none border-black/10 font-bold uppercase text-[10px] tracking-widest">
-                <CreditCard className="h-3 w-3 mr-2" />
+              <SelectTrigger className="h-14 w-[200px] rounded-none border-white/10 bg-white/5 font-black uppercase text-[10px] tracking-widest text-white">
+                <CreditCard className="h-3 w-3 mr-2 text-kaosNeon" />
                 <SelectValue placeholder="Estado Pago" />
               </SelectTrigger>
-              <SelectContent className="rounded-none border-black">
+              <SelectContent className="rounded-none border-black bg-black text-white">
                 <SelectItem value="all">TODOS LOS PAGOS</SelectItem>
                 <SelectItem value="pending">PAGO PENDIENTE</SelectItem>
                 <SelectItem value="paid">PAGADO</SelectItem>
@@ -246,7 +246,10 @@ export default function OrdersPage() {
             <Button
               variant={showDeleted ? "default" : "outline"}
               onClick={() => setShowDeleted(!showDeleted)}
-              className="h-12 rounded-none border-black/10 font-bold uppercase text-[10px] tracking-widest gap-2"
+              className={cn(
+                "h-14 rounded-none border-white/10 font-black uppercase text-[10px] tracking-widest gap-2 px-6",
+                showDeleted ? "bg-kaosNeon text-black border-none" : "bg-white/5 text-white hover:bg-white/10"
+              )}
             >
               <Trash2 className="h-4 w-4" />
               {showDeleted ? 'OCULTAR ELIMINADOS' : 'VER ELIMINADOS'}
@@ -265,22 +268,22 @@ export default function OrdersPage() {
             return (
               <div 
                 key={order.id} 
-                className="group bg-white dark:bg-slate-950 border border-black/10 p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center hover:border-black transition-all cursor-pointer relative overflow-hidden"
+                className="group bg-white border border-black p-8 flex flex-col lg:flex-row justify-between items-start lg:items-center hover:bg-black transition-all duration-300 cursor-pointer relative overflow-hidden"
                 onClick={() => { setSelectedOrder(order); setShowDetails(true); }}
               >
-                {/* Visual Accent */}
-                <div className={cn("absolute left-0 top-0 bottom-0 w-1", status.bgColor)}></div>
+                {/* Status Bar Left */}
+                <div className={cn("absolute left-0 top-0 bottom-0 w-1.5", status.bgColor.replace('bg-opacity-10', ''))}></div>
 
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 w-full">
                    {/* Order ID & Status */}
                    <div>
-                      <p className="text-2xl font-black uppercase tracking-tighter mb-2">#{order.orderNumber}</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/30 group-hover:text-white/20 mb-2">ID TRANSACCIÓN</p>
+                      <p className="text-3xl font-black uppercase tracking-tighter mb-4 group-hover:text-kaosNeon transition-colors">#{order.orderNumber}</p>
                       <div className="flex flex-wrap gap-2">
-                         <Badge className={cn("rounded-none border-none text-[8px] font-black uppercase tracking-widest h-5", status.bgColor, status.color)}>
-                            <StatusIcon className="h-3 w-3 mr-1" />
+                         <Badge className={cn("rounded-none border-none text-[8px] font-black uppercase tracking-widest h-6 px-3", status.bgColor, status.color)}>
                             {status.label}
                          </Badge>
-                         <Badge className={cn("rounded-none border text-[8px] font-black uppercase tracking-widest h-5 bg-transparent", paymentStatus.color)}>
+                         <Badge className={cn("rounded-none border text-[8px] font-black uppercase tracking-widest h-6 px-3 bg-transparent", paymentStatus.color.replace('bg-', 'border-').replace('text-', 'border-'))}>
                             {paymentStatus.label}
                          </Badge>
                       </div>
@@ -288,60 +291,32 @@ export default function OrdersPage() {
 
                    {/* Customer Info */}
                    <div className="flex flex-col justify-center">
-                      <div className="flex items-center gap-2 mb-1">
-                         <User className="h-3 w-3 text-black/40" />
-                         <p className="text-[11px] font-black uppercase tracking-tight">{order.customerInfo?.firstName} {order.customerInfo?.lastName}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                         <Mail className="h-3 w-3 text-black/20" />
-                         <p className="text-[9px] font-bold text-black/40 truncate">{order.customerInfo?.email}</p>
-                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/30 group-hover:text-white/20 mb-4 flex items-center gap-2">
+                         <User className="h-3 w-3" /> CLIENTE
+                      </p>
+                      <p className="text-lg font-black uppercase tracking-tight group-hover:text-white mb-1">{order.customerInfo?.firstName} {order.customerInfo?.lastName}</p>
+                      <p className="text-[10px] font-bold text-black/40 group-hover:text-white/40 truncate tracking-widest">{order.customerInfo?.email}</p>
                    </div>
 
                    {/* Logistics & Date */}
                    <div className="flex flex-col justify-center">
-                      <div className="flex items-center gap-2 mb-1">
-                         <Calendar className="h-3 w-3 text-black/40" />
-                         <p className="text-[11px] font-black uppercase tracking-tight">{new Date(order.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                         <Truck className="h-3 w-3 text-black/20" />
-                         <p className="text-[9px] font-bold text-black/40 uppercase tracking-widest truncate">{order.shippingMethod?.name || 'ENTREGA ESTÁNDAR'}</p>
-                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/30 group-hover:text-white/20 mb-4 flex items-center gap-2">
+                         <Truck className="h-3 w-3" /> LOGÍSTICA
+                      </p>
+                      <p className="text-lg font-black uppercase tracking-tight group-hover:text-white mb-1">{new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p className="text-[10px] font-bold text-black/40 group-hover:text-white/40 uppercase tracking-widest truncate">{order.shippingMethod?.name || 'ENTREGA ESTÁNDAR'}</p>
                    </div>
 
                    {/* Payment & Price */}
                    <div className="flex items-center justify-between lg:justify-end gap-12">
-                      <div className="text-right hidden md:block">
-                         <p className="text-[9px] font-black text-black/20 uppercase tracking-widest mb-1">Pago: {order.paymentMethod?.name || 'N/A'}</p>
-                         <p className="text-3xl font-black">${order.total?.toFixed(0)}</p>
+                      <div className="text-right">
+                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/30 group-hover:text-white/20 mb-2">MONTO TOTAL</p>
+                         <p className="text-4xl font-black group-hover:text-white transition-colors">${order.total?.toLocaleString()}</p>
                       </div>
                       <div className="flex gap-2">
-                         <Button variant="outline" size="icon" className="rounded-none border-black/10 hover:border-black hover:bg-black hover:text-white transition-all h-10 w-10">
-                            <ChevronRight className="h-5 w-5" />
+                         <Button variant="outline" size="icon" className="rounded-none border-black group-hover:border-white/20 group-hover:text-white hover:bg-kaosNeon hover:text-black transition-all h-14 w-14">
+                            <ChevronRight className="h-6 w-6" />
                          </Button>
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                               <Button variant="outline" size="icon" className="rounded-none border-black/10 hover:border-black transition-all h-10 w-10">
-                                  <MoreHorizontal className="h-4 w-4" />
-                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="rounded-none border-black p-1">
-                               <DropdownMenuItem className="text-[10px] font-black uppercase cursor-pointer" onClick={() => { setSelectedOrder(order); setShowDetails(true); }}>
-                                  <Eye className="h-3 w-3 mr-2" /> VER DETALLES
-                               </DropdownMenuItem>
-                               <DropdownMenuItem className="text-[10px] font-black uppercase cursor-pointer">
-                                  <Printer className="h-3 w-3 mr-2" /> IMPRIMIR TICKET
-                               </DropdownMenuItem>
-                               <DropdownMenuSeparator className="bg-black/5" />
-                               <DropdownMenuItem 
-                                 className="text-[10px] font-black uppercase cursor-pointer text-red-500"
-                                 onClick={() => updateStatus(order.id, 'cancelled')}
-                               >
-                                  <XCircle className="h-3 w-3 mr-2" /> CANCELAR PEDIDO
-                               </DropdownMenuItem>
-                            </DropdownMenuContent>
-                         </DropdownMenu>
                       </div>
                    </div>
                 </div>
