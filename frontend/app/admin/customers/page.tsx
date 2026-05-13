@@ -134,7 +134,7 @@ export default function CustomersPage() {
       case 'added': return 'AGREGADO'
       case 'removed': return 'ELIMINADO'
       case 'updated': return 'ACTUALIZADO'
-      default: return action.toUpperCase()
+      default: return (action || '').toUpperCase()
     }
   }
 
@@ -349,7 +349,7 @@ export default function CustomersPage() {
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-[10px] font-black uppercase tracking-widest bg-white text-black px-2 py-0.5">MANIFIESTO DE CLIENTE</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest border border-white px-2 py-0.5">#{selectedCustomer._id.slice(-8).toUpperCase()}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest border border-white px-2 py-0.5">#{selectedCustomer._id?.slice(-8).toUpperCase() || '---'}</span>
                     </div>
                     <h2 className="text-4xl font-black uppercase tracking-tighter leading-none">{selectedCustomer.firstName} {selectedCustomer.lastName}</h2>
                   </div>
@@ -443,7 +443,7 @@ export default function CustomersPage() {
                                   <div className="flex items-center gap-3 mb-1">
                                     <span className="text-lg font-black uppercase tracking-tighter">#{order.orderNumber}</span>
                                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 border ${getOrderStatusColor(order.orderStatus)}`}>
-                                      {translateOrderStatus(order.orderStatus).toUpperCase()}
+                                      {translateOrderStatus(order.orderStatus)?.toUpperCase() || 'PENDIENTE'}
                                     </span>
                                   </div>
                                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">

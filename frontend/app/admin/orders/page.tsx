@@ -126,7 +126,7 @@ export default function OrdersPage() {
   }
 
   const filteredOrders = orders.filter(o => {
-    const matchesSearch = o.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
+    const matchesSearch = (o.orderNumber || "").toLowerCase().includes(search.toLowerCase()) ||
                          o.customerInfo?.firstName?.toLowerCase().includes(search.toLowerCase()) ||
                          o.customerInfo?.email?.toLowerCase().includes(search.toLowerCase())
     

@@ -661,7 +661,7 @@ export default function AdminSettingsPage() {
                        </div>
 
                        <div className="mt-4">
-                          <p className="text-[8px] font-bold text-black/40 uppercase tracking-widest">Protocolo: {method.type.toUpperCase()}</p>
+                          <p className="text-[8px] font-bold text-black/40 uppercase tracking-widest">Protocolo: {method.type?.toUpperCase() || 'DELIVERY'}</p>
                        </div>
                     </div>
                  )

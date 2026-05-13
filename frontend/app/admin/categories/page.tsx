@@ -83,7 +83,7 @@ export default function AdminCategoriesPage() {
   const filteredCategories = useMemo(() => {
     if (!searchTerm) return categories
     return categories.filter(cat => 
-      cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (cat.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       cat.fullPath?.toLowerCase().includes(searchTerm.toLowerCase())
     )
   }, [categories, searchTerm])
@@ -413,7 +413,7 @@ export default function AdminCategoriesPage() {
                   </div>
                   {category.fullPath && category.fullPath !== category.name && (
                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                      RUTA: {category.fullPath.toUpperCase()}
+                      RUTA: {category.fullPath?.toUpperCase() || 'RAÍZ'}
                     </div>
                   )}
                 </div>
@@ -547,7 +547,7 @@ export default function AdminCategoriesPage() {
                         .filter(cat => cat._id !== editingCategory._id)
                         .map(cat => (
                           <SelectItem key={cat._id} value={cat._id} className="text-[10px] font-bold uppercase">
-                            {cat.name.toUpperCase()}
+                            {cat.name?.toUpperCase() || 'S/N'}
                           </SelectItem>
                         ))}
                     </SelectContent>
