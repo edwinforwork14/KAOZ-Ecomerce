@@ -137,7 +137,7 @@ export default function ProductsPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const params: any = { page: currentPage, limit: itemsPerPage }
+      const params: any = { page: currentPage, limit: itemsPerPage, isAdmin: true }
       if (search.trim()) params.search = search.trim()
 
       const [productsResult, categoriesResult, settingsResult] = await Promise.all([

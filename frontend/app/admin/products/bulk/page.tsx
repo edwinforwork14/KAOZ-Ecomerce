@@ -254,24 +254,11 @@ export default function BulkUploadPage() {
             
             <div className="flex gap-3">
               {currentStep === "edit" && (
-                <Button onClick={saveDrafts} disabled={loading} variant="outline" className="rounded-none border-white/20 text-white hover:bg-white/10 h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
-                  <Save className="h-4 w-4" /> Respaldar
-                </Button>
-              )}
-              {currentStep === "edit" && (
                 <Button 
                   onClick={() => setCurrentStep("validate")} 
                   className="rounded-none bg-kaosNeon text-black hover:bg-white h-11 px-8 text-[10px] font-black uppercase tracking-widest gap-2"
                 >
-                  Validar Datos <ChevronRight className="h-4 w-4" />
-                </Button>
-              )}
-              {currentStep === "validate" && (
-                <Button 
-                  onClick={() => setCurrentStep("publish")} 
-                  className="rounded-none bg-kaosNeon text-black hover:bg-white h-11 px-8 text-[10px] font-black uppercase tracking-widest gap-2"
-                >
-                  Confirmar Despliegue <Rocket className="h-4 w-4" />
+                  Continuar a Validación <ChevronRight className="h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -283,8 +270,11 @@ export default function BulkUploadPage() {
         {/* STEP 1: UPLOAD (Industrial Minimalist) */}
         {currentStep === "upload" && (
           <div className="max-w-4xl mx-auto mt-20 flex flex-col items-center">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-              <div className="p-12 border border-black hover:bg-black hover:text-white transition-all cursor-pointer group flex flex-col items-center text-center">
+            <div className="w-full max-w-2xl mx-auto">
+              <div 
+                className="p-16 border-2 border-dashed border-black hover:bg-black/5 transition-all cursor-pointer group flex flex-col items-center text-center space-y-6"
+                onClick={() => document.getElementById("file-upload")?.click()}
+              >
                 <input 
                   type="file" 
                   multiple 
@@ -293,38 +283,16 @@ export default function BulkUploadPage() {
                   onChange={handleFileUpload}
                   disabled={uploading}
                 />
-                <label htmlFor="file-upload" className="cursor-pointer space-y-6">
-                  <div className="w-20 h-20 bg-black text-white group-hover:bg-kaosNeon group-hover:text-black flex items-center justify-center transition-colors mx-auto">
-                    <ImageIcon className="h-10 w-10" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-black uppercase tracking-tight mb-2">Archivos Individuales</h3>
-                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Selección manual de activos (.JPG, .PNG)</p>
-                  </div>
-                </label>
-              </div>
-
-              <div className="p-12 border border-black hover:bg-black hover:text-white transition-all cursor-pointer group flex flex-col items-center text-center">
-                <input 
-                  type="file" 
-                  multiple 
-                  // @ts-ignore
-                  webkitdirectory="" 
-                  directory="" 
-                  className="hidden" 
-                  id="folder-upload"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                />
-                <label htmlFor="folder-upload" className="cursor-pointer space-y-6">
-                  <div className="w-20 h-20 bg-black text-white group-hover:bg-kaosNeon group-hover:text-black flex items-center justify-center transition-colors mx-auto">
-                    <FolderOpen className="h-10 w-10" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-black uppercase tracking-tight mb-2">Estructura de Carpeta</h3>
-                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Escaneo inteligente de variantes y nombres</p>
-                  </div>
-                </label>
+                <div className="w-24 h-24 bg-black text-white group-hover:bg-kaosNeon group-hover:text-black flex items-center justify-center transition-colors mx-auto shadow-[8px_8px_0_rgba(0,0,0,0.1)]">
+                  <Upload className="h-12 w-12" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Seleccionar Activos</h3>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">Formatos soportados: JPG, PNG, WEBP, HEIC</p>
+                </div>
+                <Button className="rounded-none bg-black text-white group-hover:bg-kaosNeon group-hover:text-black px-10 h-12 text-[10px] font-black uppercase tracking-widest">
+                  Explorar Archivos
+                </Button>
               </div>
             </div>
 
@@ -488,6 +456,23 @@ export default function BulkUploadPage() {
                 <p className="text-sm font-black uppercase tracking-[0.2em] opacity-20 italic">Esperando Activos de Inventario...</p>
               </div>
             )}
+
+            <div className="p-8 border-t border-black bg-[#fafafa] flex justify-between items-center">
+              <Button onClick={() => setCurrentStep("upload")} variant="ghost" className="rounded-none border border-black/10 h-12 px-8 text-[10px] font-black uppercase tracking-widest gap-2">
+                <ChevronLeft className="h-4 w-4" /> Retornar
+              </Button>
+              <div className="flex gap-4">
+                <Button onClick={saveDrafts} disabled={loading} variant="outline" className="rounded-none border-black h-12 px-8 text-[10px] font-black uppercase tracking-widest gap-2">
+                  <Save className="h-4 w-4" /> Respaldar Sesión
+                </Button>
+                <Button 
+                  onClick={() => setCurrentStep("validate")} 
+                  className="rounded-none bg-black text-white hover:bg-kaosNeon hover:text-black h-12 px-10 text-[10px] font-black uppercase tracking-widest gap-2 shadow-[4px_4px_0_rgba(0,0,0,0.1)]"
+                >
+                  Validar Lote <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -581,10 +566,10 @@ export default function BulkUploadPage() {
                 </p>
                 <Button 
                   onClick={() => setCurrentStep("publish")}
-                  disabled={drafts.filter(d => d.status === "valid").length === 0}
+                  disabled={drafts.filter(d => d.status === "valid").length === 0 || drafts.some(d => d.status !== "valid")}
                   className="w-full bg-black text-white hover:bg-white hover:text-black rounded-none h-14 font-black uppercase text-xs tracking-widest transition-all"
                 >
-                  Finalizar Revisión
+                  {drafts.some(d => d.status !== "valid") ? "Corregir Errores para Continuar" : "Finalizar Revisión"}
                 </Button>
               </div>
             </div>
@@ -647,6 +632,9 @@ export default function BulkUploadPage() {
             <DialogTitle className="text-3xl font-black uppercase tracking-tighter">
               {editingDraft?.name || "Detalles del Producto"}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Formulario de edición para detalles técnicos, categorías y variantes de productos en carga masiva.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto p-8 bg-white space-y-12 custom-scrollbar">

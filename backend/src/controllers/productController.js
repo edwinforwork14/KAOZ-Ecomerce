@@ -10,9 +10,11 @@ const escapeRegExp = (value = "") =>
  */
 exports.getFilterOptions = async (req, res) => {
   try {
-    const { category, search } = req.query;
-
-    const where = { isActive: true };
+    const { category, search, isAdmin } = req.query;
+    const where = {};
+    if (isAdmin !== "true") {
+      where.isActive = true;
+    }
 
     if (category) {
       where.categoryId = category;
@@ -147,12 +149,16 @@ exports.getProducts = async (req, res) => {
       page = 1,
       limit = 12,
       featured,
+      isAdmin,
     } = req.query;
 
     const pageNum = Math.max(parseInt(page) || 1, 1);
     const limitNum = Math.min(Math.max(parseInt(limit) || 12, 1), 200);
 
-    const where = { isActive: true };
+    const where = {};
+    if (isAdmin !== "true") {
+      where.isActive = true;
+    }
 
     if (category) where.categoryId = category;
     if (subcategory) where.subcategoryId = subcategory;

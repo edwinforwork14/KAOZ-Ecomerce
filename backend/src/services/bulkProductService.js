@@ -120,7 +120,7 @@ class BulkProductService {
         subcategoryId: null,
         brand: "KAOZ",
         isNew: true,
-        isActive: false, // Por defecto inactivo hasta revisión
+        isActive: true, // Por defecto activo para visibilidad inmediata
         images: images.map((img, idx) => ({
           url: img.url,
           isMain: idx === 0,
@@ -194,7 +194,7 @@ class BulkProductService {
 
     for (const draft of validDrafts) {
       try {
-        await prisma.product.create({
+        const newProduct = await prisma.product.create({
           data: {
             name: draft.name,
             description: draft.description || "",
@@ -227,9 +227,10 @@ class BulkProductService {
             }
           }
         });
+        console.log(`✅ Producto creado exitosamente: ${draft.name} (ID: ${newProduct.id})`);
         results.created++;
       } catch (error) {
-        console.error(`Error publishing product ${draft.name}:`, error);
+        console.error(`❌ Error al publicar producto "${draft.name}":`, error);
         results.failed++;
         results.errors.push({ name: draft.name, error: error.message });
       }
