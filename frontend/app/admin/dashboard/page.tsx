@@ -98,10 +98,10 @@ export default function DashboardPage() {
                  <div className="p-3 bg-black text-white group-hover:bg-kaosNeon group-hover:text-black transition-colors">
                     <Clock className="h-5 w-5" />
                  </div>
-                 <div>
-                    <p className="text-sm font-black uppercase tracking-tight text-black group-hover:text-white">{stats?.pendingOrdersCount || 0} PENDIENTES</p>
+                  <div>
+                    <p className="text-sm font-black uppercase tracking-tight text-black group-hover:text-white">{stats?.pendingOrders || 0} PENDIENTES</p>
                     <p className="text-[9px] font-bold text-black/30 group-hover:text-white/40 uppercase">REVISIÓN MANUAL REQUERIDA</p>
-                 </div>
+                  </div>
               </div>
               <Link href="/admin/orders" className="opacity-0 group-hover:opacity-100 transition-all"><ArrowRight className="h-5 w-5 text-kaosNeon" /></Link>
            </div>
@@ -207,8 +207,8 @@ export default function DashboardPage() {
         <div className="bg-black text-white p-8 group hover:bg-kaosNeon hover:text-black transition-all">
            <div className="flex justify-between items-start">
               <div>
-                 <p className="text-[10px] font-black uppercase tracking-widest text-white/40 group-hover:text-black/40 mb-2">Gastos Operativos</p>
-                 <h2 className="text-5xl font-black tracking-tighter">{currencySymbol}{(stats?.totalExpenses || 0).toLocaleString()}</h2>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40 group-hover:text-black/40 mb-2">Gastos Operativos</p>
+                  <h2 className="text-5xl font-black tracking-tighter">{currencySymbol}{(stats?.totalExpenses || 0).toLocaleString()}</h2>
               </div>
               <div className="p-4 bg-white/10 group-hover:bg-black/10 transition-colors">
                  <TrendingDown className="h-6 w-6" />

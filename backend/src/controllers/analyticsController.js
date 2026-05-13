@@ -25,6 +25,8 @@ exports.getDashboardStats = async (req, res) => {
       activeCarts,
       totalViewsResult,
       paymentMethodStats,
+      recentOrders,
+      totalExpensesResult,
     ] = await Promise.all([
       // Total de pedidos activos (incluyendo pending)
       prisma.order.count({ where: { orderStatus: { in: allActiveStatuses }, isDeleted: false } }),

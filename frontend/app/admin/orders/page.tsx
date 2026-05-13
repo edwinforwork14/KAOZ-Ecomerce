@@ -136,6 +136,7 @@ export default function OrdersPage() {
     return matchesSearch && matchesStatus && matchesPayment
   })
 
+  const currencySymbol = '$'
   // Calculate stats based on ALL orders
   const stats = {
     total: orders.length,
@@ -280,10 +281,10 @@ export default function OrdersPage() {
                       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/30 group-hover:text-white/20 mb-2">ID TRANSACCIÓN</p>
                       <p className="text-3xl font-black uppercase tracking-tighter mb-4 group-hover:text-kaosNeon transition-colors">#{order.orderNumber}</p>
                       <div className="flex flex-wrap gap-2">
-                         <Badge className={cn("rounded-none border-none text-[8px] font-black uppercase tracking-widest h-6 px-3", status.bgColor, status.color)}>
+                         <Badge className={cn("rounded-none border-none text-[8px] font-black uppercase tracking-widest h-6 px-3 group-hover:bg-white group-hover:text-black", status.bgColor, status.color)}>
                             {status.label}
                          </Badge>
-                         <Badge className={cn("rounded-none border text-[8px] font-black uppercase tracking-widest h-6 px-3 bg-transparent", paymentStatus.color.replace('bg-', 'border-').replace('text-', 'border-'))}>
+                         <Badge className={cn("rounded-none border text-[8px] font-black uppercase tracking-widest h-6 px-3 bg-transparent group-hover:text-white", paymentStatus.color.replace('bg-', 'border-').replace('text-', 'border-'))}>
                             {paymentStatus.label}
                          </Badge>
                       </div>

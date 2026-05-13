@@ -159,16 +159,19 @@ export default function BulkUploadPage() {
   }
 
   const saveDrafts = async () => {
-    if (!sessionId) return
+    if (!sessionId) return null
     setLoading(true)
     try {
       const res = await api.updateBulkDrafts(sessionId, drafts)
       if (res.success) {
         setDrafts(res.session.drafts)
         toast({ title: "SISTEMA SINCRONIZADO", description: "BORRADORES ASEGURADOS EN NUBE." })
+        return res.session.drafts
       }
+      return null
     } catch (error: any) {
       toast({ title: "ERROR DE PERSISTENCIA", description: error.message, variant: "destructive" })
+      return null
     } finally {
       setLoading(false)
     }
@@ -255,10 +258,14 @@ export default function BulkUploadPage() {
             <div className="flex gap-3">
               {currentStep === "edit" && (
                 <Button 
-                  onClick={() => setCurrentStep("validate")} 
+                  onClick={async () => {
+                    const updatedDrafts = await saveDrafts();
+                    if (updatedDrafts) setCurrentStep("validate");
+                  }} 
+                  disabled={loading}
                   className="rounded-none bg-kaosNeon text-black hover:bg-white h-11 px-8 text-[10px] font-black uppercase tracking-widest gap-2"
                 >
-                  Continuar a Validación <ChevronRight className="h-4 w-4" />
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Continuar a Validación <ChevronRight className="h-4 w-4" /></>}
                 </Button>
               )}
             </div>
@@ -466,10 +473,21 @@ export default function BulkUploadPage() {
                   <Save className="h-4 w-4" /> Respaldar Sesión
                 </Button>
                 <Button 
-                  onClick={() => setCurrentStep("validate")} 
+                  onClick={async () => {
+                    const updatedDrafts = await saveDrafts();
+                    if (updatedDrafts) {
+                      const allValid = updatedDrafts.every((d: any) => d.status === "valid");
+                      if (allValid) {
+                        setCurrentStep("validate");
+                      } else {
+                        toast({ title: "VALIDACIÓN FALLIDA", description: "EXISTEN REGISTROS CON ERRORES TÉCNICOS.", variant: "destructive" });
+                      }
+                    }
+                  }} 
+                  disabled={loading}
                   className="rounded-none bg-black text-white hover:bg-kaosNeon hover:text-black h-12 px-10 text-[10px] font-black uppercase tracking-widest gap-2 shadow-[4px_4px_0_rgba(0,0,0,0.1)]"
                 >
-                  Validar Lote <ChevronRight className="h-4 w-4" />
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Validar Lote <ChevronRight className="h-4 w-4" /></>}
                 </Button>
               </div>
             </div>
@@ -891,22 +909,3 @@ export default function BulkUploadPage() {
   )
 }
 
-function X(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  )
-}
