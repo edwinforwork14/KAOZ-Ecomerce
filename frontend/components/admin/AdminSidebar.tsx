@@ -26,7 +26,8 @@ import {
   Building2,
   Bell,
   Search,
-  ExternalLink
+  ExternalLink,
+  Banknote
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { brandConfig } from "@/lib/config"
