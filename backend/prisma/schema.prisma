@@ -271,3 +271,17 @@ model Deployment {
 
   @@index([version])
 }
+
+model BulkUploadSession {
+  id          String   @id @default(uuid())
+  userId      String
+  status      String   @default("uploading") // uploading, editing, validating, processing, completed
+  drafts      Json?    // Array of product drafts
+  assets      Json?    // Map of filenames to URLs
+  progress    Int      @default(0)
+  totalItems  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt @default(now())
+
+  @@index([userId])
+}

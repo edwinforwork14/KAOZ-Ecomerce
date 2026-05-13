@@ -684,5 +684,72 @@ export const api = {
   getAdminCategories,
   createCategory,
   updateCategory,
-  deleteCategory
+  deleteCategory,
+  // === BULK PRODUCTS ===
+  initBulkSession: async () => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/admin/bulk/init`, {
+        method: 'POST',
+        headers
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error initiating bulk session:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  getBulkSession: async (id: string) => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/admin/bulk/${id}`, { headers })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error fetching bulk session:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  uploadBulkImages: async (sessionId: string, formData: FormData) => {
+    try {
+      const headers = await getAuthHeaders()
+      const { 'Content-Type': _, ...authHeaders } = headers
+      const response = await fetch(`${API_BASE_URL}/admin/bulk/${sessionId}/upload`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: formData
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error uploading bulk images:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  updateBulkDrafts: async (id: string, drafts: any[]) => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/admin/bulk/${id}/drafts`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ drafts })
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error updating bulk drafts:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  publishBulkSession: async (id: string) => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/admin/bulk/${id}/publish`, {
+        method: 'POST',
+        headers
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error publishing bulk session:", error)
+      return { success: false, error: error.message }
+    }
+  }
+
 }

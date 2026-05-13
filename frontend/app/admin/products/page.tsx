@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -82,6 +83,7 @@ function safeLower(v: unknown) {
 }
 
 export default function ProductsPage() {
+  const router = useRouter()
   const { toast } = useToast()
 
   const [products, setProducts] = useState<any[]>([])
@@ -501,16 +503,26 @@ export default function ProductsPage() {
             Productos
           </h1>
         </div>
-        <Button
-          onClick={() => {
-            resetForm()
-            setIsDialogOpen(true)
-          }}
-          className="bg-black text-white rounded-none hover:bg-kaosNeon hover:text-black transition-all h-14 px-8 text-xs font-black uppercase tracking-widest"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Registrar Producto
-        </Button>
+        <div className="flex gap-4">
+          <Button
+            variant="outline"
+            onClick={() => router.push("/admin/products/bulk")}
+            className="border-black rounded-none hover:bg-black hover:text-white transition-all h-14 px-8 text-xs font-black uppercase tracking-widest"
+          >
+            <Upload className="h-5 w-5 mr-2" />
+            Carga Masiva
+          </Button>
+          <Button
+            onClick={() => {
+              resetForm()
+              setIsDialogOpen(true)
+            }}
+            className="bg-black text-white rounded-none hover:bg-kaosNeon hover:text-black transition-all h-14 px-8 text-xs font-black uppercase tracking-widest"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Registrar Producto
+          </Button>
+        </div>
       </div>
 
       {/* Search & Controls */}

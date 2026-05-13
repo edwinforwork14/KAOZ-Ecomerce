@@ -19,6 +19,13 @@ const {
   getCategories,
   reorderCategories,
 } = require("../controllers/adminController");
+const {
+  initSession,
+  uploadImages,
+  getSession,
+  updateSessionDrafts,
+  publishSession,
+} = require("../controllers/bulkProductController");
 const { protect, authorize } = require("../middleware/auth");
 const { upload, processImage } = require("../middleware/upload");
 
@@ -39,6 +46,13 @@ router.put(
   updateProduct
 );
 router.delete("/products/:id", deleteProduct);
+
+// Bulk Products
+router.post("/bulk/init", initSession);
+router.get("/bulk/:id", getSession);
+router.post("/bulk/:sessionId/upload", upload.array("images", 50), uploadImages);
+router.patch("/bulk/:id/drafts", updateSessionDrafts);
+router.post("/bulk/:id/publish", publishSession);
 
 router.delete("/products/:id/images/:imageId", deleteProductImage);
 
