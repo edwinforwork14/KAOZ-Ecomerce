@@ -201,7 +201,7 @@ export default function ProductsPage() {
             Catálogo Maestro
           </h1>
           <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest mt-2 flex items-center gap-2">
-             <Package className="h-3 w-3" /> {totalProducts} Unidades de Inventario Registradas
+             <Package className="h-3 w-3" /> {toNumber(totalProducts)} Unidades de Inventario Registradas
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -253,10 +253,10 @@ export default function ProductsPage() {
             </div>
          </div>
          <div className="lg:col-span-4 flex gap-4">
-            <div className="flex-1 bg-black text-white p-4 flex flex-col justify-center">
-               <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Valor de Inventario</span>
-               <p className="text-2xl font-black tracking-tighter text-kaosNeon">${(totalProducts * 45).toLocaleString()}</p>
-            </div>
+             <div className="flex-1 bg-black text-white p-4 flex flex-col justify-center">
+                <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Valor de Inventario</span>
+                <p className="text-2xl font-black tracking-tighter text-kaosNeon">${(toNumber(totalProducts) * 45).toLocaleString()}</p>
+             </div>
             <div className="flex-1 bg-white border border-black/10 p-4 flex flex-col justify-center">
                <span className="text-[8px] font-black uppercase tracking-widest text-black/20">Alertas de Stock</span>
                <p className="text-2xl font-black tracking-tighter text-red-500">08 CRÍTICOS</p>
@@ -267,11 +267,12 @@ export default function ProductsPage() {
       {/* Grid Display */}
       {viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => {
-            const variantsArr = Array.isArray(product?.variants) ? product.variants : []
-            const totalStock = variantsArr.reduce((sum: number, v: any) => {
-               return sum + (v.sizes || []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0)
-            }, 0)
+           {products.map((product) => {
+             if (!product) return null
+             const variantsArr = Array.isArray(product?.variants) ? product.variants : []
+             const totalStock = variantsArr.reduce((sum: number, v: any) => {
+                return sum + (Array.isArray(v?.sizes) ? v.sizes : []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0)
+             }, 0)
             const firstImage = product?.images?.[0]?.url
 
             return (
@@ -334,8 +335,10 @@ export default function ProductsPage() {
              </thead>
              <tbody className="divide-y divide-black/5">
                 {products.map((product) => {
-                  const totalStock = (product?.variants || []).reduce((sum: number, v: any) => 
-                    sum + (v.sizes || []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0), 0
+                  if (!product) return null
+                  const variantsArr = Array.isArray(product?.variants) ? product.variants : []
+                  const totalStock = variantsArr.reduce((sum: number, v: any) => 
+                    sum + (Array.isArray(v.sizes) ? v.sizes : []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0), 0
                   )
                   return (
                     <tr key={product.id || product._id} className="hover:bg-black/[0.01] transition-all group">

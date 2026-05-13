@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import AdminSidebar from "@/components/admin/AdminSidebar"
@@ -40,7 +40,9 @@ export default function AdminLayout({
 
   return (
     <div className="flex h-screen bg-[#f4f4f5]">
-      <AdminSidebar />
+      <Suspense fallback={<div className="w-64 bg-black" />}>
+        <AdminSidebar />
+      </Suspense>
       <div className="flex-1 overflow-auto custom-scrollbar">
         {children}
       </div>

@@ -131,11 +131,11 @@ export async function getProducts(params?: any) {
     
     // El backend devuelve los productos con _id si es MongoDB, pero si es Prisma/Supabase 
     // y el backend los mapea, debemos asegurar consistencia.
-    if (data.success) {
+    if (data.success && Array.isArray(data.products)) {
       data.products = data.products.map((p: any) => ({
         ...p,
         _id: p.id || p._id,
-        images: (p.images || []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) }))
+        images: (Array.isArray(p.images) ? p.images : []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) }))
       }))
     }
     
