@@ -75,7 +75,7 @@ exports.getDashboardStats = async (req, res) => {
       prisma.order.groupBy({
         by: ['paymentMethod'],
         where: { orderStatus: { in: allActiveStatuses }, isDeleted: false },
-        _count: { _count: true },
+        _count: { _all: true },
         _sum: { total: true }
       }),
       // Órdenes recientes
