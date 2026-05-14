@@ -365,7 +365,8 @@ export default function ProductsPage() {
                 isActive: true,
                 isFeatured: false,
                 variants: [],
-                priceConfig: { mode: "fixed", percentage: 0, basePrice: 0 }
+                priceConfig: { mode: "fixed", percentage: 0, basePrice: 0 },
+                globalSizes: ["S", "M", "L", "XL"]
               })
               setGeneralImages([])
               setIsDialogOpen(true)
@@ -681,7 +682,7 @@ export default function ProductsPage() {
                     <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Tallas del Producto</Label>
                     <div className="flex flex-wrap gap-2">
                       {["UNIQUE", "S", "M", "L", "XL", "XXL", "38", "40", "42", "44"].map((size) => {
-                        const isSelected = formData.globalSizes.includes(size)
+                        const isSelected = formData.globalSizes?.includes(size) || false
                         return (
                           <Button
                             key={size}
@@ -689,9 +690,10 @@ export default function ProductsPage() {
                             variant={isSelected ? "default" : "outline"}
                             size="sm"
                             onClick={() => {
+                              const currentSizes = formData.globalSizes || []
                               const newSizes = isSelected
-                                ? formData.globalSizes.filter((s: string) => s !== size)
-                                : [...formData.globalSizes, size]
+                                ? currentSizes.filter((s: string) => s !== size)
+                                : [...currentSizes, size]
                               setFormData({ ...formData, globalSizes: newSizes })
                             }}
                             className={cn(

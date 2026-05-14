@@ -129,7 +129,8 @@ export default function BulkUploadPage() {
           isActive: d.isActive !== undefined ? d.isActive : true,
           categoryId: d.categoryId || "",
           subcategoryId: d.subcategoryId || "",
-          priceConfig: d.priceConfig || { mode: "fixed", percentage: 0, basePrice: 0 }
+          priceConfig: d.priceConfig || { mode: "fixed", percentage: 0, basePrice: 0 },
+          globalSizes: d.globalSizes || ["S", "M", "L", "XL"]
         })))
         setCurrentStep("edit")
         toast({ title: "MÓDULOS CARGADOS", description: `${e.target.files.length} ACTIVOS PROCESADOS.` })
@@ -736,6 +737,38 @@ export default function BulkUploadPage() {
                               placeholder="RUNNING, URBAN, LIMITED..."
                            />
                         </div>
+
+                        <div className="col-span-2 space-y-4 pt-4 border-t border-black/5">
+                          <Label className="text-[10px] font-black uppercase tracking-widest opacity-40">Tallas del Producto</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {["UNIQUE", "S", "M", "L", "XL", "XXL", "38", "40", "42", "44"].map((size) => {
+                              const isSelected = editingDraft?.globalSizes?.includes(size) || false
+                              return (
+                                <Button
+                                  key={size}
+                                  type="button"
+                                  variant={isSelected ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => {
+                                    const currentSizes = editingDraft.globalSizes || []
+                                    const newSizes = isSelected
+                                      ? currentSizes.filter((s: string) => s !== size)
+                                      : [...currentSizes, size]
+                                    setEditingDraft({ ...editingDraft, globalSizes: newSizes })
+                                  }}
+                                  className={cn(
+                                    "rounded-none h-10 px-4 font-black text-[10px] tracking-widest transition-all",
+                                    isSelected 
+                                      ? "bg-black text-white border-black" 
+                                      : "bg-transparent border-black/10 hover:border-black"
+                                  )}
+                                >
+                                  {size}
+                                </Button>
+                              )
+                            })}
+                          </div>
+                        </div>
                      </div>
                   </div>
                </div>
@@ -783,6 +816,7 @@ export default function BulkUploadPage() {
                   <ProductVariantEditor 
                     variants={editingDraft?.variants || []} 
                     onChange={(newVariants) => setEditingDraft({...editingDraft, variants: newVariants})} 
+                    availableSizes={editingDraft?.globalSizes || ["S", "M", "L", "XL"]}
                   />
                </div>
             </div>
