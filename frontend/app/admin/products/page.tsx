@@ -37,7 +37,7 @@ import {
   LayoutGrid,
   Trello
 } from "lucide-react"
-import { api, cleanImageUrl } from "@/lib/api"
+import { api, cleanImageUrl, getInventoryStats } from "@/lib/api"
 import { brandConfig } from "@/lib/config"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -108,6 +108,7 @@ export default function ProductsPage() {
   // Paginación
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [totalProducts, setTotalProducts] = useState(0)
   const [itemsPerPage, setItemsPerPage] = useState(12)
   const [stats, setStats] = useState({ totalValue: 0, totalStock: 0, criticalItems: 0 })
   
@@ -148,7 +149,7 @@ export default function ProductsPage() {
         api.getProducts(params),
         api.getCategories(),
         api.getSettings(),
-        api.getInventoryStats()
+        getInventoryStats()
       ])
 
       if (productsResult?.success) {
@@ -379,7 +380,7 @@ export default function ProductsPage() {
                   <SelectTrigger className="w-[140px] h-14 rounded-none border-black/10 font-black text-[10px] uppercase tracking-widest bg-white">
                      <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-none border-black">
+                  <SelectContent className="rounded-none border-black bg-white text-black dark:bg-slate-900 dark:text-white">
                      <SelectItem value="12">12 UDS / PÁG</SelectItem>
                      <SelectItem value="24">24 UDS / PÁG</SelectItem>
                      <SelectItem value="48">48 UDS / PÁG</SelectItem>
@@ -536,7 +537,7 @@ export default function ProductsPage() {
       {/* Modern Pagination Section */}
       <div className="flex flex-col md:flex-row items-center justify-between border-t border-black/10 pt-12 gap-8">
          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">
-            Página {currentPage} de {totalPages} • Total {totalProducts} Registros
+            Página {currentPage} de {totalPages} • Total {stats.totalProducts || totalProducts} Registros
          </div>
          <div className="flex gap-1">
             <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="rounded-none border-black/10 h-12 w-12 p-0 hover:border-black" variant="outline"><ChevronLeft className="h-5 w-5" /></Button>
@@ -618,7 +619,7 @@ export default function ProductsPage() {
                       <SelectTrigger className="rounded-none border-gray-200 font-bold text-xs uppercase">
                         <SelectValue placeholder="Seleccionar..." />
                       </SelectTrigger>
-                      <SelectContent className="rounded-none border-black">
+                      <SelectContent className="rounded-none border-black bg-white text-black dark:bg-slate-900 dark:text-white">
                         {parentCategories.map((cat: any) => (
                           <SelectItem key={cat.id || cat._id} value={cat.id || cat._id} className="text-xs font-bold uppercase">{cat.name}</SelectItem>
                         ))}

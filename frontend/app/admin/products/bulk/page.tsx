@@ -705,7 +705,7 @@ export default function BulkUploadPage() {
                               <SelectTrigger className="rounded-none border-black/10 focus:border-black h-11 text-[10px] font-black uppercase">
                                  <SelectValue placeholder="SELECCIONAR..." />
                               </SelectTrigger>
-                              <SelectContent className="rounded-none border-black font-mono">
+                              <SelectContent className="rounded-none border-black font-mono bg-white text-black dark:bg-slate-900 dark:text-white">
                                  {categories.filter(c => !c.parentId).map(cat => (
                                     <SelectItem key={cat.id} value={cat.id} className="text-[10px] font-black uppercase">{cat.name}</SelectItem>
                                  ))}
@@ -722,7 +722,7 @@ export default function BulkUploadPage() {
                               <SelectTrigger className="rounded-none border-black/10 focus:border-black h-11 text-[10px] font-black uppercase">
                                  <SelectValue placeholder={editingDraft?.categoryId ? "SELECCIONAR..." : "ELEGIR CAT. PRIMARIA"} />
                               </SelectTrigger>
-                              <SelectContent className="rounded-none border-black font-mono">
+                              <SelectContent className="rounded-none border-black font-mono bg-white text-black dark:bg-slate-900 dark:text-white">
                                  {categories.filter(c => c.parentId === editingDraft?.categoryId).map(cat => (
                                     <SelectItem key={cat.id} value={cat.id} className="text-[10px] font-black uppercase">{cat.name}</SelectItem>
                                  ))}

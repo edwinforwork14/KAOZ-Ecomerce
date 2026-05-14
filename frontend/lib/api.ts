@@ -677,6 +677,7 @@ export const api = {
   updateOrderWhatsApp,
   getMe,
   getDashboardStats,
+  getInventoryStats,
   getExchangeRate,
   getExchangeRateHistory,
   updateExchangeRate,
