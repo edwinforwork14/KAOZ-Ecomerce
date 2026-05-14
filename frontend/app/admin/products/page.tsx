@@ -261,7 +261,7 @@ export default function ProductsPage() {
         const headers = await (api as any).getAuthHeaders()
         const { 'Content-Type': _, ...authHeaders } = headers
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/bulk/temp-upload`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/temp-upload`, {
           method: "POST",
           headers: authHeaders,
           body: formData
@@ -292,6 +292,44 @@ export default function ProductsPage() {
     const newVariants = [...formData.variants]
     newVariants[vIndex].images = newVariants[vIndex].images.filter((_: any, i: number) => i !== imgIdx)
     setFormData({ ...formData, variants: newVariants })
+  }
+
+  const handleGeneralImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return
+    
+    const files = Array.from(e.target.files)
+    setSaving(true)
+    
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData()
+        formData.append("images", file)
+        
+        const headers = await (api as any).getAuthHeaders()
+        const { 'Content-Type': _, ...authHeaders } = headers
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/temp-upload`, {
+          method: "POST",
+          headers: authHeaders,
+          body: formData
+        })
+        const result = await response.json()
+        return { url: result.url, isMain: false }
+      })
+      
+      const newImages = await Promise.all(uploadPromises)
+      setGeneralImages([...generalImages, ...newImages])
+      toast({ title: "IMÁGENES CARGADAS", description: `${newImages.length} RECURSOS GENERALES DISPONIBLES` })
+    } catch (error) {
+      console.error("Error uploading general images:", error)
+      toast({ title: "ERROR", description: "FALLO EN LA CARGA DE RECURSOS GENERALES", variant: "destructive" })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const removeGeneralImage = (idOrIdx: any) => {
+    setGeneralImages(prev => prev.filter((img, idx) => (img._id || img.id || idx) !== idOrIdx))
   }
 
   const currencySymbol = settings?.currency?.symbol || "$"
@@ -840,7 +878,7 @@ export default function ProductsPage() {
                     {generalImages.map((img, idx) => (
                        <div key={img.id || img._id || idx} className="aspect-square bg-gray-100 border border-black relative group grayscale hover:grayscale-0 transition-all">
                           <img src={cleanImageUrl(img.url)} className="w-full h-full object-cover" />
-                          <Button type="button" onClick={() => removeGeneralImage(img.id || img._id)} className="absolute top-2 right-2 h-8 w-8 bg-red-600 text-white rounded-none opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button type="button" onClick={() => removeGeneralImage(img.id || img._id || idx)} className="absolute top-2 right-2 h-8 w-8 bg-red-600 text-white rounded-none opacity-0 group-hover:opacity-100 transition-opacity">
                              <X className="h-4 w-4" />
                           </Button>
                        </div>

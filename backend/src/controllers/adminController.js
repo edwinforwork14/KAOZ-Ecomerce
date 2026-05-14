@@ -9,14 +9,26 @@ exports.createProduct = async (req, res) => {
   try {
     const productData = JSON.parse(req.body.data);
 
-    // Procesar imágenes generales
+    // Procesar imágenes generales (tanto de archivos subidos como de URLs pre-cargadas)
     let imagesData = [];
+    
+    // 1. Imágenes subidas en esta petición
     if (req.files && req.files.length > 0) {
       imagesData = req.files.map((file, index) => ({
-        url: file.url, // Ya viene con la URL de Supabase desde processImage
+        url: file.url,
         alt: productData.name,
         isMain: index === 0,
       }));
+    }
+    
+    // 2. Imágenes pre-cargadas (URLs enviadas en el JSON)
+    if (productData.images && Array.isArray(productData.images)) {
+      const preloadedImages = productData.images.map(img => ({
+        url: img.url,
+        alt: img.alt || productData.name,
+        isMain: img.isMain || false
+      }));
+      imagesData = [...imagesData, ...preloadedImages];
     }
 
     const product = await prisma.product.create({
@@ -96,15 +108,31 @@ exports.updateProduct = async (req, res) => {
     // Simplificado: Para variantes y tallas en Prisma, es mejor manejar actualizaciones específicas 
     // o borrar y recrear si el dataset es pequeño, o usar updateMany/upsert.
     // Por ahora, solo actualizamos campos básicos del producto.
-    // Procesar nuevas imágenes generales si se subieron
+    // Procesar nuevas imágenes generales (subidas ahora o pre-cargadas)
     let newImagesData = [];
+    
+    // 1. Imágenes subidas en esta petición
     if (req.files && req.files.length > 0) {
       newImagesData = req.files.map((file, index) => ({
-        url: file.url, // URL de Supabase
-        alt: productData.name,
-        // Si no había imágenes previas, la primera será main
-        isMain: existingProduct.images?.length === 0 && index === 0,
+        url: file.url,
+        alt: productData.name || existingProduct.name,
+        isMain: false,
       }));
+    }
+
+    // 2. Imágenes pre-cargadas o mantenidas (URLs enviadas en el JSON)
+    if (productData.images && Array.isArray(productData.images)) {
+      // Eliminar imágenes actuales para reemplazar por la nueva lista (solo generales)
+      await prisma.productImage.deleteMany({
+        where: { productId: id, variantId: null }
+      });
+
+      const preloadedImages = productData.images.map(img => ({
+        url: img.url,
+        alt: img.alt || productData.name || existingProduct.name,
+        isMain: img.isMain || false
+      }));
+      newImagesData = [...newImagesData, ...preloadedImages];
     }
 
     const updateData = {
