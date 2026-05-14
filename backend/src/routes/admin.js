@@ -21,6 +21,7 @@ const {
   createCategory,
   updateCategory,
   deleteCategory,
+  getInventoryStats,
 } = require("../controllers/adminController");
 const {
   initSession,
@@ -35,7 +36,8 @@ const { upload, processImage } = require("../middleware/upload");
 // Todas las rutas requieren autenticación y rol de admin
 router.use(protect, authorize("admin"));
 
-// Products
+router.get("/products/stats", getInventoryStats);
+
 router.post(
   "/products",
   upload.array("images", 10),

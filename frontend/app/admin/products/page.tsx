@@ -108,8 +108,8 @@ export default function ProductsPage() {
   // Paginación
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [totalProducts, setTotalProducts] = useState(0)
   const [itemsPerPage, setItemsPerPage] = useState(12)
+  const [stats, setStats] = useState({ totalValue: 0, totalStock: 0, criticalItems: 0 })
   
   // Vista
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
@@ -144,10 +144,11 @@ export default function ProductsPage() {
       const params: any = { page: currentPage, limit: itemsPerPage, isAdmin: true }
       if (search.trim()) params.search = search.trim()
 
-      const [productsResult, categoriesResult, settingsResult] = await Promise.all([
+      const [productsResult, categoriesResult, settingsResult, statsResult] = await Promise.all([
         api.getProducts(params),
         api.getCategories(),
         api.getSettings(),
+        api.getInventoryStats()
       ])
 
       if (productsResult?.success) {
@@ -157,6 +158,7 @@ export default function ProductsPage() {
       }
       if (categoriesResult?.success) setCategories(categoriesResult.categories || [])
       if (settingsResult?.success) setSettings(settingsResult.settings || null)
+      if (statsResult?.success) setStats(statsResult.stats)
     } catch (error) {
       console.error("Error loading data:", error)
     } finally {
@@ -193,7 +195,6 @@ export default function ProductsPage() {
   }
 
   const handleEdit = (product: any) => {
-    console.log("📝 [ProductsPage] Iniciando edición de producto:", product);
     setEditingProduct(product)
     const initialData = {
       ...product,
@@ -204,7 +205,6 @@ export default function ProductsPage() {
       priceConfig: ensurePriceConfig(product.priceConfig),
       globalSizes: Array.from(new Set(product.variants?.flatMap((v: any) => v.sizes?.map((s: any) => s.size)) || ["S", "M", "L", "XL"]))
     };
-    console.log("📋 [ProductsPage] FormData inicializado:", initialData);
     setFormData(initialData)
     setGeneralImages(product.images || [])
     setIsDialogOpen(true)
@@ -213,8 +213,6 @@ export default function ProductsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    console.log("🚀 [ProductsPage] Iniciando SUBMIT. FormData actual:", formData);
-    console.log("🖼️ [ProductsPage] Imágenes generales actuales:", generalImages);
 
     try {
       const payloadData = {
@@ -224,32 +222,24 @@ export default function ProductsPage() {
         images: generalImages
       }
       
-      console.log("📦 [ProductsPage] Payload preparado para envío:", payloadData);
-
       const payload = new FormData()
       payload.append("data", JSON.stringify(payloadData))
 
       let result
       if (editingProduct) {
-        console.log(`🔄 [ProductsPage] Ejecutando UPDATE para ID: ${editingProduct._id || editingProduct.id}`);
         result = await api.updateProduct(editingProduct._id || editingProduct.id, payload)
       } else {
-        console.log("🆕 [ProductsPage] Ejecutando CREATE producto");
         result = await api.createProduct(payload)
       }
-
-      console.log("✅ [ProductsPage] Respuesta del servidor:", result);
 
       if (result.success) {
         toast({ title: "ÉXITO", description: "REGISTRO ACTUALIZADO CORRECTAMENTE" })
         setIsDialogOpen(false)
         loadData()
       } else {
-        console.error("❌ [ProductsPage] Error en la respuesta:", result);
         toast({ title: "ERROR", description: result.message || "FALLO EN EL PROTOCOLO", variant: "destructive" })
       }
     } catch (error) {
-      console.error("💥 [ProductsPage] Excepción crítica durante submit:", error)
       toast({ title: "ERROR", description: "EXCEPCIÓN CRÍTICA EN EL SERVIDOR", variant: "destructive" })
     } finally {
       setSaving(false)
@@ -257,7 +247,6 @@ export default function ProductsPage() {
   }
 
   const handleVariantChange = (newVariants: any[]) => {
-    console.log("🎨 [ProductsPage] Cambio detectado en VARIANTES:", newVariants);
     setFormData({ ...formData, variants: newVariants })
   }
 
@@ -265,7 +254,6 @@ export default function ProductsPage() {
     if (!e.target.files?.length) return
     
     const files = Array.from(e.target.files)
-    console.log(`📸 [ProductsPage] Iniciando carga masiva de ${files.length} imágenes generales...`);
     setSaving(true)
     
     const formData = new FormData()
@@ -277,7 +265,6 @@ export default function ProductsPage() {
       const headers = await (api as any).getAuthHeaders()
       const { 'Content-Type': _, ...authHeaders } = headers
       
-      console.log(`📤 [ProductsPage] Enviando batch a temp-upload...`);
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/temp-upload`, {
         method: "POST",
         headers: authHeaders,
@@ -285,19 +272,15 @@ export default function ProductsPage() {
       })
       
       const result = await response.json()
-      console.log(`🏁 [ProductsPage] Resultado de carga masiva:`, result);
       
       if (result.success) {
         const newImages = result.urls.map((url: string) => ({ url, isMain: false }))
-        console.log("✨ [ProductsPage] Nuevas imágenes añadidas:", newImages);
         setGeneralImages([...generalImages, ...newImages])
         toast({ title: "IMÁGENES CARGADAS", description: `${newImages.length} RECURSOS GENERALES DISPONIBLES` })
       } else {
-        console.error("❌ [ProductsPage] Error del servidor:", result);
         toast({ title: "ERROR", description: "EL SERVIDOR RECHAZÓ LA CARGA", variant: "destructive" })
       }
     } catch (error) {
-      console.error("❌ [ProductsPage] Error cargando imágenes generales:", error)
       toast({ title: "ERROR", description: "FALLO EN LA CARGA DE RECURSOS GENERALES", variant: "destructive" })
     } finally {
       setSaving(false)
@@ -411,11 +394,11 @@ export default function ProductsPage() {
          <div className="lg:col-span-4 flex gap-4">
              <div className="flex-1 bg-black text-white p-4 flex flex-col justify-center">
                 <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Valor de Inventario</span>
-                <p className="text-2xl font-black tracking-tighter text-kaosNeon">${(toNumber(totalProducts) * 45).toLocaleString()}</p>
+                <p className="text-2xl font-black tracking-tighter text-kaosNeon">{currencySymbol}{stats.totalValue.toLocaleString()}</p>
              </div>
             <div className="flex-1 bg-white border border-black/10 p-4 flex flex-col justify-center">
                <span className="text-[8px] font-black uppercase tracking-widest text-black/20">Alertas de Stock</span>
-               <p className="text-2xl font-black tracking-tighter text-red-500">08 CRÍTICOS</p>
+               <p className="text-2xl font-black tracking-tighter text-red-500">{stats.criticalItems.toString().padStart(2, '0')} CRÍTICOS</p>
             </div>
          </div>
       </div>

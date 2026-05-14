@@ -242,6 +242,18 @@ export async function getDashboardStats() {
   }
 }
 
+export async function getInventoryStats() {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/products/stats`, { headers })
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error fetching inventory stats:", error)
+    return { success: false, error: error.message }
+  }
+}
+
 export async function updateExchangeRate(data?: { usd: number, eur?: number }) { 
   try {
     const headers = await getAuthHeaders()

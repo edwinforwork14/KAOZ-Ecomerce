@@ -672,3 +672,49 @@ exports.deleteExpense = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+exports.getInventoryStats = async (req, res) => {
+  try {
+    const products = await prisma.product.findMany({
+      include: {
+        variants: {
+          include: {
+            sizes: true
+          }
+        }
+      }
+    });
+
+    let totalValue = 0;
+    let totalStock = 0;
+    let criticalItems = 0;
+
+    products.forEach(product => {
+      let productStock = 0;
+      product.variants.forEach(variant => {
+        variant.sizes.forEach(size => {
+          productStock += (size.stock || 0);
+        });
+      });
+
+      totalStock += productStock;
+      totalValue += ((product.price || 0) * productStock);
+      
+      if (productStock < 5) {
+        criticalItems++;
+      }
+    });
+
+    res.json({
+      success: true,
+      stats: {
+        totalValue,
+        totalStock,
+        criticalItems,
+        totalProducts: products.length
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
