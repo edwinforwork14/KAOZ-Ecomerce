@@ -475,7 +475,7 @@ export default function AdminSettingsPage() {
                                  type="number" 
                                  value={settings.newProductDuration} 
                                  onChange={(e) => setSettings({...settings, newProductDuration: parseInt(e.target.value)})}
-                                 className="h-14 rounded-none border-black/10 focus:border-black font-black text-center text-lg"
+                                 className="h-14 rounded-none border-black bg-black text-white focus:border-kaosNeon font-black text-center text-lg"
                                />
                                <Button 
                                  onClick={() => saveSettings({ newProductDuration: settings.newProductDuration })}

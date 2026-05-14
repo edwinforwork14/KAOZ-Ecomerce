@@ -433,7 +433,9 @@ export default function ProductsPage() {
 
                   <div className="absolute bottom-4 left-4 right-4 translate-y-20 group-hover:translate-y-0 transition-all duration-500 flex gap-1 opacity-0 group-hover:opacity-100">
                      <Button onClick={() => handleEdit(product)} className="flex-1 bg-black text-white rounded-none text-[9px] font-black uppercase h-10 hover:bg-kaosNeon hover:text-black">EDITAR</Button>
-                     <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" className="w-10 rounded-none bg-red-600 h-10 p-0"><Trash2 className="h-4 w-4" /></Button>
+                     {settings?.orders?.allowDelete && (
+                       <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" className="w-10 rounded-none bg-red-600 h-10 p-0"><Trash2 className="h-4 w-4" /></Button>
+                     )}
                   </div>
                 </div>
 
@@ -525,7 +527,9 @@ export default function ProductsPage() {
                        <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
                              <Button onClick={() => handleEdit(product)} variant="outline" size="sm" className="rounded-none border-black/10 hover:border-black h-10 w-10 p-0"><Edit className="h-4 w-4" /></Button>
-                             <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" size="sm" className="rounded-none bg-black text-white h-10 w-10 p-0 hover:bg-red-600"><Trash2 className="h-4 w-4" /></Button>
+                             {settings?.orders?.allowDelete && (
+                               <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" size="sm" className="rounded-none bg-black text-white h-10 w-10 p-0 hover:bg-red-600"><Trash2 className="h-4 w-4" /></Button>
+                             )}
                           </div>
                        </td>
                     </tr>

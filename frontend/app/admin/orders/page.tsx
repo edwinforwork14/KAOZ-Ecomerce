@@ -84,6 +84,7 @@ export default function OrdersPage() {
   const [showDetails, setShowDetails] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [showDeleted, setShowDeleted] = useState(false)
+  const [settings, setSettings] = useState<any>(null)
 
   useEffect(() => {
     loadOrders()
@@ -92,13 +93,20 @@ export default function OrdersPage() {
   const loadOrders = async () => {
     try {
       setLoading(true)
-      const result = await api.getAllOrders()
-      if (result.success) {
-        setOrders(result.orders || [])
+      const [ordersRes, settingsRes] = await Promise.all([
+        api.getAllOrders({ includeDeleted: showDeleted }),
+        api.getSettings()
+      ])
+
+      if (ordersRes.success) {
+        setOrders(ordersRes.orders || [])
+      }
+      if (settingsRes.success) {
+        setSettings(settingsRes.settings)
       }
     } catch (error) {
-      console.error('Error loading orders:', error)
-      toast({ title: "Error", description: "No se pudieron cargar los pedidos.", variant: "destructive" })
+      console.error('Error loading data:', error)
+      toast({ title: "Error", description: "No se pudieron cargar los datos.", variant: "destructive" })
     } finally {
       setLoading(false)
     }
@@ -125,6 +133,37 @@ export default function OrdersPage() {
     }
   }
 
+  const handleDeleteOrder = async (id: string) => {
+    if (!confirm("¿EJECUTAR PROTOCOLO DE ELIMINACIÓN DE REGISTRO?")) return
+    setUpdating(true)
+    try {
+      const result = await api.deleteOrder(id)
+      if (result.success) {
+        toast({ title: "ELIMINADO", description: "PEDIDO REMOVIDO DEL REGISTRO ACTIVO" })
+        loadOrders()
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Error al eliminar pedido", variant: "destructive" })
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handleRestoreOrder = async (id: string) => {
+    setUpdating(true)
+    try {
+      const result = await api.restoreOrder(id)
+      if (result.success) {
+        toast({ title: "RESTAURADO", description: "PEDIDO REINTEGRADO AL SISTEMA" })
+        loadOrders()
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Error al restaurar pedido", variant: "destructive" })
+    } finally {
+      setUpdating(false)
+    }
+  }
+
   const filteredOrders = orders.filter(o => {
     const matchesSearch = (o.orderNumber || "").toLowerCase().includes(search.toLowerCase()) ||
                          o.customerInfo?.firstName?.toLowerCase().includes(search.toLowerCase()) ||
@@ -132,19 +171,21 @@ export default function OrdersPage() {
     
     const matchesStatus = filterStatus === 'all' || o.orderStatus === filterStatus
     const matchesPayment = filterPaymentStatus === 'all' || o.paymentStatus === filterPaymentStatus
+    const matchesDeleted = showDeleted ? o.isDeleted : !o.isDeleted
     
-    return matchesSearch && matchesStatus && matchesPayment
+    return matchesSearch && matchesStatus && matchesPayment && matchesDeleted
   })
 
-  const currencySymbol = '$'
-  // Calculate stats based on ALL orders
-  const stats = {
-    total: orders.length,
-    pending: orders.filter(o => o.orderStatus === 'pending').length,
-    delivered: orders.filter(o => o.orderStatus === 'delivered').length,
-    cancelled: orders.filter(o => o.orderStatus === 'cancelled').length,
-    totalRevenue: orders.reduce((sum, o) => sum + (o.total || 0), 0)
-  }
+  const stats = useMemo(() => {
+    const activeOrders = orders.filter(o => !o.isDeleted)
+    return {
+      total: activeOrders.length,
+      pending: activeOrders.filter(o => o.orderStatus === 'pending').length,
+      delivered: activeOrders.filter(o => o.orderStatus === 'delivered').length,
+      cancelled: activeOrders.filter(o => o.orderStatus === 'cancelled').length,
+      totalRevenue: activeOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+    }
+  }, [orders])
 
   if (loading) {
     return (
@@ -246,7 +287,10 @@ export default function OrdersPage() {
 
             <Button
               variant={showDeleted ? "default" : "outline"}
-              onClick={() => setShowDeleted(!showDeleted)}
+              onClick={() => {
+                setShowDeleted(!showDeleted)
+                setTimeout(() => loadOrders(), 0)
+              }}
               className={cn(
                 "h-14 rounded-none border-white/10 font-black uppercase text-[10px] tracking-widest gap-2 px-6",
                 showDeleted ? "bg-kaosNeon text-black border-none" : "bg-white/5 text-white hover:bg-white/10"
@@ -315,9 +359,30 @@ export default function OrdersPage() {
                          <p className="text-4xl font-black group-hover:text-white transition-colors">${order.total?.toLocaleString()}</p>
                       </div>
                       <div className="flex gap-2">
-                         <Button variant="outline" size="icon" className="rounded-none border-black group-hover:border-white/20 group-hover:text-white hover:bg-kaosNeon hover:text-black transition-all h-14 w-14">
-                            <ChevronRight className="h-6 w-6" />
-                         </Button>
+                        {order.isDeleted ? (
+                          <Button 
+                            onClick={(e) => { e.stopPropagation(); handleRestoreOrder(order.id); }}
+                            variant="outline" 
+                            className="rounded-none border-kaosNeon text-kaosNeon hover:bg-kaosNeon hover:text-black h-14 px-4 font-black uppercase text-[9px]"
+                          >
+                            RESTAURAR
+                          </Button>
+                        ) : (
+                          <>
+                            {settings?.orders?.allowDelete && (
+                              <Button 
+                                onClick={(e) => { e.stopPropagation(); handleDeleteOrder(order.id); }}
+                                variant="destructive" 
+                                className="rounded-none bg-red-600 h-14 w-14 p-0"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button variant="outline" size="icon" className="rounded-none border-black group-hover:border-white/20 group-hover:text-white hover:bg-kaosNeon hover:text-black transition-all h-14 w-14">
+                              <ChevronRight className="h-6 w-6" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                    </div>
                 </div>

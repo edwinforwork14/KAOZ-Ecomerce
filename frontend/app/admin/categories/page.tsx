@@ -567,7 +567,7 @@ export default function AdminCategoriesPage() {
                       parent: value === "none" ? undefined : value
                     })}
                   >
-                    <SelectTrigger className="h-14 rounded-none border-black focus:ring-0 uppercase font-bold text-[10px] tracking-widest">
+                    <SelectTrigger className="h-14 rounded-none border-black dark:border-white/10 focus:ring-0 uppercase font-bold text-[10px] tracking-widest bg-transparent text-black dark:text-white">
                       <SelectValue placeholder="RAÍZ (SIN PADRE)" />
                     </SelectTrigger>
                     <SelectContent className="rounded-none border-black bg-white text-black dark:bg-slate-900 dark:text-white">
@@ -588,19 +588,19 @@ export default function AdminCategoriesPage() {
                   <div className="flex gap-4">
                     <div 
                       onClick={() => imageInputRef.current?.click()}
-                      className="flex-1 h-14 border border-black dark:border-white/10 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-all group"
+                      className="flex-1 h-14 border border-black dark:border-white/10 flex items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-all group"
                     >
                       {previewImage || editingCategory.image ? (
                         <div className="flex items-center gap-3 px-4 w-full">
-                           <div className="h-10 w-10 border border-black overflow-hidden flex-shrink-0">
+                           <div className="h-10 w-10 border border-black dark:border-white/20 overflow-hidden flex-shrink-0">
                              <img src={previewImage || cleanImageUrl(editingCategory.image!)} className="w-full h-full object-cover" />
                            </div>
-                           <span className="text-[9px] font-black uppercase tracking-widest truncate">Cambiar Imagen</span>
+                           <span className="text-[9px] font-black uppercase tracking-widest truncate text-black dark:text-white">Cambiar Imagen</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <Plus className="h-4 w-4 text-gray-400 group-hover:text-black" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-black">Subir Imagen</span>
+                          <Plus className="h-4 w-4 text-gray-400 group-hover:text-black dark:group-hover:text-white" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-black dark:group-hover:text-white">Subir Imagen</span>
                         </div>
                       )}
                     </div>
@@ -622,18 +622,18 @@ export default function AdminCategoriesPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-4 border border-black bg-gray-50">
+                <div className="flex items-center gap-3 p-4 border border-black dark:border-white/10 bg-gray-50 dark:bg-white/5">
                   <Switch
                     checked={editingCategory.isActive !== false}
                     onCheckedChange={(checked) => setEditingCategory({
                       ...editingCategory,
                       isActive: checked
                     })}
-                    className="data-[state=checked]:bg-black"
+                    className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-kaosNeon"
                   />
-                  <label className="text-[10px] font-black uppercase tracking-widest">ACTIVO</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-black dark:text-white">ACTIVO</label>
                 </div>
-                <div className="flex items-center gap-3 p-4 border border-black bg-kaosNeon/10">
+                <div className="flex items-center gap-3 p-4 border border-black dark:border-kaosNeon/20 bg-kaosNeon/10 dark:bg-kaosNeon/5">
                   <Switch
                     checked={editingCategory.isFeatured === true}
                     onCheckedChange={(checked) => setEditingCategory({
@@ -642,21 +642,21 @@ export default function AdminCategoriesPage() {
                     })}
                     className="data-[state=checked]:bg-kaosNeon"
                   />
-                  <label className="text-[10px] font-black uppercase tracking-widest">DESTACADA EN HOME</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-black dark:text-kaosNeon">DESTACADA EN HOME</label>
                 </div>
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setShowForm(false)
-                    setEditingCategory(null)
-                  }}
-                  className="flex-1 h-14 rounded-none border-black font-black uppercase text-xs tracking-widest hover:bg-gray-100 transition-all"
-                >
-                  ABORTAR
-                </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowForm(false)
+                      setEditingCategory(null)
+                    }}
+                    className="flex-1 h-14 rounded-none border-black dark:border-white/10 font-black uppercase text-xs tracking-widest hover:bg-gray-100 dark:hover:bg-white/5 transition-all text-black dark:text-white bg-transparent"
+                  >
+                    ABORTAR
+                  </Button>
                 <Button 
                   onClick={saveCategory} 
                   disabled={saving}

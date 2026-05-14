@@ -364,13 +364,49 @@ export async function uploadVariantImages(productId: string, variantIndex: numbe
 }
 
 // === ADMIN ORDERS ===
-export async function getAllOrders() {
+export async function getAllOrders(params: any = {}) {
   try {
     const headers = await getAuthHeaders()
-    const response = await fetch(`${API_BASE_URL}/admin/orders`, { headers })
+    const query = new URLSearchParams()
+    if (params.includeDeleted) query.append("includeDeleted", "true")
+    if (params.page) query.append("page", params.page.toString())
+    if (params.limit) query.append("limit", params.limit.toString())
+    if (params.status) query.append("status", params.status)
+    if (params.paymentStatus) query.append("paymentStatus", params.paymentStatus)
+    if (params.search) query.append("search", params.search)
+
+    const response = await fetch(`${API_BASE_URL}/admin/orders?${query.toString()}`, { headers })
     return await response.json()
   } catch (error: any) {
     console.error("Error fetching all orders:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+export async function deleteOrder(id: string) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/orders/${id}`, {
+      method: 'DELETE',
+      headers
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error deleting order:", error)
+    return { success: false, message: error.message }
+  }
+}
+
+export async function restoreOrder(id: string) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/orders/${id}/restore`, {
+      method: 'POST',
+      headers
+    })
+    return await response.json()
+  } catch (error: any) {
+    console.error("Error restoring order:", error)
     return { success: false, message: error.message }
   }
 }
