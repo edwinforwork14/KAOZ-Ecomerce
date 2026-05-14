@@ -3,6 +3,7 @@ const { supabase } = require("../config/supabase");
 const sharp = require("sharp");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+const ProductService = require("./productService");
 
 const heicConvert = require("heic-convert");
 
@@ -129,15 +130,18 @@ class BulkProductService {
         variants: [
           {
             color: "N/A",
+            colorHex: "#000000",
+            images: [],
             sizes: [
-              { size: "Única", stock: 0 }
+              { size: "S", stock: 0 },
+              { size: "M", stock: 0 },
+              { size: "L", stock: 0 }
             ]
           }
         ],
         tags: [],
         status: "incomplete",
-        isActive: true, // Forzar activo por defecto para visibilidad
-        errors: ["Precio es requerido", "Falta categoría", "Falta stock"]
+        errors: ["Precio es requerido", "Falta categoría"]
       });
     }
 
@@ -195,40 +199,8 @@ class BulkProductService {
 
     for (const draft of validDrafts) {
       try {
-        const newProduct = await prisma.product.create({
-          data: {
-            name: draft.name,
-            description: draft.description || "",
-            price: parseFloat(draft.price) || 0,
-            originalPrice: draft.originalPrice ? parseFloat(draft.originalPrice) : null,
-            categoryId: draft.categoryId || (await prisma.category.findFirst({ where: { isActive: true } }))?.id,
-            subcategoryId: draft.subcategoryId,
-            isActive: true, // Forzamos true para asegurar visibilidad en tienda
-            isNew: draft.isNew,
-            markedAsNewAt: draft.isNew ? new Date() : null,
-            brand: draft.brand || "KAOZ",
-            tags: draft.tags || [],
-            images: {
-              create: draft.images.map(img => ({
-                url: img.url,
-                alt: draft.name,
-                isMain: img.isMain
-              }))
-            },
-            variants: {
-              create: (draft.variants || []).map(v => ({
-                color: v.color || "N/A",
-                sizes: {
-                  create: (v.sizes || []).map(s => ({
-                    size: s.size,
-                    stock: parseInt(s.stock) || 0
-                  }))
-                }
-              }))
-            }
-          }
-        });
-        console.log(`✅ Producto creado exitosamente: ${draft.name} (ID: ${newProduct.id})`);
+        // Usar el servicio unificado para crear el producto
+        await ProductService.createProduct(draft);
         results.created++;
       } catch (error) {
         console.error(`❌ Error al publicar producto "${draft.name}":`, error);
@@ -256,3 +228,4 @@ class BulkProductService {
 }
 
 module.exports = new BulkProductService();
+

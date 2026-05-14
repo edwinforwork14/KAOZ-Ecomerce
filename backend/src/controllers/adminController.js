@@ -1,5 +1,6 @@
 const { prisma } = require("../config/database");
 const Settings = require("../services/settingsService");
+const ProductService = require("../services/productService");
 const fs = require("fs");
 const path = require("path");
 const { supabase } = require("../config/supabase");
@@ -8,68 +9,7 @@ const { supabase } = require("../config/supabase");
 exports.createProduct = async (req, res) => {
   try {
     const productData = JSON.parse(req.body.data);
-
-    // Procesar imágenes generales (tanto de archivos subidos como de URLs pre-cargadas)
-    let imagesData = [];
-    
-    // 1. Imágenes subidas en esta petición
-    if (req.files && req.files.length > 0) {
-      imagesData = req.files.map((file, index) => ({
-        url: file.url,
-        alt: productData.name,
-        isMain: index === 0,
-      }));
-    }
-    
-    // 2. Imágenes pre-cargadas (URLs enviadas en el JSON)
-    if (productData.images && Array.isArray(productData.images)) {
-      const preloadedImages = productData.images.map(img => ({
-        url: img.url,
-        alt: img.alt || productData.name,
-        isMain: img.isMain || false
-      }));
-      imagesData = [...imagesData, ...preloadedImages];
-    }
-
-    const product = await prisma.product.create({
-      data: {
-        name: productData.name,
-        description: productData.description,
-        price: productData.price,
-        originalPrice: productData.originalPrice,
-        categoryId: productData.categoryId || null,
-        subcategoryId: productData.subcategoryId || null,
-        isActive: productData.isActive ?? true,
-        isNew: productData.isNew ?? false,
-        markedAsNewAt: productData.isNew ? new Date() : null,
-        images: {
-          create: imagesData
-        },
-        variants: {
-          create: productData.variants?.map(v => ({
-            color: v.color,
-            colorHex: v.colorHex || "#000000",
-            images: {
-              create: v.images?.map(img => ({
-                url: img.url,
-                alt: productData.name,
-                isMain: img.isMain || false
-              }))
-            },
-            sizes: {
-              create: v.sizes?.map(s => ({
-                size: s.size,
-                stock: parseInt(s.stock) || 0
-              }))
-            }
-          }))
-        }
-      },
-      include: {
-        images: true,
-        variants: { include: { sizes: true } }
-      }
-    });
+    const product = await ProductService.createProduct(productData, req.files);
 
     res.status(201).json({
       success: true,
@@ -91,106 +31,7 @@ exports.updateProduct = async (req, res) => {
     const { id } = req.params;
     const productData = req.body.data ? JSON.parse(req.body.data) : req.body;
 
-    const existingProduct = await prisma.product.findUnique({ 
-      where: { id },
-      include: { images: true }
-    });
-    if (!existingProduct) {
-      return res.status(404).json({ success: false, message: "Producto no encontrado" });
-    }
-
-    // Handle isNew logic
-    let markedAsNewAt = existingProduct.markedAsNewAt;
-    if (productData.isNew !== undefined && productData.isNew !== existingProduct.isNew) {
-      markedAsNewAt = productData.isNew ? new Date() : null;
-    }
-
-    // Simplificado: Para variantes y tallas en Prisma, es mejor manejar actualizaciones específicas 
-    // o borrar y recrear si el dataset es pequeño, o usar updateMany/upsert.
-    // Por ahora, solo actualizamos campos básicos del producto.
-    // Procesar nuevas imágenes generales (subidas ahora o pre-cargadas)
-    let newImagesData = [];
-    
-    // 1. Imágenes subidas en esta petición
-    if (req.files && req.files.length > 0) {
-      newImagesData = req.files.map((file, index) => ({
-        url: file.url,
-        alt: productData.name || existingProduct.name,
-        isMain: false,
-      }));
-    }
-
-    // 2. Imágenes pre-cargadas o mantenidas (URLs enviadas en el JSON)
-    if (productData.images && Array.isArray(productData.images)) {
-      // Eliminar imágenes actuales para reemplazar por la nueva lista (solo generales)
-      await prisma.productImage.deleteMany({
-        where: { productId: id, variantId: null }
-      });
-
-      const preloadedImages = productData.images.map(img => ({
-        url: img.url,
-        alt: img.alt || productData.name || existingProduct.name,
-        isMain: img.isMain || false
-      }));
-      newImagesData = [...newImagesData, ...preloadedImages];
-    }
-
-    const updateData = {
-      name: productData.name,
-      description: productData.description,
-      price: productData.price,
-      originalPrice: productData.originalPrice,
-      categoryId: productData.categoryId || null,
-      subcategoryId: productData.subcategoryId || null,
-      isActive: productData.isActive,
-      isNew: productData.isNew,
-      markedAsNewAt
-    };
-
-    if (newImagesData.length > 0) {
-      updateData.images = {
-        create: newImagesData
-      };
-    }
-
-    // Actualización de variantes y tallas (Delete & Recreate approach para simplicidad y consistencia)
-    if (productData.variants) {
-      // 1. Eliminar variantes existentes (Cascading delete se encargará de las tallas e imágenes vinculadas a la variante)
-      await prisma.productVariant.deleteMany({
-        where: { productId: id }
-      });
-
-      // 2. Preparar la creación de nuevas variantes
-      updateData.variants = {
-        create: productData.variants.map(v => ({
-          color: v.color,
-          colorHex: v.colorHex || "#000000",
-          images: {
-            create: v.images?.map(img => ({
-              url: img.url,
-              alt: productData.name,
-              isMain: img.isMain || false,
-              productId: id // Asegurar vínculo con el producto también
-            }))
-          },
-          sizes: {
-            create: v.sizes.map(s => ({
-              size: s.size,
-              stock: parseInt(s.stock) || 0
-            }))
-          }
-        }))
-      };
-    }
-
-    const product = await prisma.product.update({
-      where: { id },
-      data: updateData,
-      include: {
-        images: true,
-        variants: { include: { sizes: true } }
-      }
-    });
+    const product = await ProductService.updateProduct(id, productData, req.files);
 
     res.json({
       success: true,
@@ -206,6 +47,7 @@ exports.updateProduct = async (req, res) => {
     });
   }
 };
+
 
 exports.deleteProduct = async (req, res) => {
   try {

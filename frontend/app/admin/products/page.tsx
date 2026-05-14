@@ -41,6 +41,7 @@ import { api, cleanImageUrl } from "@/lib/api"
 import { brandConfig } from "@/lib/config"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { ProductVariantEditor } from "@/components/admin/ProductVariantEditor"
 
 interface ExistingImage {
   _id: string
@@ -235,62 +236,7 @@ export default function ProductsPage() {
     }
   }
 
-  const handleVariantImageChange = async (vIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return
-    
-    const files = Array.from(e.target.files)
-    setSaving(true)
-    
-    try {
-      const uploadPromises = files.map(async (file) => {
-        const formData = new FormData()
-        formData.append("images", file)
-        
-        // Usar el endpoint existente si el producto ya existe, 
-        // o subirlo como asset temporal si es nuevo (para simplificar, subiremos a un endpoint genérico o manejaremos localmente)
-        // Por ahora, asumiremos que el backend procesa imágenes en el create/update principal.
-        // Así que solo necesitamos las URLs.
-        
-        // Simulación de subida para obtener URL (esto debería ser una llamada real a Supabase)
-        // Pero como el usuario quiere "SQL", tal vez prefiera que el backend maneje el buffer.
-        // Sin embargo, el backend espera URLs en el JSON para variantes según mi cambio anterior.
-        
-        // Vamos a implementar una subida real a un bucket de Supabase desde el frontend 
-        // o usar el backend como proxy. El backend ya tiene processImage.
-        
-        const headers = await (api as any).getAuthHeaders()
-        const { 'Content-Type': _, ...authHeaders } = headers
-        
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/temp-upload`, {
-          method: "POST",
-          headers: authHeaders,
-          body: formData
-        })
-        const result = await response.json()
-        return result.url
-      })
-      
-      const urls = await Promise.all(uploadPromises)
-      
-      const newVariants = [...formData.variants]
-      newVariants[vIndex].images = [
-        ...(newVariants[vIndex].images || []),
-        ...urls.map(url => ({ url, isMain: false }))
-      ]
-      setFormData({ ...formData, variants: newVariants })
-      
-      toast({ title: "IMÁGENES CARGADAS", description: `${urls.length} RECURSOS VINCULADOS A LA VARIANTE` })
-    } catch (error) {
-      console.error("Error uploading variant images:", error)
-      toast({ title: "ERROR", description: "FALLO EN LA CARGA DE RECURSOS", variant: "destructive" })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const removeVariantImage = (vIndex: number, imgIdx: number) => {
-    const newVariants = [...formData.variants]
-    newVariants[vIndex].images = newVariants[vIndex].images.filter((_: any, i: number) => i !== imgIdx)
+  const handleVariantChange = (newVariants: any[]) => {
     setFormData({ ...formData, variants: newVariants })
   }
 
@@ -345,6 +291,12 @@ export default function ProductsPage() {
         </div>
       </div>
     )
+  }
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+    }
   }
 
   return (
@@ -728,148 +680,10 @@ export default function ProductsPage() {
 
               {/* Variants Content */}
               <TabsContent value="variants" className="space-y-6 mt-0">
-                 {formData.variants.map((variant, vIndex) => (
-                   <div key={vIndex} className="border border-black p-6 space-y-6 relative group">
-                      <div className="flex items-center justify-between">
-                         <span className="industrial-heading">Variante #{vIndex + 1}</span>
-                         <Button type="button" variant="ghost" onClick={() => setFormData({ ...formData, variants: formData.variants.filter((_, i) => i !== vIndex) })} className="text-red-500 hover:bg-red-50 rounded-none">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Remover
-                         </Button>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-6 p-4 bg-black/5 dark:bg-white/5 border-l-4 border-black dark:border-kaosNeon">
-                         <div className="space-y-2">
-                            <Label className="industrial-stat-label">Nombre del Color</Label>
-                            <Input 
-                              value={variant.color} 
-                              onChange={(e) => {
-                                const newVariants = [...formData.variants];
-                                newVariants[vIndex].color = e.target.value;
-                                setFormData({ ...formData, variants: newVariants });
-                              }}
-                              placeholder="Ej: NEGRO MATE"
-                              className="rounded-none border-black/10 focus:border-black dark:border-white/20 dark:focus:border-kaosNeon uppercase font-black text-xs h-11 bg-white dark:bg-transparent" 
-                            />
-                         </div>
-                         <div className="space-y-2">
-                            <Label className="industrial-stat-label">Código Hexadecimal</Label>
-                            <div className="flex gap-2">
-                               <label className="cursor-pointer relative group/picker">
-                                  <div 
-                                    className="w-11 h-11 border border-black/20 dark:border-white/20 flex-shrink-0 shadow-inner"
-                                    style={{ backgroundColor: variant.colorHex }}
-                                  />
-                                  <input 
-                                    type="color"
-                                    value={variant.colorHex}
-                                    onChange={(e) => {
-                                      const newVariants = [...formData.variants];
-                                      newVariants[vIndex].colorHex = e.target.value;
-                                      setFormData({ ...formData, variants: newVariants });
-                                    }}
-                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                  />
-                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/picker:opacity-100 flex items-center justify-center transition-opacity">
-                                     <Plus className="h-4 w-4 text-white" />
-                                  </div>
-                               </label>
-                               <Input 
-                                 value={variant.colorHex} 
-                                 onChange={(e) => {
-                                   const newVariants = [...formData.variants];
-                                   newVariants[vIndex].colorHex = e.target.value;
-                                   setFormData({ ...formData, variants: newVariants });
-                                 }}
-                                 className="rounded-none border-black/10 focus:border-black dark:border-white/20 dark:focus:border-kaosNeon font-mono text-xs h-11 flex-1 uppercase" 
-                               />
-                            </div>
-                         </div>
-                      </div>
-
-                       <div className="space-y-4">
-                          <Label className="industrial-stat-label flex items-center gap-2">
-                             <ImageIcon className="h-3 w-3" /> IMÁGENES DE VARIANTE
-                          </Label>
-                          <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
-                             {variant.images?.map((img: any, imgIdx: number) => (
-                                <div key={imgIdx} className="aspect-square relative group bg-black/5 border border-black/10">
-                                   <img src={cleanImageUrl(img.url)} className="w-full h-full object-cover" />
-                                   <button 
-                                      type="button"
-                                      onClick={() => removeVariantImage(vIndex, imgIdx)}
-                                      className="absolute top-1 right-1 bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                   >
-                                      <X className="h-2 w-2" />
-                                   </button>
-                                </div>
-                             ))}
-                             <label className="aspect-square border-2 border-dashed border-black/10 hover:border-black dark:border-white/10 dark:hover:border-kaosNeon flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-black/5">
-                                <Plus className="h-4 w-4 text-black/40" />
-                                <input type="file" multiple accept="image/*" className="hidden" onChange={(e) => handleVariantImageChange(vIndex, e)} />
-                             </label>
-                          </div>
-                       </div>
-
-                       <div className="space-y-6">
-                          <div className="flex items-center justify-between">
-                             <Label className="industrial-stat-label flex items-center gap-2">
-                                <Package className="h-3 w-3" /> CONTROL DE EXISTENCIAS (STOCKS)
-                             </Label>
-                            <div className="text-[10px] font-black uppercase bg-black text-white px-3 py-1">
-                               Total: {variant.sizes.reduce((s: number, sz: any) => s + (parseInt(sz.stock) || 0), 0)} UNDS
-                            </div>
-                         </div>
-                         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                            {variant.sizes.map((size, sIndex) => (
-                               <div key={sIndex} className="group/size border border-black/10 dark:border-white/10 hover:border-black dark:hover:border-kaosNeon transition-all">
-                                  <div className="bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 p-2 flex justify-between items-center">
-                                     <span className="text-[8px] font-black uppercase tracking-tighter">{size.size}</span>
-                                     <button 
-                                        type="button"
-                                        onClick={() => {
-                                           const newVariants = [...formData.variants];
-                                           newVariants[vIndex].sizes = newVariants[vIndex].sizes.filter((_: any, i: number) => i !== sIndex);
-                                           setFormData({ ...formData, variants: newVariants });
-                                        }}
-                                        className="text-red-500 hover:scale-125 transition-transform opacity-0 group-hover/size:opacity-100"
-                                     >
-                                        <X className="h-2 w-2" />
-                                     </button>
-                                  </div>
-                                  <Input 
-                                    type="number" 
-                                    value={size.stock} 
-                                    onChange={(e) => {
-                                      const newVariants = [...formData.variants];
-                                      newVariants[vIndex].sizes[sIndex].stock = parseInt(e.target.value) || 0;
-                                      setFormData({ ...formData, variants: newVariants });
-                                    }}
-                                    className="rounded-none border-none text-center font-black text-sm h-12 w-full focus:ring-0 bg-transparent" 
-                                  />
-                               </div>
-                            ))}
-                            <button 
-                               type="button"
-                               onClick={() => {
-                                  const sizeName = prompt("TALLA (Ej: XXL, 42, XL):")?.toUpperCase();
-                                  if (sizeName) {
-                                     const newVariants = [...formData.variants];
-                                     newVariants[vIndex].sizes.push({ size: sizeName, stock: 0 });
-                                     setFormData({ ...formData, variants: newVariants });
-                                  }
-                               }}
-                               className="h-20 border-2 border-dashed border-black/20 dark:border-white/20 flex items-center justify-center hover:border-black dark:hover:border-kaosNeon hover:bg-black/5 transition-all"
-                            >
-                               <Plus className="h-4 w-4 text-black/40" />
-                            </button>
-                         </div>
-                      </div>
-                   </div>
-                 ))}
-                 <Button type="button" variant="outline" onClick={() => setFormData({ ...formData, variants: [...formData.variants, { color: '', colorHex: '#000000', images: [], sizes: [{ size: 'S', stock: 0 }, { size: 'M', stock: 0 }, { size: 'L', stock: 0 }, { size: 'XL', stock: 0 }] }] })} className="w-full h-12 rounded-none border-black border-dashed font-black uppercase tracking-widest">
-                    + Añadir Variante
-                 </Button>
+                 <ProductVariantEditor 
+                    variants={formData.variants} 
+                    onChange={handleVariantChange} 
+                 />
               </TabsContent>
 
               {/* Images Content */}

@@ -54,9 +54,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { api } from "@/lib/api"
+import { api, cleanImageUrl } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { ProductVariantEditor } from "@/components/admin/ProductVariantEditor"
 
 type Step = "upload" | "edit" | "validate" | "publish"
 
@@ -778,132 +779,11 @@ export default function BulkUploadPage() {
                </div>
             </div>
 
-            {/* Row 2: Variants Management */}
-            <div className="space-y-6">
-               <div className="flex items-center justify-between border-b border-black pb-2">
-                  <h4 className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
-                     <Palette className="h-4 w-4" /> Matriz de Variantes & Stock
-                  </h4>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => {
-                      const newVariants = [...(editingDraft?.variants || []), { color: "NUEVO COLOR", colorHex: "#000000", sizes: [{ size: "ÚNICA", stock: 0 }] }]
-                      setEditingDraft({...editingDraft, variants: newVariants})
-                    }}
-                    className="h-8 text-[9px] font-black uppercase tracking-widest gap-1 hover:bg-black hover:text-white rounded-none border border-black/10"
-                  >
-                    <Plus className="h-3 w-3" /> Añadir Variante
-                  </Button>
-               </div>
-
                <div className="space-y-6">
-                  {editingDraft?.variants?.map((v: any, vIdx: number) => (
-                    <div key={vIdx} className="border border-black p-6 bg-gray-50/50 space-y-6">
-                       <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 flex-1">
-                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase opacity-40">Identificador Color</Label>
-                                <Input 
-                                   value={v.color}
-                                   onChange={(e) => {
-                                      const newVariants = [...editingDraft.variants]
-                                      newVariants[vIdx].color = e.target.value
-                                      setEditingDraft({...editingDraft, variants: newVariants})
-                                   }}
-                                   className="h-9 rounded-none border-black/10 bg-white text-xs uppercase font-black"
-                                />
-                             </div>
-                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase opacity-40">Hex</Label>
-                                <div className="flex gap-2">
-                                   <Input 
-                                      type="color"
-                                      value={v.colorHex || "#000000"}
-                                      onChange={(e) => {
-                                         const newVariants = [...editingDraft.variants]
-                                         newVariants[vIdx].colorHex = e.target.value
-                                         setEditingDraft({...editingDraft, variants: newVariants})
-                                      }}
-                                      className="h-9 w-12 p-1 rounded-none border-black/10 bg-white"
-                                   />
-                                   <Input 
-                                      value={v.colorHex || "#000000"}
-                                      onChange={(e) => {
-                                         const newVariants = [...editingDraft.variants]
-                                         newVariants[vIdx].colorHex = e.target.value
-                                         setEditingDraft({...editingDraft, variants: newVariants})
-                                      }}
-                                      className="h-9 w-24 rounded-none border-black/10 bg-white text-[10px] uppercase font-black"
-                                   />
-                                </div>
-                             </div>
-                          </div>
-                          <Button 
-                             variant="ghost" 
-                             size="icon" 
-                             className="text-red-600 hover:bg-red-50"
-                             onClick={() => {
-                                const newVariants = editingDraft.variants.filter((_: any, i: number) => i !== vIdx)
-                                setEditingDraft({...editingDraft, variants: newVariants})
-                             }}
-                          >
-                             <Trash2 className="h-4 w-4" />
-                          </Button>
-                       </div>
-
-                       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                          {v.sizes?.map((s: any, sIdx: number) => (
-                             <div key={sIdx} className="bg-white border border-black/10 p-3 space-y-2 group relative">
-                                <Input 
-                                   value={s.size}
-                                   onChange={(e) => {
-                                      const newVariants = [...editingDraft.variants]
-                                      newVariants[vIdx].sizes[sIdx].size = e.target.value
-                                      setEditingDraft({...editingDraft, variants: newVariants})
-                                   }}
-                                   className="h-7 border-none bg-transparent p-0 text-[10px] font-black uppercase text-center focus:ring-0"
-                                />
-                                <div className="flex items-center gap-1 border-t border-black/5 pt-2">
-                                   <span className="text-[8px] font-black opacity-20">UDS:</span>
-                                   <Input 
-                                      type="number"
-                                      value={s.stock}
-                                      onChange={(e) => {
-                                         const newVariants = [...editingDraft.variants]
-                                         newVariants[vIdx].sizes[sIdx].stock = parseInt(e.target.value) || 0
-                                         setEditingDraft({...editingDraft, variants: newVariants})
-                                      }}
-                                      className="h-7 border-none bg-transparent p-0 text-xs font-black text-center focus:ring-0"
-                                   />
-                                </div>
-                                <button 
-                                   onClick={() => {
-                                      const newVariants = [...editingDraft.variants]
-                                      newVariants[vIdx].sizes = newVariants[vIdx].sizes.filter((_: any, i: number) => i !== sIdx)
-                                      setEditingDraft({...editingDraft, variants: newVariants})
-                                   }}
-                                   className="absolute -top-2 -right-2 w-5 h-5 bg-black text-white items-center justify-center hidden group-hover:flex"
-                                >
-                                   <X className="h-3 w-3" />
-                                </button>
-                             </div>
-                          ))}
-                          <Button 
-                             variant="outline" 
-                             className="h-auto aspect-square border-dashed border-black/20 text-black/40 hover:border-black hover:text-black rounded-none flex flex-col gap-1 p-0"
-                             onClick={() => {
-                                const newVariants = [...editingDraft.variants]
-                                newVariants[vIdx].sizes.push({ size: "TALLA", stock: 0 })
-                                setEditingDraft({...editingDraft, variants: newVariants})
-                             }}
-                          >
-                             <Plus className="h-4 w-4" />
-                             <span className="text-[8px] font-black uppercase">Añadir Talla</span>
-                          </Button>
-                       </div>
-                    </div>
-                  ))}
+                  <ProductVariantEditor 
+                    variants={editingDraft?.variants || []} 
+                    onChange={(newVariants) => setEditingDraft({...editingDraft, variants: newVariants})} 
+                  />
                </div>
             </div>
           </div>
