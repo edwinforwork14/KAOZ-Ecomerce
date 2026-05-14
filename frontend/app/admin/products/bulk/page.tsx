@@ -786,7 +786,6 @@ export default function BulkUploadPage() {
                   />
                </div>
             </div>
-          </div>
 
           <DialogFooter className="p-8 border-t border-black bg-gray-50">
             <Button 
