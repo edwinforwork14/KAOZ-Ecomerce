@@ -39,6 +39,8 @@ const updateNewStatus = async (globalDurationDays = 30) => {
  */
 const createProduct = async (productData, files = []) => {
   try {
+    console.log("🛠️ [ProductService] Iniciando PERSISTENCIA de producto");
+    console.log("📊 [ProductService] Cantidad de variantes a crear:", productData.variants?.length || 0);
     // 1. Preparar imágenes generales
     let imagesData = [];
     

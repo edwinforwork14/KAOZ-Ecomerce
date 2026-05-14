@@ -8,7 +8,18 @@ const { supabase } = require("../config/supabase");
 // ===== PRODUCTS =====
 exports.createProduct = async (req, res) => {
   try {
-    const productData = JSON.parse(req.body.data);
+    console.log("🆕 [AdminController] Petición CREATE PRODUCT recibida");
+    let productData;
+    if (req.body.data) {
+      console.log("📦 [AdminController] Datos recibidos en req.body.data (FormData)");
+      productData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+    } else {
+      console.log("📦 [AdminController] Datos recibidos en req.body (JSON)");
+      productData = req.body;
+    }
+    
+    console.log("🔍 [AdminController] ProductData procesado:", JSON.stringify(productData, null, 2));
+    console.log(`🖼️ [AdminController] Archivos adjuntos (multer): ${req.files?.length || 0}`);
     const product = await ProductService.createProduct(productData, req.files);
 
     res.status(201).json({
@@ -29,7 +40,19 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const productData = req.body.data ? JSON.parse(req.body.data) : req.body;
+    console.log(`🔄 [AdminController] Petición UPDATE PRODUCT recibida para ID: ${id}`);
+    
+    let productData;
+    if (req.body.data) {
+      console.log("📦 [AdminController] Datos recibidos en req.body.data (FormData)");
+      productData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+    } else {
+      console.log("📦 [AdminController] Datos recibidos en req.body (JSON)");
+      productData = req.body;
+    }
+
+    console.log("🔍 [AdminController] ProductData procesado:", JSON.stringify(productData, null, 2));
+    console.log(`🖼️ [AdminController] Archivos adjuntos (multer): ${req.files?.length || 0}`);
 
     const product = await ProductService.updateProduct(id, productData, req.files);
 

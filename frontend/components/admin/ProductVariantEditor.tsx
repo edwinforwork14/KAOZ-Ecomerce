@@ -35,21 +35,19 @@ interface Variant {
 interface ProductVariantEditorProps {
   variants: Variant[]
   onChange: (variants: Variant[]) => void
+  availableSizes?: string[]
 }
 
-export function ProductVariantEditor({ variants, onChange }: ProductVariantEditorProps) {
+export function ProductVariantEditor({ variants, onChange, availableSizes = [] }: ProductVariantEditorProps) {
   const [uploading, setUploading] = useState<number | null>(null)
 
   const addVariant = () => {
+    console.log("➕ [VariantEditor] Añadiendo nueva variante con tallas:", availableSizes);
     const newVariant: Variant = {
-      color: "Nueva Variante",
+      color: "",
       colorHex: "#000000",
       images: [],
-      sizes: [
-        { size: "S", stock: 0 },
-        { size: "M", stock: 0 },
-        { size: "L", stock: 0 },
-      ],
+      sizes: availableSizes.map(size => ({ size, stock: 0 }))
     }
     onChange([...variants, newVariant])
   }
@@ -61,6 +59,7 @@ export function ProductVariantEditor({ variants, onChange }: ProductVariantEdito
   }
 
   const updateVariant = (index: number, field: keyof Variant, value: any) => {
+    console.log(`🎨 [VariantEditor] Actualizando VARIANTE index:${index}, campo:${field}:`, value);
     const newVariants = [...variants]
     newVariants[index] = { ...newVariants[index], [field]: value }
     onChange(newVariants)
@@ -79,23 +78,27 @@ export function ProductVariantEditor({ variants, onChange }: ProductVariantEdito
   }
 
   const updateSize = (variantIndex: number, sizeIndex: number, field: keyof SizeStock, value: any) => {
+    console.log(`📏 [VariantEditor] Actualizando TALLA var:${variantIndex}, size:${sizeIndex}, campo:${field}:`, value);
     const newVariants = [...variants]
     const size = newVariants[variantIndex].sizes[sizeIndex]
     newVariants[variantIndex].sizes[sizeIndex] = { ...size, [field]: value }
     onChange(newVariants)
   }
 
-  const handleImageUpload = async (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+   const handleImageUpload = async (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
 
+    const files = Array.from(e.target.files);
+    console.log(`🖼️ [VariantEditor] Iniciando carga de ${files.length} imágenes para VARIANTE index:${variantIndex}`);
     setUploading(variantIndex)
     const formData = new FormData()
-    Array.from(e.target.files).forEach((file) => {
+    files.forEach((file) => {
       formData.append("images", file)
     })
 
     try {
       // Usar endpoint de carga temporal
+      console.log("📤 [VariantEditor] Enviando a temp-upload...");
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/temp-upload`, {
         method: "POST",
         headers: {
@@ -105,17 +108,20 @@ export function ProductVariantEditor({ variants, onChange }: ProductVariantEdito
       })
 
       const data = await response.json()
+      console.log("🏁 [VariantEditor] Respuesta de subida:", data);
 
       if (data.success) {
         const newImages = data.urls.map((url: string) => ({ url, isMain: false }))
         const updatedImages = [...variants[variantIndex].images, ...newImages]
+        console.log("✨ [VariantEditor] Nuevas imágenes añadidas a la variante:", updatedImages);
         updateVariant(variantIndex, "images", updatedImages)
         toast.success("Imágenes subidas correctamente")
       } else {
+        console.error("❌ [VariantEditor] Error del servidor al subir:", data);
         toast.error("Error al subir imágenes")
       }
     } catch (error) {
-      console.error("Upload error:", error)
+      console.error("💥 [VariantEditor] Excepción en subida:", error)
       toast.error("Error de conexión al subir imágenes")
     } finally {
       setUploading(null)

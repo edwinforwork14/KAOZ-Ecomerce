@@ -103,6 +103,8 @@ export default function ProductsPage() {
     return categories.filter(c => !c.parent)
   }, [categories])
 
+  const currencySymbol = settings?.currency?.symbol || "$"
+
   // Paginación
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -129,6 +131,7 @@ export default function ProductsPage() {
     features: "",
     priceConfig: { mode: "fixed", percentage: 0, basePrice: 0 },
     variants: [],
+    globalSizes: ["S", "M", "L", "XL"], // Default sizes
   })
 
   useEffect(() => {
@@ -190,15 +193,19 @@ export default function ProductsPage() {
   }
 
   const handleEdit = (product: any) => {
+    console.log("📝 [ProductsPage] Iniciando edición de producto:", product);
     setEditingProduct(product)
-    setFormData({
+    const initialData = {
       ...product,
       price: product.price?.toString() || "",
       originalPrice: product.originalPrice?.toString() || "",
-      category: typeof product.category === 'string' ? product.category : product.category?._id || "",
+      category: typeof product.category === 'string' ? product.category : product.category?._id || product.category?.id || "",
       variants: Array.isArray(product.variants) ? product.variants : [],
-      priceConfig: ensurePriceConfig(product.priceConfig)
-    })
+      priceConfig: ensurePriceConfig(product.priceConfig),
+      globalSizes: Array.from(new Set(product.variants?.flatMap((v: any) => v.sizes?.map((s: any) => s.size)) || ["S", "M", "L", "XL"]))
+    };
+    console.log("📋 [ProductsPage] FormData inicializado:", initialData);
+    setFormData(initialData)
     setGeneralImages(product.images || [])
     setIsDialogOpen(true)
   }
@@ -206,30 +213,43 @@ export default function ProductsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
+    console.log("🚀 [ProductsPage] Iniciando SUBMIT. FormData actual:", formData);
+    console.log("🖼️ [ProductsPage] Imágenes generales actuales:", generalImages);
+
     try {
-      const data = {
+      const payloadData = {
         ...formData,
         price: parseFloat(formData.price) || 0,
         originalPrice: parseFloat(formData.originalPrice) || 0,
         images: generalImages
       }
+      
+      console.log("📦 [ProductsPage] Payload preparado para envío:", payloadData);
+
+      const payload = new FormData()
+      payload.append("data", JSON.stringify(payloadData))
 
       let result
       if (editingProduct) {
-        result = await api.updateProduct(editingProduct._id || editingProduct.id, data)
+        console.log(`🔄 [ProductsPage] Ejecutando UPDATE para ID: ${editingProduct._id || editingProduct.id}`);
+        result = await api.updateProduct(editingProduct._id || editingProduct.id, payload)
       } else {
-        result = await api.createProduct(data)
+        console.log("🆕 [ProductsPage] Ejecutando CREATE producto");
+        result = await api.createProduct(payload)
       }
+
+      console.log("✅ [ProductsPage] Respuesta del servidor:", result);
 
       if (result.success) {
         toast({ title: "ÉXITO", description: "REGISTRO ACTUALIZADO CORRECTAMENTE" })
         setIsDialogOpen(false)
         loadData()
       } else {
+        console.error("❌ [ProductsPage] Error en la respuesta:", result);
         toast({ title: "ERROR", description: result.message || "FALLO EN EL PROTOCOLO", variant: "destructive" })
       }
     } catch (error) {
-      console.error("Error saving product:", error)
+      console.error("💥 [ProductsPage] Excepción crítica durante submit:", error)
       toast({ title: "ERROR", description: "EXCEPCIÓN CRÍTICA EN EL SERVIDOR", variant: "destructive" })
     } finally {
       setSaving(false)
@@ -237,6 +257,7 @@ export default function ProductsPage() {
   }
 
   const handleVariantChange = (newVariants: any[]) => {
+    console.log("🎨 [ProductsPage] Cambio detectado en VARIANTES:", newVariants);
     setFormData({ ...formData, variants: newVariants })
   }
 
@@ -244,30 +265,39 @@ export default function ProductsPage() {
     if (!e.target.files?.length) return
     
     const files = Array.from(e.target.files)
+    console.log(`📸 [ProductsPage] Iniciando carga masiva de ${files.length} imágenes generales...`);
     setSaving(true)
     
+    const formData = new FormData()
+    files.forEach(file => {
+      formData.append("images", file)
+    })
+
     try {
-      const uploadPromises = files.map(async (file) => {
-        const formData = new FormData()
-        formData.append("images", file)
-        
-        const headers = await (api as any).getAuthHeaders()
-        const { 'Content-Type': _, ...authHeaders } = headers
-        
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/temp-upload`, {
-          method: "POST",
-          headers: authHeaders,
-          body: formData
-        })
-        const result = await response.json()
-        return { url: result.url, isMain: false }
+      const headers = await (api as any).getAuthHeaders()
+      const { 'Content-Type': _, ...authHeaders } = headers
+      
+      console.log(`📤 [ProductsPage] Enviando batch a temp-upload...`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/temp-upload`, {
+        method: "POST",
+        headers: authHeaders,
+        body: formData
       })
       
-      const newImages = await Promise.all(uploadPromises)
-      setGeneralImages([...generalImages, ...newImages])
-      toast({ title: "IMÁGENES CARGADAS", description: `${newImages.length} RECURSOS GENERALES DISPONIBLES` })
+      const result = await response.json()
+      console.log(`🏁 [ProductsPage] Resultado de carga masiva:`, result);
+      
+      if (result.success) {
+        const newImages = result.urls.map((url: string) => ({ url, isMain: false }))
+        console.log("✨ [ProductsPage] Nuevas imágenes añadidas:", newImages);
+        setGeneralImages([...generalImages, ...newImages])
+        toast({ title: "IMÁGENES CARGADAS", description: `${newImages.length} RECURSOS GENERALES DISPONIBLES` })
+      } else {
+        console.error("❌ [ProductsPage] Error del servidor:", result);
+        toast({ title: "ERROR", description: "EL SERVIDOR RECHAZÓ LA CARGA", variant: "destructive" })
+      }
     } catch (error) {
-      console.error("Error uploading general images:", error)
+      console.error("❌ [ProductsPage] Error cargando imágenes generales:", error)
       toast({ title: "ERROR", description: "FALLO EN LA CARGA DE RECURSOS GENERALES", variant: "destructive" })
     } finally {
       setSaving(false)
@@ -648,6 +678,51 @@ export default function ProductsPage() {
                       />
                     </div>
                   </div>
+
+                  <div className="col-span-2 space-y-4 pt-4 border-t border-black/5">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Tallas del Producto</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {["UNIQUE", "S", "M", "L", "XL", "XXL", "38", "40", "42", "44"].map((size) => {
+                        const isSelected = formData.globalSizes.includes(size)
+                        return (
+                          <Button
+                            key={size}
+                            type="button"
+                            variant={isSelected ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                              const newSizes = isSelected
+                                ? formData.globalSizes.filter((s: string) => s !== size)
+                                : [...formData.globalSizes, size]
+                              setFormData({ ...formData, globalSizes: newSizes })
+                            }}
+                            className={cn(
+                              "rounded-none h-10 px-4 font-black text-[10px] tracking-widest transition-all",
+                              isSelected 
+                                ? "bg-black text-white border-black dark:bg-kaosNeon dark:text-black dark:border-kaosNeon" 
+                                : "bg-transparent border-black/10 hover:border-black"
+                            )}
+                          >
+                            {size}
+                          </Button>
+                        )
+                      })}
+                      <Input
+                        placeholder="AÑADIR TALLA..."
+                        className="w-32 h-10 rounded-none border-black/10 text-[10px] font-black uppercase placeholder:text-black/20"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            const val = e.currentTarget.value.trim().toUpperCase()
+                            if (val && !formData.globalSizes.includes(val)) {
+                              setFormData({ ...formData, globalSizes: [...formData.globalSizes, val] })
+                              e.currentTarget.value = ""
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
 
@@ -655,7 +730,7 @@ export default function ProductsPage() {
               <TabsContent value="pricing" className="space-y-8 mt-0">
                  <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-black/60 dark:text-white/60">Precio de Venta ({currencySymbol})</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-black/60 dark:text-white/60">Precio Normal con Descuento ({currencySymbol})</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -666,7 +741,7 @@ export default function ProductsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="industrial-stat-label">Precio Original / Ref</Label>
+                      <Label className="industrial-stat-label">Precio Anterior / Tachado</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -679,30 +754,66 @@ export default function ProductsPage() {
               </TabsContent>
 
               {/* Variants Content */}
-              <TabsContent value="variants" className="space-y-6 mt-0">
-                 <ProductVariantEditor 
-                    variants={formData.variants} 
-                    onChange={handleVariantChange} 
-                 />
-              </TabsContent>
+               <TabsContent value="variants" className="space-y-6 mt-0">
+                  <ProductVariantEditor 
+                     variants={formData.variants} 
+                     onChange={handleVariantChange} 
+                     availableSizes={formData.globalSizes}
+                  />
+               </TabsContent>
 
               {/* Images Content */}
               <TabsContent value="images" className="space-y-8 mt-0">
-                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {generalImages.map((img, idx) => (
-                       <div key={img.id || img._id || idx} className="aspect-square bg-gray-100 border border-black relative group grayscale hover:grayscale-0 transition-all">
-                          <img src={cleanImageUrl(img.url)} className="w-full h-full object-cover" />
-                          <Button type="button" onClick={() => removeGeneralImage(img.id || img._id || idx)} className="absolute top-2 right-2 h-8 w-8 bg-red-600 text-white rounded-none opacity-0 group-hover:opacity-100 transition-opacity">
-                             <X className="h-4 w-4" />
-                          </Button>
-                       </div>
-                    ))}
-                    <label className="aspect-square border-2 border-dashed border-black flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
-                       <Upload className="h-8 w-8 mb-2" />
-                       <span className="industrial-stat-label">Subir Imagen</span>
-                       <input type="file" multiple accept="image/*" onChange={handleGeneralImageChange} className="hidden" />
-                    </label>
-                 </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="col-span-full">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40 mb-4 block">Multimedia del Producto (Imagen Principal y Galería)</Label>
+                  </div>
+                  {generalImages.map((img, idx) => (
+                    <div key={idx} className={cn(
+                      "group relative aspect-square rounded-none border bg-zinc-50 overflow-hidden",
+                      img.isMain ? "border-kaosNeon ring-2 ring-kaosNeon" : "border-black"
+                    )}>
+                      <img src={cleanImageUrl(img.url)} alt="General" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                        <Button 
+                          type="button" 
+                          variant={img.isMain ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            const newImages = generalImages.map((image, i) => ({
+                              ...image,
+                              isMain: i === idx
+                            }))
+                            setGeneralImages(newImages)
+                          }}
+                          className="rounded-none h-8 px-3 font-black text-[9px] uppercase tracking-widest bg-white text-black hover:bg-kaosNeon hover:text-black border-none"
+                        >
+                          {img.isMain ? 'PRINCIPAL' : 'DEFINIR PRINCIPAL'}
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => removeGeneralImage(img._id || img.id || idx)}
+                          className="rounded-none h-8 w-8 bg-red-600 hover:bg-red-700 border-none"
+                        >
+                          <Trash2 className="h-4 w-4 text-white" />
+                        </Button>
+                      </div>
+                      {img.isMain && (
+                        <div className="absolute top-0 left-0 bg-kaosNeon text-black px-2 py-1 text-[8px] font-black uppercase italic">
+                          MAIN ASSET
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  <label className="aspect-square border-2 border-dashed border-black/10 hover:border-kaosNeon flex flex-col items-center justify-center cursor-pointer hover:bg-kaosNeon/5 transition-all group relative overflow-hidden">
+                    <Upload className="h-8 w-8 mb-2 text-black/20 group-hover:text-black transition-colors" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-black/40 group-hover:text-black text-center px-2">Añadir Activos<br/>Multimedia</span>
+                    <input type="file" multiple accept="image/*" onChange={handleGeneralImageChange} className="hidden" />
+                  </label>
+                </div>
               </TabsContent>
             </form>
 
