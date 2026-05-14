@@ -173,6 +173,21 @@ export default function ProductsPage() {
     }
   }
 
+  const toggleProductStatus = async (product: any) => {
+    try {
+      const res = await api.updateProduct(product.id || product._id, {
+        ...product,
+        isActive: !product.isActive
+      })
+      if (res.success) {
+        setProducts(prev => prev.map(p => (p.id === product.id || p._id === product._id) ? res.product : p))
+        toast({ title: "SISTEMA ACTUALIZADO", description: `PRODUCTO ${!product.isActive ? 'ACTIVADO' : 'DESACTIVADO'} CORRECTAMENTE.` })
+      }
+    } catch (error: any) {
+      toast({ title: "ERROR DE PROTOCOLO", description: error.message, variant: "destructive" })
+    }
+  }
+
   const handleEdit = (product: any) => {
     setEditingProduct(product)
     setFormData({
@@ -419,19 +434,33 @@ export default function ProductsPage() {
                        <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
                              <div className="w-14 h-14 bg-slate-50 border border-black/5 overflow-hidden flex-shrink-0">
-                                {product.images?.[0]?.url && <img src={product.images[0].url} className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 transition-all" />}
+                                {product.images?.[0]?.url && <img src={product.images[0].url} className="w-full h-full object-cover contrast-110 group-hover:scale-110 transition-all" />}
                              </div>
                              <div>
                                 <p className="text-xs font-black uppercase tracking-tight">{product.name}</p>
-                                <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">{product.brand || 'KAOZ'}</p>
+                                <div className="flex items-center gap-2">
+                                   <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">{product.brand || 'KAOZ'}</p>
+                                   <span className="text-[8px] text-black/20">•</span>
+                                   <p className="text-[9px] font-black text-kaosNeon uppercase tracking-widest">{product.category?.name || 'SIN CAT.'}</p>
+                                </div>
                              </div>
                           </div>
                        </td>
                        <td className="px-6 py-4">
-                          <Badge className="rounded-none bg-slate-100 text-black border-none text-[8px] font-black uppercase tracking-widest px-2 py-1">
-                             {product.category?.name || 'S/C'}
-                          </Badge>
-                       </td>
+                           <div className="flex items-center gap-3">
+                              <Switch 
+                                checked={product.isActive} 
+                                onCheckedChange={() => toggleProductStatus(product)}
+                                className="data-[state=checked]:bg-kaosNeon data-[state=unchecked]:bg-black/10"
+                              />
+                              <Badge className={cn(
+                                "rounded-none border-none text-[8px] font-black uppercase tracking-widest px-2 py-1",
+                                product.isActive ? "bg-kaosNeon text-black" : "bg-black text-white"
+                              )}>
+                                 {product.isActive ? "ACTIVO" : "OFFLINE"}
+                              </Badge>
+                           </div>
+                        </td>
                        <td className="px-6 py-4">
                           <div className={cn("text-[10px] font-black uppercase tracking-widest", totalStock < 5 ? "text-red-500" : "text-black/40")}>
                              {totalStock} Unidades
@@ -598,7 +627,7 @@ export default function ProductsPage() {
                          </Button>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-2 gap-6 p-4 bg-black/5 dark:bg-white/5 border-l-4 border-black dark:border-kaosNeon">
                          <div className="space-y-2">
                             <Label className="industrial-stat-label">Nombre del Color</Label>
                             <Input 
@@ -608,33 +637,56 @@ export default function ProductsPage() {
                                 newVariants[vIndex].color = e.target.value;
                                 setFormData({ ...formData, variants: newVariants });
                               }}
-                              className="rounded-none border-gray-200 uppercase font-bold text-xs" 
+                              placeholder="Ej: NEGRO MATE"
+                              className="rounded-none border-black/10 focus:border-black dark:border-white/20 dark:focus:border-kaosNeon uppercase font-black text-xs h-11 bg-white dark:bg-transparent" 
                             />
                          </div>
                          <div className="space-y-2">
-                            <Label className="industrial-stat-label">Muestra de Color</Label>
-                            <div className="flex gap-4">
+                            <Label className="industrial-stat-label">Código Hexadecimal</Label>
+                            <div className="flex gap-2">
+                               <div 
+                                 className="w-11 h-11 border border-black/20 dark:border-white/20 flex-shrink-0 shadow-inner"
+                                 style={{ backgroundColor: variant.colorHex }}
+                               />
                                <Input 
-                                 type="color" 
                                  value={variant.colorHex} 
                                  onChange={(e) => {
                                    const newVariants = [...formData.variants];
                                    newVariants[vIndex].colorHex = e.target.value;
                                    setFormData({ ...formData, variants: newVariants });
                                  }}
-                                 className="w-16 h-10 p-1 rounded-none border-gray-200 cursor-pointer" 
+                                 className="rounded-none border-black/10 focus:border-black dark:border-white/20 dark:focus:border-kaosNeon font-mono text-xs h-11 flex-1 uppercase" 
                                />
-                               <Input value={variant.colorHex} className="rounded-none border-gray-200 font-mono text-xs" readOnly />
                             </div>
                          </div>
                       </div>
 
-                      <div className="space-y-4">
-                         <Label className="industrial-stat-label">Stock por Talla</Label>
-                         <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                      <div className="space-y-6">
+                         <div className="flex items-center justify-between">
+                            <Label className="industrial-stat-label flex items-center gap-2">
+                               <Package className="h-3 w-3" /> CONTROL DE EXISTENCIAS (STOCKS)
+                            </Label>
+                            <div className="text-[10px] font-black uppercase bg-black text-white px-3 py-1">
+                               Total: {variant.sizes.reduce((s: number, sz: any) => s + (parseInt(sz.stock) || 0), 0)} UNDS
+                            </div>
+                         </div>
+                         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
                             {variant.sizes.map((size, sIndex) => (
-                               <div key={sIndex} className="space-y-1">
-                                  <div className="bg-black text-white text-[8px] font-black py-1 text-center">{size.size}</div>
+                               <div key={sIndex} className="group/size border border-black/10 dark:border-white/10 hover:border-black dark:hover:border-kaosNeon transition-all">
+                                  <div className="bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 p-2 flex justify-between items-center">
+                                     <span className="text-[8px] font-black uppercase tracking-tighter">{size.size}</span>
+                                     <button 
+                                        type="button"
+                                        onClick={() => {
+                                           const newVariants = [...formData.variants];
+                                           newVariants[vIndex].sizes = newVariants[vIndex].sizes.filter((_: any, i: number) => i !== sIndex);
+                                           setFormData({ ...formData, variants: newVariants });
+                                        }}
+                                        className="text-red-500 hover:scale-125 transition-transform opacity-0 group-hover/size:opacity-100"
+                                     >
+                                        <X className="h-2 w-2" />
+                                     </button>
+                                  </div>
                                   <Input 
                                     type="number" 
                                     value={size.stock} 
@@ -643,10 +695,24 @@ export default function ProductsPage() {
                                       newVariants[vIndex].sizes[sIndex].stock = parseInt(e.target.value) || 0;
                                       setFormData({ ...formData, variants: newVariants });
                                     }}
-                                    className="rounded-none border-gray-200 text-center font-bold text-xs p-1 h-8" 
+                                    className="rounded-none border-none text-center font-black text-sm h-12 w-full focus:ring-0 bg-transparent" 
                                   />
                                </div>
                             ))}
+                            <button 
+                               type="button"
+                               onClick={() => {
+                                  const sizeName = prompt("TALLA (Ej: XXL, 42, XL):")?.toUpperCase();
+                                  if (sizeName) {
+                                     const newVariants = [...formData.variants];
+                                     newVariants[vIndex].sizes.push({ size: sizeName, stock: 0 });
+                                     setFormData({ ...formData, variants: newVariants });
+                                  }
+                               }}
+                               className="h-20 border-2 border-dashed border-black/20 dark:border-white/20 flex items-center justify-center hover:border-black dark:hover:border-kaosNeon hover:bg-black/5 transition-all"
+                            >
+                               <Plus className="h-4 w-4 text-black/40" />
+                            </button>
                          </div>
                       </div>
                    </div>

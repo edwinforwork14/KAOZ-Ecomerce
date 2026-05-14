@@ -117,6 +117,28 @@ exports.updateProduct = async (req, res) => {
       };
     }
 
+    // Actualización de variantes y tallas (Delete & Recreate approach para simplicidad y consistencia)
+    if (productData.variants) {
+      // 1. Eliminar variantes existentes (Cascading delete se encargará de las tallas)
+      await prisma.productVariant.deleteMany({
+        where: { productId: id }
+      });
+
+      // 2. Preparar la creación de nuevas variantes
+      updateData.variants = {
+        create: productData.variants.map(v => ({
+          color: v.color,
+          colorHex: v.colorHex || "#000000",
+          sizes: {
+            create: v.sizes.map(s => ({
+              size: s.size,
+              stock: parseInt(s.stock) || 0
+            }))
+          }
+        }))
+      };
+    }
+
     const product = await prisma.product.update({
       where: { id },
       data: updateData,

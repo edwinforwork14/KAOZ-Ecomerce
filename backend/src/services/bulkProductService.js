@@ -136,6 +136,7 @@ class BulkProductService {
         ],
         tags: [],
         status: "incomplete",
+        isActive: true, // Forzar activo por defecto para visibilidad
         errors: ["Precio es requerido", "Falta categoría"]
       });
     }
@@ -198,11 +199,11 @@ class BulkProductService {
           data: {
             name: draft.name,
             description: draft.description || "",
-            price: parseFloat(draft.price),
+            price: parseFloat(draft.price) || 0,
             originalPrice: draft.originalPrice ? parseFloat(draft.originalPrice) : null,
             categoryId: draft.categoryId,
             subcategoryId: draft.subcategoryId,
-            isActive: draft.isActive,
+            isActive: true, // Forzamos true para asegurar visibilidad en tienda
             isNew: draft.isNew,
             markedAsNewAt: draft.isNew ? new Date() : null,
             brand: draft.brand || "KAOZ",

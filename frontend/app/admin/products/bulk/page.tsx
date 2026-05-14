@@ -260,7 +260,18 @@ export default function BulkUploadPage() {
                 <Button 
                   onClick={async () => {
                     const updatedDrafts = await saveDrafts();
-                    if (updatedDrafts) setCurrentStep("validate");
+                    if (updatedDrafts) {
+                      const allValid = updatedDrafts.every((d: any) => d.status === "valid");
+                      if (allValid) {
+                        setCurrentStep("validate");
+                      } else {
+                        toast({ 
+                          title: "VALIDACIÓN REQUERIDA", 
+                          description: "TODOS LOS REGISTROS DEBEN SER VÁLIDOS (SIN ERRORES ROJOS) ANTES DE CONTINUAR.",
+                          variant: "destructive"
+                        });
+                      }
+                    }
                   }} 
                   disabled={loading}
                   className="rounded-none bg-kaosNeon text-black hover:bg-white h-11 px-8 text-[10px] font-black uppercase tracking-widest gap-2"
@@ -366,7 +377,7 @@ export default function BulkUploadPage() {
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 bg-gray-100 border border-black/5 flex-shrink-0 group-hover:scale-110 transition-transform overflow-hidden">
                             {draft.images?.[0] ? (
-                              <img src={draft.images[0].url} className="w-full h-full object-cover grayscale" />
+                              <img src={draft.images[0].url} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-black/10"><ImageIcon className="h-5 w-5" /></div>
                             )}
@@ -480,7 +491,11 @@ export default function BulkUploadPage() {
                       if (allValid) {
                         setCurrentStep("validate");
                       } else {
-                        toast({ title: "VALIDACIÓN FALLIDA", description: "EXISTEN REGISTROS CON ERRORES TÉCNICOS.", variant: "destructive" });
+                        toast({ 
+                          title: "VALIDACIÓN FALLIDA", 
+                          description: "EXISTEN REGISTROS CON ERRORES TÉCNICOS. VERIFIQUE QUE TODOS TENGAN PRECIO Y CATEGORÍA.", 
+                          variant: "destructive" 
+                        });
                       }
                     }
                   }} 
@@ -511,7 +526,7 @@ export default function BulkUploadPage() {
                   )}>
                     <div className="flex items-center gap-6">
                       <div className="w-14 h-14 bg-gray-100 border border-black/5 overflow-hidden">
-                        <img src={draft.images?.[0]?.url} className="w-full h-full object-cover grayscale" />
+                        <img src={draft.images?.[0]?.url} className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <p className="font-black text-xs uppercase tracking-tight">{draft.name}</p>
@@ -596,46 +611,51 @@ export default function BulkUploadPage() {
 
         {/* STEP 4: PUBLISH (Final confirmation) */}
         {currentStep === "publish" && (
-          <div className="max-w-xl mx-auto text-center py-20 flex flex-col items-center">
-            <div className="mb-12 relative">
-              <div className="w-32 h-32 bg-kaosNeon text-black flex items-center justify-center border-4 border-black animate-pulse">
-                <Rocket className="h-16 w-16" />
-              </div>
-              <div className="absolute -right-4 -top-4 w-12 h-12 bg-black text-white flex items-center justify-center font-black text-xl">
-                !
-              </div>
-            </div>
-            <h2 className="text-4xl font-black uppercase tracking-tighter mb-4 italic">Confirmar Inyección</h2>
-            <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-12 max-w-sm">
-              Está a punto de publicar <strong>{drafts.filter(d => d.status === "valid").length}</strong> registros al entorno de producción. Esta acción es irreversible.
-            </p>
-            
-            <div className="space-y-4 w-full">
-              <Button 
-                onClick={handlePublish} 
-                disabled={publishing}
-                className="w-full h-16 bg-black text-white hover:bg-kaosNeon hover:text-black rounded-none text-sm font-black uppercase tracking-[0.2em] gap-3 transition-all group"
-              >
-                {publishing ? <RefreshCw className="h-6 w-6 animate-spin" /> : <><Rocket className="h-6 w-6 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" /> Inyectar a Catálogo</>}
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => setCurrentStep("validate")}
-                disabled={publishing}
-                className="text-[10px] font-black uppercase tracking-widest text-black/40 hover:text-black hover:bg-transparent"
-              >
-                Retornar a Control de Calidad
-              </Button>
-            </div>
+            <div className="w-full space-y-12">
+               <div className="flex flex-col items-center">
+                  <div className="mb-12 relative">
+                    <div className="w-32 h-32 bg-kaosNeon text-black flex items-center justify-center border-4 border-black animate-pulse">
+                      <Rocket className="h-16 w-16" />
+                    </div>
+                    <div className="absolute -right-4 -top-4 w-12 h-12 bg-black text-white flex items-center justify-center font-black text-xl">
+                      !
+                    </div>
+                  </div>
+                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-4 italic">Confirmar Inyección</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-12 max-w-sm">
+                    Está a punto de publicar <strong>{drafts.filter(d => d.status === "valid").length}</strong> registros al entorno de producción. Esta acción es irreversible.
+                  </p>
+               </div>
+               
+               <div className="space-y-4 w-full">
+                 <Button 
+                   onClick={handlePublish} 
+                   disabled={publishing}
+                   className="w-full h-24 bg-black text-white hover:bg-kaosNeon hover:text-black rounded-none text-xl font-black uppercase tracking-[0.3em] gap-4 transition-all group shadow-[12px_12px_0_rgba(0,0,0,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+                 >
+                   {publishing ? <RefreshCw className="h-8 w-8 animate-spin" /> : <><Rocket className="h-8 w-8 group-hover:translate-x-3 group-hover:-translate-y-3 transition-transform" /> Inyectar a Catálogo</>}
+                 </Button>
+                 <Button 
+                   variant="ghost" 
+                   onClick={() => setCurrentStep("validate")}
+                   disabled={publishing}
+                   className="w-full text-[10px] font-black uppercase tracking-widest text-black/40 hover:text-black hover:bg-transparent h-12"
+                 >
+                   Retornar a Control de Calidad
+                 </Button>
+               </div>
 
-            <div className="mt-16 flex items-start gap-4 p-6 border border-black/10 text-left bg-gray-50 max-w-sm">
-              <Info className="h-5 w-5 text-black mt-0.5" />
-              <p className="text-[9px] font-bold text-black/60 leading-relaxed uppercase tracking-widest">
-                El proceso de inyección optimiza imágenes y sincroniza bases de datos. 
-                Los cambios se reflejarán instantáneamente en la interfaz de usuario final.
-              </p>
+               <div className="mt-16 flex items-start gap-4 p-8 border-2 border-black text-left bg-gray-50">
+                 <Info className="h-6 w-6 text-black mt-0.5 shrink-0" />
+                 <div>
+                    <h5 className="text-[10px] font-black uppercase tracking-widest mb-1">Nota de Seguridad</h5>
+                    <p className="text-[9px] font-bold text-black/60 leading-relaxed uppercase tracking-widest">
+                      El proceso de inyección optimiza imágenes y sincroniza bases de datos. 
+                      Los cambios se reflejarán instantáneamente en la interfaz de usuario final y panel administrativo.
+                    </p>
+                 </div>
+               </div>
             </div>
-          </div>
         )}
       </main>
 
