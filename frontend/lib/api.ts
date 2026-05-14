@@ -59,13 +59,14 @@ export async function getAdminCategories(tree = false) {
   }
 }
 
-export async function createCategory(categoryData: any) {
+export async function createCategory(formData: FormData) {
   try {
     const headers = await getAuthHeaders()
+    const { 'Content-Type': _, ...authHeaders } = headers
     const response = await fetch(`${API_BASE_URL}/admin/categories`, {
       method: "POST",
-      headers,
-      body: JSON.stringify(categoryData)
+      headers: authHeaders,
+      body: formData
     })
     return await response.json()
   } catch (error: any) {
@@ -74,13 +75,14 @@ export async function createCategory(categoryData: any) {
   }
 }
 
-export async function updateCategory(id: string, categoryData: any) {
+export async function updateCategory(id: string, formData: FormData) {
   try {
     const headers = await getAuthHeaders()
+    const { 'Content-Type': _, ...authHeaders } = headers
     const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
       method: "PUT",
-      headers,
-      body: JSON.stringify(categoryData)
+      headers: authHeaders,
+      body: formData
     })
     return await response.json()
   } catch (error: any) {

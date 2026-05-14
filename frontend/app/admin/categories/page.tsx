@@ -13,7 +13,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { api } from "@/lib/api"
+import { api, cleanImageUrl } from "@/lib/api"
+import { useRef } from "react"
 import { useToast } from "@/hooks/use-toast"
 
 interface Category {
@@ -51,6 +52,11 @@ export default function AdminCategoriesPage() {
   
   // Estados para expansión del árbol
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  
+  // Referencia para input de imagen
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   useEffect(() => {
     loadCategories()
@@ -104,16 +110,28 @@ export default function AdminCategoriesPage() {
 
     setSaving(true)
     try {
+      const payload = new FormData()
+      payload.append("data", JSON.stringify({
+        ...editingCategory,
+        parent: editingCategory.parent?._id || editingCategory.parent
+      }))
+      
+      if (selectedImage) {
+        payload.append("images", selectedImage)
+      }
+
       let result
       if (editingCategory._id) {
-        result = await api.updateCategory(editingCategory._id, editingCategory)
+        result = await api.updateCategory(editingCategory._id, payload)
       } else {
-        result = await api.createCategory(editingCategory)
+        result = await api.createCategory(payload)
       }
 
       if (result.success) {
         loadCategories()
         setEditingCategory(null)
+        setSelectedImage(null)
+        setPreviewImage(null)
         setShowForm(false)
         toast({
           title: "Guardado",
@@ -264,6 +282,8 @@ export default function AdminCategoriesPage() {
                   isActive: true,
                   order: (category.subcategories?.length || 0)
                 })
+                setSelectedImage(null)
+                setPreviewImage(null)
                 setShowForm(true)
               }}
               title="Agregar subcategoría"
@@ -279,6 +299,8 @@ export default function AdminCategoriesPage() {
                   ...category,
                   parent: category.parent?._id || undefined
                 })
+                setSelectedImage(null)
+                setPreviewImage(null)
                 setShowForm(true)
               }}
             >
@@ -338,6 +360,8 @@ export default function AdminCategoriesPage() {
               isFeatured: false,
               order: categories.length
             })
+            setSelectedImage(null)
+            setPreviewImage(null)
             setShowForm(true)
           }}
           className="rounded-none bg-black text-white hover:bg-gray-800 h-14 px-10 font-black uppercase text-xs tracking-widest transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
@@ -391,7 +415,7 @@ export default function AdminCategoriesPage() {
                 {category.image ? (
                   <div className="w-16 h-16 border border-black p-1 grayscale hover:grayscale-0 transition-all">
                     <img
-                      src={category.image}
+                      src={cleanImageUrl(category.image)}
                       alt={category.name}
                       className="w-full h-full object-cover"
                     />
@@ -436,6 +460,8 @@ export default function AdminCategoriesPage() {
                         ...category,
                         parent: category.parent?._id || undefined
                       })
+                      setSelectedImage(null)
+                      setPreviewImage(null)
                       setShowForm(true)
                     }}
                   >
@@ -544,7 +570,7 @@ export default function AdminCategoriesPage() {
                     <SelectTrigger className="h-14 rounded-none border-black focus:ring-0 uppercase font-bold text-[10px] tracking-widest">
                       <SelectValue placeholder="RAÍZ (SIN PADRE)" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-none border-black">
+                    <SelectContent className="rounded-none border-black bg-white text-black dark:bg-slate-900 dark:text-white">
                       <SelectItem value="none" className="text-[10px] font-bold uppercase">RAÍZ (SIN PADRE)</SelectItem>
                       {parentCategories
                         .filter(cat => cat._id !== editingCategory._id)
@@ -558,22 +584,39 @@ export default function AdminCategoriesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Recurso Multimedia (URL)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Recurso Multimedia</label>
                   <div className="flex gap-4">
-                    <Input
-                      value={editingCategory.image || ""}
-                      onChange={(e) => setEditingCategory({
-                        ...editingCategory,
-                        image: e.target.value
-                      })}
-                      placeholder="https://..."
-                      className="h-14 rounded-none border-black dark:border-white/10 focus:border-kaosNeon focus:ring-0 text-[10px] font-bold bg-transparent"
+                    <div 
+                      onClick={() => imageInputRef.current?.click()}
+                      className="flex-1 h-14 border border-black dark:border-white/10 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-all group"
+                    >
+                      {previewImage || editingCategory.image ? (
+                        <div className="flex items-center gap-3 px-4 w-full">
+                           <div className="h-10 w-10 border border-black overflow-hidden flex-shrink-0">
+                             <img src={previewImage || cleanImageUrl(editingCategory.image!)} className="w-full h-full object-cover" />
+                           </div>
+                           <span className="text-[9px] font-black uppercase tracking-widest truncate">Cambiar Imagen</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Plus className="h-4 w-4 text-gray-400 group-hover:text-black" />
+                          <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-black">Subir Imagen</span>
+                        </div>
+                      )}
+                    </div>
+                    <input 
+                      type="file" 
+                      ref={imageInputRef} 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          setSelectedImage(file)
+                          setPreviewImage(URL.createObjectURL(file))
+                        }
+                      }}
                     />
-                    {editingCategory.image && (
-                      <div className="h-14 w-14 border border-black overflow-hidden flex-shrink-0 grayscale hover:grayscale-0 transition-all">
-                        <img src={editingCategory.image} className="w-full h-full object-cover" />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

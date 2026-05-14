@@ -552,8 +552,21 @@ exports.getCategories = async (req, res) => {
 
 exports.createCategory = async (req, res) => {
   try {
-    const { name, description, parent, image, isActive, order } = req.body;
+    let categoryData;
+    if (req.body.data) {
+      categoryData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+    } else {
+      categoryData = req.body;
+    }
+
+    const { name, description, parent, isActive, order, isFeatured } = categoryData;
     const slug = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-");
+
+    // Si hay un archivo subido, usar esa URL
+    let imageUrl = categoryData.image;
+    if (req.files && req.files.length > 0) {
+      imageUrl = req.files[0].url;
+    }
 
     const category = await prisma.category.create({
       data: {
@@ -561,15 +574,16 @@ exports.createCategory = async (req, res) => {
         slug,
         description,
         parentId: parent || null,
-        image,
+        image: imageUrl,
         isActive: isActive ?? true,
-        isFeatured: req.body.isFeatured ?? false,
+        isFeatured: isFeatured ?? false,
         order: order ?? 0,
       }
     });
 
     res.status(201).json({ success: true, category });
   } catch (error) {
+    console.error("Error creating category:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
@@ -577,23 +591,35 @@ exports.createCategory = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = req.body;
+    let categoryData;
+    if (req.body.data) {
+      categoryData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+    } else {
+      categoryData = req.body;
+    }
+
+    // Si hay un archivo subido, usar esa URL
+    let imageUrl = categoryData.image;
+    if (req.files && req.files.length > 0) {
+      imageUrl = req.files[0].url;
+    }
 
     const category = await prisma.category.update({
       where: { id },
       data: {
-        name: data.name,
-        description: data.description,
-        parentId: data.parent || null,
-        image: data.image,
-        isActive: data.isActive,
-        isFeatured: data.isFeatured,
-        order: data.order
+        name: categoryData.name,
+        description: categoryData.description,
+        parentId: categoryData.parent || null,
+        image: imageUrl,
+        isActive: categoryData.isActive,
+        isFeatured: categoryData.isFeatured,
+        order: categoryData.order
       }
     });
 
     res.json({ success: true, category });
   } catch (error) {
+    console.error("Error updating category:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

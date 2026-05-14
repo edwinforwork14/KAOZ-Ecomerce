@@ -98,8 +98,18 @@ router.get("/customers/:customerId/cart-history", getCustomerCartHistory);
 
 // Categories
 router.get("/categories", getCategories);
-router.post("/categories", createCategory);
-router.put("/categories/:id", updateCategory);
+router.post(
+  "/categories",
+  upload.array("images", 1),
+  processImage,
+  createCategory
+);
+router.put(
+  "/categories/:id",
+  upload.array("images", 1),
+  processImage,
+  updateCategory
+);
 router.delete("/categories/:id", deleteCategory);
 router.post("/categories/reorder", reorderCategories);
 
