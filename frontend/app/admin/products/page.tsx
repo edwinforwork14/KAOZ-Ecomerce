@@ -308,8 +308,6 @@ export default function ProductsPage() {
     setGeneralImages(prev => prev.filter((img, idx) => (img._id || img.id || idx) !== idOrIdx))
   }
 
-  const currencySymbol = settings?.currency?.symbol || "$"
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
