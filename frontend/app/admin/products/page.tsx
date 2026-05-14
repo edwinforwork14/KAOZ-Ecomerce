@@ -413,7 +413,7 @@ export default function ProductsPage() {
              const totalStock = variantsArr.reduce((sum: number, v: any) => {
                 return sum + (Array.isArray(v?.sizes) ? v.sizes : []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0)
              }, 0)
-            const firstImage = product?.images?.[0]?.url
+             const firstImage = product?.images?.[0]?.url || product?.variants?.[0]?.images?.[0]?.url
 
             return (
               <div key={product.id || product._id} className="group relative bg-white border border-black/5 hover:border-black transition-all duration-500 flex flex-col">
@@ -485,7 +485,9 @@ export default function ProductsPage() {
                        <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
                              <div className="w-14 h-14 bg-slate-50 border border-black/5 overflow-hidden flex-shrink-0">
-                                {product.images?.[0]?.url && <img src={product.images[0].url} className="w-full h-full object-cover group-hover:scale-110 transition-all" />}
+                                 {(product.images?.[0]?.url || product.variants?.[0]?.images?.[0]?.url) && (
+                                   <img src={product.images?.[0]?.url || product.variants?.[0]?.images?.[0]?.url} className="w-full h-full object-cover group-hover:scale-110 transition-all" />
+                                 )}
                              </div>
                              <div>
                                 <p className="text-xs font-black uppercase tracking-tight">{product.name}</p>
@@ -573,7 +575,7 @@ export default function ProductsPage() {
                 03. Variantes
               </TabsTrigger>
               <TabsTrigger value="images" className="rounded-none font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-kaosNeon dark:data-[state=active]:text-black transition-all">
-                04. Imágenes
+                04. Multimedia (Opcional)
               </TabsTrigger>
             </TabsList>
 

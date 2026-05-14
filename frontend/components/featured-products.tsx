@@ -572,7 +572,7 @@ export default function FeaturedProducts({
                 >
                   <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-50 mb-6 transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] ring-1 ring-black/5">
                     <img 
-                      src={product.images?.[0]?.url || "/placeholder.svg"} 
+                      src={product.images?.[0]?.url || product.variants?.[0]?.images?.[0]?.url || "/placeholder.svg"} 
                       alt={product.name} 
                       className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" 
                     />

@@ -72,7 +72,7 @@ export default function ProductDetail({ product: initialProduct, onBack, onCheck
   const handleAddToCart = async () => {
     if (isOutOfStock) return
 
-    const mainImage = currentImages[selectedImageIndex]?.url || product.images?.[0]?.url
+    const mainImage = currentImages[selectedImageIndex]?.url || product.images?.[0]?.url || product.variants?.[0]?.images?.[0]?.url
     
     await addItem({
       id: product.id || product._id,
