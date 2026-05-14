@@ -235,15 +235,63 @@ export default function ProductsPage() {
     }
   }
 
-  const handleGeneralImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVariantImageChange = async (vIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
-    // Implementación simplificada para el ejemplo - idealmente subiría a un CDN
-    toast({ title: "INFO", description: "CARGANDO RECURSOS VISUALES..." })
-    // Simulando subida o manejando localmente si el backend lo soporta
+    
+    const files = Array.from(e.target.files)
+    setSaving(true)
+    
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData()
+        formData.append("images", file)
+        
+        // Usar el endpoint existente si el producto ya existe, 
+        // o subirlo como asset temporal si es nuevo (para simplificar, subiremos a un endpoint genérico o manejaremos localmente)
+        // Por ahora, asumiremos que el backend procesa imágenes en el create/update principal.
+        // Así que solo necesitamos las URLs.
+        
+        // Simulación de subida para obtener URL (esto debería ser una llamada real a Supabase)
+        // Pero como el usuario quiere "SQL", tal vez prefiera que el backend maneje el buffer.
+        // Sin embargo, el backend espera URLs en el JSON para variantes según mi cambio anterior.
+        
+        // Vamos a implementar una subida real a un bucket de Supabase desde el frontend 
+        // o usar el backend como proxy. El backend ya tiene processImage.
+        
+        const headers = await (api as any).getAuthHeaders()
+        const { 'Content-Type': _, ...authHeaders } = headers
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/bulk/temp-upload`, {
+          method: "POST",
+          headers: authHeaders,
+          body: formData
+        })
+        const result = await response.json()
+        return result.url
+      })
+      
+      const urls = await Promise.all(uploadPromises)
+      
+      const newVariants = [...formData.variants]
+      newVariants[vIndex].images = [
+        ...(newVariants[vIndex].images || []),
+        ...urls.map(url => ({ url, isMain: false }))
+      ]
+      setFormData({ ...formData, variants: newVariants })
+      
+      toast({ title: "IMÁGENES CARGADAS", description: `${urls.length} RECURSOS VINCULADOS A LA VARIANTE` })
+    } catch (error) {
+      console.error("Error uploading variant images:", error)
+      toast({ title: "ERROR", description: "FALLO EN LA CARGA DE RECURSOS", variant: "destructive" })
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const removeGeneralImage = (id: string) => {
-    setGeneralImages(prev => prev.filter(img => (img.id || img._id) !== id))
+  const removeVariantImage = (vIndex: number, imgIdx: number) => {
+    const newVariants = [...formData.variants]
+    newVariants[vIndex].images = newVariants[vIndex].images.filter((_: any, i: number) => i !== imgIdx)
+    setFormData({ ...formData, variants: newVariants })
   }
 
   const currencySymbol = settings?.currency?.symbol || "$"
@@ -279,9 +327,9 @@ export default function ProductsPage() {
         </div>
         <div className="flex flex-wrap gap-3">
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => router.push("/admin/products/bulk")}
-            className="border-black rounded-none h-14 px-8 text-[10px] font-black uppercase tracking-widest bg-white text-black hover:bg-black hover:text-white transition-all shadow-[4px_4px_0_rgba(0,0,0,0.1)]"
+            className="bg-black text-white hover:bg-kaosNeon hover:text-black border-2 border-black rounded-none h-14 px-8 text-[10px] font-black uppercase tracking-widest transition-all shadow-[4px_4px_0_rgba(0,0,0,0.1)]"
           >
             <Upload className="h-4 w-4 mr-2" />
             Carga Masiva
@@ -369,7 +417,7 @@ export default function ProductsPage() {
                 {/* Image Container */}
                 <div className="relative aspect-[4/5] overflow-hidden bg-slate-50">
                   {firstImage ? (
-                    <img src={firstImage} alt={product.name} className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" />
+                    <img src={firstImage} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-black/5"><ImageIcon className="h-16 w-16" /></div>
                   )}
@@ -434,7 +482,7 @@ export default function ProductsPage() {
                        <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
                              <div className="w-14 h-14 bg-slate-50 border border-black/5 overflow-hidden flex-shrink-0">
-                                {product.images?.[0]?.url && <img src={product.images[0].url} className="w-full h-full object-cover contrast-110 group-hover:scale-110 transition-all" />}
+                                {product.images?.[0]?.url && <img src={product.images[0].url} className="w-full h-full object-cover group-hover:scale-110 transition-all" />}
                              </div>
                              <div>
                                 <p className="text-xs font-black uppercase tracking-tight">{product.name}</p>
@@ -575,15 +623,40 @@ export default function ProductsPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex items-center gap-6 pt-8">
-                     <div className="flex items-center gap-2">
-                        <Switch checked={formData.isActive} onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })} className="data-[state=checked]:bg-black" />
-                        <Label className="industrial-stat-label">Activo</Label>
-                     </div>
-                     <div className="flex items-center gap-2">
-                        <Switch checked={formData.isFeatured} onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })} className="data-[state=checked]:bg-black" />
-                        <Label className="industrial-stat-label">Destacado</Label>
-                     </div>
+                  <div className="grid grid-cols-3 gap-6 pt-6 col-span-2">
+                    <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 border border-black/5">
+                      <div className="space-y-0.5">
+                        <Label className="text-[10px] font-black uppercase">Activo</Label>
+                        <p className="text-[8px] font-bold opacity-40 uppercase">Venta Directa</p>
+                      </div>
+                      <Switch 
+                        checked={formData.isActive} 
+                        onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                        className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-kaosNeon"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 border border-black/5">
+                      <div className="space-y-0.5">
+                        <Label className="text-[10px] font-black uppercase">Destacado</Label>
+                        <p className="text-[8px] font-bold opacity-40 uppercase">Sección Hot</p>
+                      </div>
+                      <Switch 
+                        checked={formData.isFeatured} 
+                        onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
+                        className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-kaosNeon"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 border border-black/5">
+                      <div className="space-y-0.5">
+                        <Label className="text-[10px] font-black uppercase">Insignia Nuevo</Label>
+                        <p className="text-[8px] font-bold opacity-40 uppercase">Tag Novedad</p>
+                      </div>
+                      <Switch 
+                        checked={formData.isNew} 
+                        onCheckedChange={(checked) => setFormData({ ...formData, isNew: checked })}
+                        className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-kaosNeon"
+                      />
+                    </div>
                   </div>
                 </div>
               </TabsContent>
@@ -644,10 +717,25 @@ export default function ProductsPage() {
                          <div className="space-y-2">
                             <Label className="industrial-stat-label">Código Hexadecimal</Label>
                             <div className="flex gap-2">
-                               <div 
-                                 className="w-11 h-11 border border-black/20 dark:border-white/20 flex-shrink-0 shadow-inner"
-                                 style={{ backgroundColor: variant.colorHex }}
-                               />
+                               <label className="cursor-pointer relative group/picker">
+                                  <div 
+                                    className="w-11 h-11 border border-black/20 dark:border-white/20 flex-shrink-0 shadow-inner"
+                                    style={{ backgroundColor: variant.colorHex }}
+                                  />
+                                  <input 
+                                    type="color"
+                                    value={variant.colorHex}
+                                    onChange={(e) => {
+                                      const newVariants = [...formData.variants];
+                                      newVariants[vIndex].colorHex = e.target.value;
+                                      setFormData({ ...formData, variants: newVariants });
+                                    }}
+                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                  />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/picker:opacity-100 flex items-center justify-center transition-opacity">
+                                     <Plus className="h-4 w-4 text-white" />
+                                  </div>
+                               </label>
                                <Input 
                                  value={variant.colorHex} 
                                  onChange={(e) => {
@@ -661,11 +749,35 @@ export default function ProductsPage() {
                          </div>
                       </div>
 
-                      <div className="space-y-6">
-                         <div className="flex items-center justify-between">
-                            <Label className="industrial-stat-label flex items-center gap-2">
-                               <Package className="h-3 w-3" /> CONTROL DE EXISTENCIAS (STOCKS)
-                            </Label>
+                       <div className="space-y-4">
+                          <Label className="industrial-stat-label flex items-center gap-2">
+                             <ImageIcon className="h-3 w-3" /> IMÁGENES DE VARIANTE
+                          </Label>
+                          <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
+                             {variant.images?.map((img: any, imgIdx: number) => (
+                                <div key={imgIdx} className="aspect-square relative group bg-black/5 border border-black/10">
+                                   <img src={cleanImageUrl(img.url)} className="w-full h-full object-cover" />
+                                   <button 
+                                      type="button"
+                                      onClick={() => removeVariantImage(vIndex, imgIdx)}
+                                      className="absolute top-1 right-1 bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                   >
+                                      <X className="h-2 w-2" />
+                                   </button>
+                                </div>
+                             ))}
+                             <label className="aspect-square border-2 border-dashed border-black/10 hover:border-black dark:border-white/10 dark:hover:border-kaosNeon flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-black/5">
+                                <Plus className="h-4 w-4 text-black/40" />
+                                <input type="file" multiple accept="image/*" className="hidden" onChange={(e) => handleVariantImageChange(vIndex, e)} />
+                             </label>
+                          </div>
+                       </div>
+
+                       <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                             <Label className="industrial-stat-label flex items-center gap-2">
+                                <Package className="h-3 w-3" /> CONTROL DE EXISTENCIAS (STOCKS)
+                             </Label>
                             <div className="text-[10px] font-black uppercase bg-black text-white px-3 py-1">
                                Total: {variant.sizes.reduce((s: number, sz: any) => s + (parseInt(sz.stock) || 0), 0)} UNDS
                             </div>

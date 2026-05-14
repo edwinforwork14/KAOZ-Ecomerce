@@ -27,6 +27,14 @@
     --admin-border: 230 230 230;
     --admin-accent: 0 0 0;
     --admin-accent-foreground: 255 255 255;
+
+    /* Shadcn UI Variables */
+    --popover: 255 255 255;
+    --popover-foreground: 0 0 0;
+    --muted: 240 240 240;
+    --muted-foreground: 100 100 100;
+    --accent: 240 240 240;
+    --accent-foreground: 0 0 0;
   }
 }
 

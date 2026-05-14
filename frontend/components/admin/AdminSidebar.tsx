@@ -269,7 +269,7 @@ export default function AdminSidebar() {
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 bg-[#0A0A0A] border-r border-white/5 flex flex-col transition-all duration-500 ease-in-out lg:relative",
+          "fixed inset-y-0 left-0 z-40 bg-[#0A0A0A] bg-black border-r border-white/5 flex flex-col transition-all duration-500 ease-in-out lg:relative",
           isCollapsed ? "w-20" : "w-64",
           isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"
         )}

@@ -599,10 +599,10 @@ export default function BulkUploadPage() {
                 </p>
                 <Button 
                   onClick={() => setCurrentStep("publish")}
-                  disabled={drafts.filter(d => d.status === "valid").length === 0 || drafts.some(d => d.status !== "valid")}
+                  disabled={drafts.filter(d => d.status === "valid").length === 0}
                   className="w-full bg-black text-white hover:bg-white hover:text-black rounded-none h-14 font-black uppercase text-xs tracking-widest transition-all"
                 >
-                  {drafts.some(d => d.status !== "valid") ? "Corregir Errores para Continuar" : "Finalizar Revisión"}
+                  {drafts.some(d => d.status !== "valid") ? `Publicar ${drafts.filter(d => d.status === "valid").length} Válidos` : "Finalizar Revisión"}
                 </Button>
               </div>
             </div>

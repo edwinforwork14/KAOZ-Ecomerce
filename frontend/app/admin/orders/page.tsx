@@ -58,19 +58,19 @@ import {
 import { cn } from "@/lib/utils"
 
 const statusConfig: { [key: string]: { label: string; color: string; bgColor: string; icon: any } } = {
-  pending: { label: 'Pendiente', color: 'text-amber-700', bgColor: 'bg-amber-100 border-amber-200', icon: Clock },
-  confirmed: { label: 'Confirmado', color: 'text-blue-700', bgColor: 'bg-blue-100 border-blue-200', icon: CheckCircle2 },
-  processing: { label: 'Procesando', color: 'text-indigo-700', bgColor: 'bg-indigo-100 border-indigo-200', icon: RotateCcw },
-  shipped: { label: 'Enviado', color: 'text-purple-700', bgColor: 'bg-purple-100 border-purple-200', icon: Truck },
-  delivered: { label: 'Entregado', color: 'text-green-700', bgColor: 'bg-green-100 border-green-200', icon: CheckCircle2 },
-  cancelled: { label: 'Cancelado', color: 'text-red-700', bgColor: 'bg-red-100 border-red-200', icon: XCircle },
+  pending: { label: 'PENDIENTE', color: 'text-amber-700', bgColor: 'bg-amber-100 border-amber-200', icon: Clock },
+  confirmed: { label: 'CONFIRMADO', color: 'text-blue-700', bgColor: 'bg-blue-100 border-blue-200', icon: CheckCircle2 },
+  processing: { label: 'EN PROCESO', color: 'text-indigo-700', bgColor: 'bg-indigo-100 border-indigo-200', icon: RotateCcw },
+  shipped: { label: 'ENVIADO', color: 'text-purple-700', bgColor: 'bg-purple-100 border-purple-200', icon: Truck },
+  delivered: { label: 'ENTREGADO', color: 'text-green-700', bgColor: 'bg-green-100 border-green-200', icon: CheckCircle2 },
+  cancelled: { label: 'CANCELADO', color: 'text-red-700', bgColor: 'bg-red-100 border-red-200', icon: XCircle },
 }
 
 const paymentStatusConfig: { [key: string]: { label: string; color: string } } = {
-  pending: { label: 'Pendiente', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-  paid: { label: 'Pagado', color: 'bg-green-100 text-green-700 border-green-200' },
-  failed: { label: 'Fallido', color: 'bg-red-100 text-red-700 border-red-200' },
-  refunded: { label: 'Reembolsado', color: 'bg-slate-100 text-slate-700 border-slate-200' },
+  pending: { label: 'PAGO PENDIENTE', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+  paid: { label: 'PAGADO', color: 'bg-green-100 text-green-700 border-green-200' },
+  failed: { label: 'FALLIDO', color: 'bg-red-100 text-red-700 border-red-200' },
+  refunded: { label: 'REEMBOLSADO', color: 'bg-slate-100 text-slate-700 border-slate-200' },
 }
 
 export default function OrdersPage() {
@@ -397,15 +397,54 @@ export default function OrdersPage() {
                       <span className="text-[10px] font-black uppercase tracking-widest opacity-40 text-black dark:text-white">MÉTODO</span>
                       <span className="text-[10px] font-black uppercase tracking-widest text-black dark:text-white">{selectedOrder?.paymentMethod?.name || 'DESCONOCIDO'}</span>
                    </div>
-                   <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border border-black/5">
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40 text-black dark:text-white">ESTADO PAGO</span>
-                      <Badge className={cn(
-                        "rounded-none border-none text-[9px] font-black uppercase tracking-widest h-6 px-3",
-                        selectedOrder?.paymentStatus === 'paid' ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'
-                      )}>
-                        {selectedOrder?.paymentStatus === 'paid' ? 'PAGADO' : 'PENDIENTE'}
-                      </Badge>
-                   </div>
+                   <div className="flex flex-col gap-2 p-4 bg-slate-50 dark:bg-slate-900 border border-black/5">
+                       <span className="text-[10px] font-black uppercase tracking-widest opacity-40 text-black dark:text-white">ESTADO PAGO</span>
+                       <Select 
+                        value={selectedOrder?.paymentStatus} 
+                        onValueChange={(val) => updateStatus(selectedOrder.id, selectedOrder.orderStatus, val)}
+                        disabled={updating}
+                       >
+                         <SelectTrigger className="h-10 rounded-none border-black/10 bg-white dark:bg-black font-black uppercase text-[9px] tracking-widest text-black dark:text-white">
+                           <SelectValue placeholder="Estado Pago" />
+                         </SelectTrigger>
+                         <SelectContent className="rounded-none border-black bg-black text-white">
+                           <SelectItem value="pending">PAGO PENDIENTE</SelectItem>
+                           <SelectItem value="paid">PAGADO</SelectItem>
+                           <SelectItem value="failed">FALLIDO</SelectItem>
+                           <SelectItem value="refunded">REEMBOLSADO</SelectItem>
+                         </SelectContent>
+                       </Select>
+                    </div>
+                    <div className="flex flex-col gap-2 p-4 bg-slate-50 dark:bg-slate-900 border border-black/5">
+                       <span className="text-[10px] font-black uppercase tracking-widest opacity-40 text-black dark:text-white">ESTADO PEDIDO</span>
+                       <Select 
+                        value={selectedOrder?.orderStatus} 
+                        onValueChange={(val) => updateStatus(selectedOrder.id, val, selectedOrder.paymentStatus)}
+                        disabled={updating}
+                       >
+                         <SelectTrigger className="h-10 rounded-none border-black/10 bg-white dark:bg-black font-black uppercase text-[9px] tracking-widest text-black dark:text-white">
+                           <SelectValue placeholder="Estado Pedido" />
+                         </SelectTrigger>
+                         <SelectContent className="rounded-none border-black bg-black text-white">
+                           <SelectItem value="pending">PENDIENTE</SelectItem>
+                           <SelectItem value="confirmed">CONFIRMADO</SelectItem>
+                           <SelectItem value="processing">EN PROCESO</SelectItem>
+                           <SelectItem value="shipped">ENVIADO</SelectItem>
+                           <SelectItem value="delivered">ENTREGADO</SelectItem>
+                           <SelectItem value="cancelled">CANCELADO</SelectItem>
+                         </SelectContent>
+                       </Select>
+                    </div>
+
+                    {selectedOrder?.paymentStatus === 'pending' && (
+                       <Button 
+                         onClick={() => updateStatus(selectedOrder.id, selectedOrder.orderStatus, 'paid')}
+                         disabled={updating}
+                         className="w-full h-12 bg-kaosNeon text-black hover:bg-black hover:text-white rounded-none font-black uppercase text-[10px] tracking-widest mt-2 border-2 border-black"
+                       >
+                         {updating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmar Pago Recibido'}
+                       </Button>
+                     )}
                 </div>
               </div>
             </div>
@@ -420,7 +459,7 @@ export default function OrdersPage() {
                  {selectedOrder?.items?.map((item: any, idx: number) => (
                    <div key={idx} className="flex items-center gap-4 group">
                      <div className="w-16 h-16 bg-black/[0.03] dark:bg-white/[0.03] flex-shrink-0 border border-black/5">
-                       {item.image && <img src={item.image} className="w-full h-full object-cover grayscale contrast-125 group-hover:grayscale-0 transition-all" />}
+                       {item.image && <img src={item.image} className="w-full h-full object-cover transition-all" />}
                      </div>
                      <div className="flex-1 min-w-0">
                        <p className="text-xs font-black uppercase tracking-tight truncate text-black dark:text-white">{item.name}</p>

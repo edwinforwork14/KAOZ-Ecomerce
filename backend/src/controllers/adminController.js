@@ -36,10 +36,18 @@ exports.createProduct = async (req, res) => {
         variants: {
           create: productData.variants?.map(v => ({
             color: v.color,
+            colorHex: v.colorHex || "#000000",
+            images: {
+              create: v.images?.map(img => ({
+                url: img.url,
+                alt: productData.name,
+                isMain: img.isMain || false
+              }))
+            },
             sizes: {
               create: v.sizes?.map(s => ({
                 size: s.size,
-                stock: s.stock
+                stock: parseInt(s.stock) || 0
               }))
             }
           }))
@@ -119,7 +127,7 @@ exports.updateProduct = async (req, res) => {
 
     // Actualización de variantes y tallas (Delete & Recreate approach para simplicidad y consistencia)
     if (productData.variants) {
-      // 1. Eliminar variantes existentes (Cascading delete se encargará de las tallas)
+      // 1. Eliminar variantes existentes (Cascading delete se encargará de las tallas e imágenes vinculadas a la variante)
       await prisma.productVariant.deleteMany({
         where: { productId: id }
       });
@@ -129,6 +137,14 @@ exports.updateProduct = async (req, res) => {
         create: productData.variants.map(v => ({
           color: v.color,
           colorHex: v.colorHex || "#000000",
+          images: {
+            create: v.images?.map(img => ({
+              url: img.url,
+              alt: productData.name,
+              isMain: img.isMain || false,
+              productId: id // Asegurar vínculo con el producto también
+            }))
+          },
           sizes: {
             create: v.sizes.map(s => ({
               size: s.size,
@@ -352,21 +368,85 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     const previousStatus = order.orderStatus;
+    const newStatus = orderStatus || previousStatus;
 
-    // Lógica de stock simplificada en controlador o vía hooks de Prisma/DB
-    // Por brevedad, omitiré la lógica compleja de stock aquí, pero debería implementarse similar al original.
+    // Usar transacción para asegurar que la actualización de estado y stock sea atómica
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      // 1. Si el pedido pasa a CANCELADO, devolvemos el stock
+      if (previousStatus !== "cancelled" && newStatus === "cancelled") {
+        for (const item of order.items) {
+          const variant = await tx.productVariant.findFirst({
+            where: {
+              productId: item.productId,
+              color: item.color || "N/A"
+            },
+            include: { sizes: { where: { size: item.size } } }
+          });
 
-    const updatedOrder = await prisma.order.update({
-      where: { id },
-      data: {
-        orderStatus: orderStatus || undefined,
-        paymentStatus: paymentStatus || undefined,
-        adminNotes: adminNotes !== undefined ? adminNotes : undefined,
-        statusHistory: orderStatus ? [
-          ...(order.statusHistory || []),
-          { status: orderStatus, note, date: new Date(), updatedBy: req.user.id }
-        ] : undefined
+          if (variant && variant.sizes[0]) {
+            await tx.productSize.update({
+              where: { id: variant.sizes[0].id },
+              data: { stock: { increment: item.quantity } }
+            });
+          }
+        }
       }
+      
+      // 2. Si el pedido sale de CANCELADO, descontamos el stock (verificando disponibilidad)
+      if (previousStatus === "cancelled" && newStatus !== "cancelled") {
+        for (const item of order.items) {
+           const variant = await tx.productVariant.findFirst({
+            where: {
+              productId: item.productId,
+              color: item.color || "N/A"
+            },
+            include: { sizes: { where: { size: item.size } } }
+          });
+
+          if (variant && variant.sizes[0]) {
+            if (variant.sizes[0].stock < item.quantity) {
+              throw new Error(`Stock insuficiente para restaurar el pedido: ${item.name} (${item.size})`);
+            }
+            await tx.productSize.update({
+              where: { id: variant.sizes[0].id },
+              data: { stock: { decrement: item.quantity } }
+            });
+          }
+        }
+      }
+
+      // 2. Lógica de Sincronización de Estados (Senior Flow)
+      if (orderStatus === "CONFIRMADO" && order.paymentStatus === "PENDIENTE") {
+        paymentStatus = "PAGADO";
+      }
+      
+      if (orderStatus === "CANCELADO") {
+        paymentStatus = "REEMBOLSADO";
+      }
+
+      // 3. Actualizar el pedido
+      return await tx.order.update({
+        where: { id },
+        data: {
+          orderStatus: orderStatus || undefined,
+          paymentStatus: paymentStatus || undefined,
+          adminNotes: adminNotes !== undefined ? adminNotes : undefined,
+          statusHistory: (orderStatus || paymentStatus) ? [
+            ...(order.statusHistory || []),
+            { 
+              orderStatus: orderStatus || previousStatus, 
+              paymentStatus: paymentStatus || order.paymentStatus,
+              note: note || `Estado actualizado a ${orderStatus || previousStatus}`, 
+              date: new Date(), 
+              updatedBy: req.user.id 
+            }
+          ] : undefined
+        },
+        include: { 
+          items: true, 
+          user: { select: { firstName: true, lastName: true, email: true } } 
+        }
+      });
     });
 
     res.json({
@@ -375,10 +455,10 @@ exports.updateOrderStatus = async (req, res) => {
       order: updatedOrder,
     });
   } catch (error) {
+    console.error("Error updating order status:", error);
     res.status(500).json({
       success: false,
-      message: "Error al actualizar pedido",
-      error: error.message,
+      message: error.message || "Error al actualizar pedido",
     });
   }
 };

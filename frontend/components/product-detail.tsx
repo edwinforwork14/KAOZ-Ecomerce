@@ -49,7 +49,9 @@ export default function ProductDetail({ product: initialProduct, onBack, onCheck
         if (prod.variants?.length > 0) {
           const firstVariant = prod.variants[0]
           setSelectedColor(firstVariant.color)
-          setCurrentImages(prod.images || [])
+          
+          const initialImgs = firstVariant.images?.length > 0 ? firstVariant.images : (prod.images || [])
+          setCurrentImages(initialImgs)
           
           if (firstVariant.sizes?.length > 0) {
             // Seleccionar la primera talla que tenga stock si es posible
@@ -215,6 +217,11 @@ export default function ProductDetail({ product: initialProduct, onBack, onCheck
                           key={v.color}
                           onClick={() => {
                             setSelectedColor(v.color)
+                            // Actualizar galería de imágenes para la variante seleccionada
+                            const variantImages = v.images?.length > 0 ? v.images : product.images;
+                            setCurrentImages(variantImages);
+                            setSelectedImageIndex(0);
+
                             // Al cambiar color, intentar mantener la misma talla o elegir una con stock
                             const hasSizeInNewColor = v.sizes.find((s: any) => s.size === selectedSize && s.stock > 0)
                             if (!hasSizeInNewColor) {

@@ -137,7 +137,7 @@ class BulkProductService {
         tags: [],
         status: "incomplete",
         isActive: true, // Forzar activo por defecto para visibilidad
-        errors: ["Precio es requerido", "Falta categoría"]
+        errors: ["Precio es requerido", "Falta categoría", "Falta stock"]
       });
     }
 
@@ -201,7 +201,7 @@ class BulkProductService {
             description: draft.description || "",
             price: parseFloat(draft.price) || 0,
             originalPrice: draft.originalPrice ? parseFloat(draft.originalPrice) : null,
-            categoryId: draft.categoryId,
+            categoryId: draft.categoryId || (await prisma.category.findFirst({ where: { isActive: true } }))?.id,
             subcategoryId: draft.subcategoryId,
             isActive: true, // Forzamos true para asegurar visibilidad en tienda
             isNew: draft.isNew,

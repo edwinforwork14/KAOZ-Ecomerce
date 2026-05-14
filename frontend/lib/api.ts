@@ -135,7 +135,11 @@ export async function getProducts(params?: any) {
       data.products = data.products.map((p: any) => ({
         ...p,
         _id: p.id || p._id,
-        images: (Array.isArray(p.images) ? p.images : []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) }))
+        images: (Array.isArray(p.images) ? p.images : []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) })),
+        variants: (p.variants || []).map((v: any) => ({
+          ...v,
+          images: (v.images || []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) }))
+        }))
       }))
     }
     
@@ -155,7 +159,11 @@ export async function getProduct(id: string) {
       data.product = {
         ...data.product,
         _id: data.product.id || data.product._id,
-        images: (data.product.images || []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) }))
+        images: (data.product.images || []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) })),
+        variants: (data.product.variants || []).map((v: any) => ({
+          ...v,
+          images: (v.images || []).map((img: any) => ({ ...img, url: cleanImageUrl(img.url) }))
+        }))
       }
     }
     
