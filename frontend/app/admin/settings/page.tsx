@@ -438,11 +438,11 @@ export default function AdminSettingsPage() {
                          <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-black/40">Unidad de Cambio Primaria</Label>
                             <Select
-                              value={settings.currency.code}
+                              value={settings.currency?.code || "USD"}
                               onValueChange={(value) => {
                                 const code = value as CurrencyCode
                                 const symbol = getCurrencySymbolByCode(code)
-                                saveSettings({ currency: { ...settings.currency, code, symbol } })
+                                saveSettings({ currency: { ...(settings.currency || { symbol: "$", code: "USD", showBsPrice: true }), code, symbol } })
                               }}
                             >
                               <SelectTrigger className="h-14 rounded-none border-black/10 focus:border-black font-black uppercase text-xs tracking-widest bg-black/[0.02]">
@@ -461,8 +461,8 @@ export default function AdminSettingsPage() {
                                <p className="text-[8px] font-bold text-black/30 uppercase">Mostrar conversión a moneda local</p>
                             </div>
                             <Switch 
-                              checked={settings.currency.showBsPrice} 
-                              onCheckedChange={(v) => saveSettings({ currency: { ...settings.currency, showBsPrice: v }})}
+                              checked={settings.currency?.showBsPrice || false} 
+                              onCheckedChange={(v) => saveSettings({ currency: { ...(settings.currency || { symbol: "$", code: "USD", showBsPrice: true }), showBsPrice: v }})}
                               className="data-[state=checked]:bg-black"
                             />
                          </div>
@@ -505,8 +505,8 @@ export default function AdminSettingsPage() {
                             <p className="text-[8px] font-bold text-white/20 uppercase">Habilitar eliminación física de registros</p>
                          </div>
                          <Switch 
-                           checked={settings.orders.allowDelete} 
-                           onCheckedChange={(v) => saveSettings({ orders: { ...settings.orders, allowDelete: v }})}
+                           checked={settings.orders?.allowDelete || false} 
+                           onCheckedChange={(v) => saveSettings({ orders: { ...(settings.orders || { prefix: "KAOZ", allowDelete: false }), allowDelete: v }})}
                            className="data-[state=checked]:bg-kaosNeon"
                          />
                       </div>
@@ -514,12 +514,12 @@ export default function AdminSettingsPage() {
                          <Label className="text-[10px] font-black uppercase tracking-widest text-white/40">Prefijo de Manifiesto</Label>
                          <div className="flex gap-2">
                             <Input 
-                              value={settings.orders.prefix} 
-                              onChange={(e) => setSettings({...settings, orders: {...settings.orders, prefix: e.target.value.toUpperCase()}})}
+                              value={settings.orders?.prefix || ""} 
+                              onChange={(e) => setSettings({...settings, orders: {...(settings.orders || { prefix: "KAOZ", allowDelete: false }), prefix: e.target.value.toUpperCase()}})}
                               className="h-14 rounded-none border-white/10 bg-white/5 text-white focus:border-kaosNeon font-black text-center tracking-widest uppercase"
                             />
                             <Button 
-                              onClick={() => saveSettings({ orders: settings.orders })}
+                              onClick={() => saveSettings({ orders: settings.orders || { prefix: "KAOZ", allowDelete: false } })}
                               className="h-14 rounded-none bg-kaosNeon text-black px-8 font-black uppercase text-[10px]"
                             >ACTUALIZAR</Button>
                          </div>
@@ -871,34 +871,7 @@ export default function AdminSettingsPage() {
                      <Input 
                         placeholder="URL DEL LOGO (EJ: https://.../logo.png)"
                         value={settings.business?.logo || ""}
-                        onChange={(e) => setSettings({ ...settings, business: { ...settings.business, logo: e.target.value } })}
-                        className="h-12 rounded-none border-black text-[10px] font-bold bg-white text-black"
-                     />
-                  </div>
-               </div>
-            </div>
-            
-            <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row items-center gap-8">
-               <div className="w-32 h-32 border-2 border-black bg-gray-50 flex items-center justify-center overflow-hidden relative group">
-                  {settings.business?.logo ? (
-                     <img src={settings.business.logo} alt="Logo" className="w-full h-full object-contain" />
-                  ) : (
-                     <div className="text-center p-4">
-                        <Building className="h-8 w-8 mx-auto text-black/20 mb-2" />
-                        <span className="text-[8px] font-black uppercase text-black/30">SIN LOGO</span>
-                     </div>
-                  )}
-               </div>
-               <div className="flex-1 space-y-4">
-                  <div>
-                    <h4 className="text-[10px] font-black uppercase tracking-widest mb-1">Identidad Visual (Logo)</h4>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Se recomienda formato PNG o SVG con fondo transparente</p>
-                  </div>
-                  <div className="flex gap-2">
-                     <Input 
-                        placeholder="URL DEL LOGO (EJ: https://.../logo.png)"
-                        value={settings.business?.logo || ""}
-                        onChange={(e) => setSettings({ ...settings, business: { ...settings.business, logo: e.target.value } })}
+                        onChange={(e) => setSettings({ ...settings, business: { ...(settings.business || {}), logo: e.target.value } })}
                         className="h-12 rounded-none border-black text-[10px] font-bold bg-white text-black"
                      />
                   </div>
@@ -911,7 +884,7 @@ export default function AdminSettingsPage() {
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Razón Social / Marca</label>
                   <Input
                     value={settings.business?.name || ""}
-                    onChange={(e) => setSettings({ ...settings, business: { ...settings.business, name: e.target.value } })}
+                    onChange={(e) => setSettings({ ...settings, business: { ...(settings.business || {}), name: e.target.value } })}
                     className="h-14 rounded-none border-black focus:ring-0 font-black uppercase tracking-tight text-lg bg-white text-black"
                   />
                 </div>
@@ -919,7 +892,7 @@ export default function AdminSettingsPage() {
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Slogan / Manifesto</label>
                   <Input
                     value={settings.business?.slogan || ""}
-                    onChange={(e) => setSettings({ ...settings, business: { ...settings.business, slogan: e.target.value } })}
+                    onChange={(e) => setSettings({ ...settings, business: { ...(settings.business || {}), slogan: e.target.value } })}
                     className="h-14 rounded-none border-black focus:ring-0 font-bold text-black bg-white"
                   />
                 </div>
@@ -930,7 +903,7 @@ export default function AdminSettingsPage() {
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Canal de Ventas (WhatsApp)</label>
                   <Input
                     value={settings.whatsapp?.number || ""}
-                    onChange={(e) => setSettings({ ...settings, whatsapp: { ...settings.whatsapp, number: e.target.value } })}
+                    onChange={(e) => setSettings({ ...settings, whatsapp: { ...(settings.whatsapp || {}), number: e.target.value } })}
                     className="h-14 rounded-none border-black focus:ring-0 font-black bg-white text-black"
                   />
                 </div>
@@ -938,7 +911,7 @@ export default function AdminSettingsPage() {
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Email Administrativo</label>
                   <Input
                     value={settings.business?.email || ""}
-                    onChange={(e) => setSettings({ ...settings, business: { ...settings.business, email: e.target.value } })}
+                    onChange={(e) => setSettings({ ...settings, business: { ...(settings.business || {}), email: e.target.value } })}
                     className="h-14 rounded-none border-black focus:ring-0 font-black bg-white text-black"
                   />
                 </div>
@@ -946,7 +919,7 @@ export default function AdminSettingsPage() {
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Teléfono Contacto</label>
                   <Input
                     value={settings.business?.phone || ""}
-                    onChange={(e) => setSettings({ ...settings, business: { ...settings.business, phone: e.target.value } })}
+                    onChange={(e) => setSettings({ ...settings, business: { ...(settings.business || {}), phone: e.target.value } })}
                     className="h-14 rounded-none border-black focus:ring-0 font-black bg-white text-black"
                   />
                 </div>
@@ -956,7 +929,7 @@ export default function AdminSettingsPage() {
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Centro de Operaciones (Dirección)</label>
                 <Textarea
                   value={settings.business?.address || ""}
-                  onChange={(e) => setSettings({ ...settings, business: { ...settings.business, address: e.target.value } })}
+                  onChange={(e) => setSettings({ ...settings, business: { ...(settings.business || {}), address: e.target.value } })}
                   className="min-h-[120px] rounded-none border-black focus:ring-0 font-bold bg-white text-black"
                 />
               </div>

@@ -80,22 +80,37 @@ const getSettings = async () => {
       }
     }
 
-    // Auto-reparar si faltan campos nuevos
-    if (settings && (!settings.orders || !settings.business || !settings.whatsapp)) {
-      console.log("🛠️ [SETTINGS SERVICE] Detectados campos faltantes. Actualizando...");
-      await prisma.settings.update({
+    // Auto-reparar si faltan campos nuevos o sub-objetos incompletos
+    const needsRepair = !settings.orders || !settings.orders.prefix || settings.orders.allowDelete === undefined ||
+                        !settings.business || !settings.business.name ||
+                        !settings.whatsapp || !settings.whatsapp.number ||
+                        !settings.expenseCategories;
+
+    if (settings && needsRepair) {
+      console.log("🛠️ [SETTINGS SERVICE] Detectados campos incompletos. Reparando...");
+      const updated = await prisma.settings.update({
         where: { id: "global" },
         data: {
-          orders: settings.orders || { prefix: "KAOZ", allowDelete: false },
-          business: settings.business || { name: "KAOZ Urban Athletics" },
-          whatsapp: settings.whatsapp || { number: "584120000000" },
+          orders: {
+            prefix: settings.orders?.prefix || "KAOZ",
+            allowDelete: settings.orders?.allowDelete ?? false
+          },
+          business: {
+            name: settings.business?.name || "KAOZ Urban Athletics",
+            email: settings.business?.email || "contacto@kaoz.com",
+            logo: settings.business?.logo || ""
+          },
+          whatsapp: {
+            number: settings.whatsapp?.number || "584120000000",
+            defaultMessage: settings.whatsapp?.defaultMessage || "Hola! Me interesa este producto: "
+          },
           theme: settings.theme || "light",
           expenseCategories: settings.expenseCategories || [
             "Marketing", "Sueldos", "Logística", "Suministros", "Alquiler", "Impuestos", "Otros"
           ]
         }
       });
-      return await prisma.settings.findUnique({ where: { id: "global" } });
+      return updated;
     }
 
     return settings;
