@@ -54,6 +54,8 @@ export default function ExpensesPage() {
   const [saving, setSaving] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [settings, setSettings] = useState<any>(null)
+  const currencySymbol = settings?.currency?.symbol || "$"
   
   const [formData, setFormData] = useState({
     title: "",
@@ -70,9 +72,16 @@ export default function ExpensesPage() {
   const loadExpenses = async () => {
     try {
       setLoading(true)
-      const result = await api.getAllExpenses()
-      if (result.success) {
-        setExpenses(result.expenses || [])
+      const [expensesRes, settingsRes] = await Promise.all([
+        api.getAllExpenses(),
+        api.getSettings()
+      ])
+      
+      if (expensesRes.success) {
+        setExpenses(expensesRes.expenses || [])
+      }
+      if (settingsRes.success) {
+        setSettings(settingsRes.settings)
       }
     } catch (error) {
       toast({ title: "Error", description: "No se pudieron cargar los gastos.", variant: "destructive" })
@@ -169,7 +178,7 @@ export default function ExpensesPage() {
             <div className="flex justify-between items-start">
                <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">Total Egresos (Filtrado)</p>
-                  <h2 className="text-5xl font-black tracking-tighter">${totalAmount.toLocaleString()}</h2>
+                  <h2 className="text-5xl font-black tracking-tighter">{currencySymbol}{totalAmount.toLocaleString()}</h2>
                </div>
                <div className="p-4 bg-white/10">
                   <TrendingDown className="h-6 w-6 text-kaosNeon" />
@@ -218,7 +227,7 @@ export default function ExpensesPage() {
                     </span>
                   </td>
                   <td className="p-4 text-right">
-                    <p className="text-lg font-black">${expense.amount.toLocaleString()}</p>
+                    <p className="text-lg font-black">{currencySymbol}{expense.amount.toLocaleString()}</p>
                   </td>
                   <td className="p-4 text-right">
                     <Button 

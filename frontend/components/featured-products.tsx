@@ -83,7 +83,7 @@ export default function FeaturedProducts({
   const [categories, setCategories] = useState<any[]>([])
   const [subcategories, setSubcategories] = useState<any[]>([])
   const [filterOptions, setFilterOptions] = useState({
-    colors: [] as string[],
+    colors: [] as any[],
     sizes: [] as string[],
     brands: [] as string[],
   })
@@ -246,7 +246,8 @@ export default function FeaturedProducts({
     setPriceRangeUI([priceRangeUI[0], val])
   }
 
-  const getColorStyle = (color: string) => {
+  const getColorStyle = (color: string, hex?: string) => {
+    if (hex) return { backgroundColor: hex }
     if (color.startsWith("#")) return { backgroundColor: color }
     
     const colorMap: Record<string, string> = {
@@ -412,23 +413,28 @@ export default function FeaturedProducts({
           </h4>
           <div className="bg-gray-50/80 rounded-[28px] p-6 border border-gray-100 shadow-sm">
             <div className="grid grid-cols-5 gap-3">
-              {filterOptions.colors.slice(0, showAllColors ? undefined : COLORS_VISIBLE_LIMIT).map((color) => (
-                <button
-                  key={color}
-                  onClick={() => setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color])}
-                  className="relative group flex items-center justify-center"
-                >
-                  <div 
-                    className={`w-10 h-10 rounded-full border-2 transition-all ${selectedColors.includes(color) ? "border-black ring-4 ring-black/5 scale-110" : "border-white shadow-sm"}`}
-                    style={getColorStyle(color)}
-                  />
-                  {selectedColors.includes(color) && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className={`w-2.5 h-2.5 rounded-full ${color.toLowerCase() === 'blanco' || color.toLowerCase() === 'white' ? 'bg-black' : 'bg-white shadow-sm'}`} />
-                    </div>
-                  )}
-                </button>
-              ))}
+              {filterOptions.colors.slice(0, showAllColors ? undefined : COLORS_VISIBLE_LIMIT).map((colorObj) => {
+                const colorName = typeof colorObj === 'string' ? colorObj : colorObj.name
+                const colorHex = typeof colorObj === 'object' ? colorObj.hex : undefined
+                
+                return (
+                  <button
+                    key={colorName}
+                    onClick={() => setSelectedColors(prev => prev.includes(colorName) ? prev.filter(c => c !== colorName) : [...prev, colorName])}
+                    className="relative group flex items-center justify-center"
+                  >
+                    <div 
+                      className={`w-10 h-10 rounded-full border-2 transition-all ${selectedColors.includes(colorName) ? "border-black ring-4 ring-black/5 scale-110" : "border-white shadow-sm"}`}
+                      style={getColorStyle(colorName, colorHex)}
+                    />
+                    {selectedColors.includes(colorName) && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className={`w-2.5 h-2.5 rounded-full ${colorName.toLowerCase() === 'blanco' || colorName.toLowerCase() === 'white' ? 'bg-black' : 'bg-white shadow-sm'}`} />
+                      </div>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </div>
         </motion.div>

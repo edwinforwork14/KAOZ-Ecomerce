@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { 
   Loader2, 
   Search, 
@@ -85,6 +85,7 @@ export default function OrdersPage() {
   const [updating, setUpdating] = useState(false)
   const [showDeleted, setShowDeleted] = useState(false)
   const [settings, setSettings] = useState<any>(null)
+  const currencySymbol = settings?.currency?.symbol || "$"
 
   useEffect(() => {
     loadOrders()

@@ -55,8 +55,12 @@ exports.getFilterOptions = async (req, res) => {
     const colorsMap = new Map();
     productsWithVariants.forEach((p) => {
       p.variants.forEach((v) => {
-        if (v.color && !colorsMap.has(v.color)) {
-          colorsMap.set(v.color, v.colorHex || null);
+        if (v.color) {
+          const normalizedName = v.color.trim();
+          // Preferir el que tenga hex si ya existe uno sin hex
+          if (!colorsMap.has(normalizedName) || (!colorsMap.get(normalizedName) && v.colorHex)) {
+            colorsMap.set(normalizedName, v.colorHex || null);
+          }
         }
       });
     });
@@ -180,7 +184,9 @@ exports.getProducts = async (req, res) => {
       if (colorList.length > 0) {
         where.variants = {
           some: {
-            color: { in: colorList }
+            OR: colorList.map(c => ({
+              color: { equals: c, mode: "insensitive" }
+            }))
           }
         };
       }

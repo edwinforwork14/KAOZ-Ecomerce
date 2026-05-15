@@ -696,7 +696,7 @@ export async function getFilterOptions(params?: any) {
       return {
         success: true,
         brands: data.filterOptions.brands || [],
-        colors: (data.filterOptions.colors || []).map((c: any) => c.name),
+        colors: data.filterOptions.colors || [],
         priceRange: data.filterOptions.priceRange || { min: 0, max: 1000 }
       }
     }
