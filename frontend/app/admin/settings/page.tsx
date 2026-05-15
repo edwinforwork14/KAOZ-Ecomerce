@@ -857,7 +857,7 @@ export default function AdminSettingsPage() {
                      <img src={settings.business.logo} alt="Logo" className="w-full h-full object-contain" />
                   ) : (
                      <div className="text-center p-4">
-                        <Building2 className="h-8 w-8 mx-auto text-black/20 mb-2" />
+                        <Building className="h-8 w-8 mx-auto text-black/20 mb-2" />
                         <span className="text-[8px] font-black uppercase text-black/30">SIN LOGO</span>
                      </div>
                   )}
