@@ -986,6 +986,41 @@ export default function AdminSettingsPage() {
                   <Label className="text-[10px] font-black uppercase text-gray-400">Instrucciones de Operación</Label>
                   <Textarea value={editingPayment.instructions || ""} onChange={(e) => setEditingPayment({ ...editingPayment, instructions: e.target.value })} className="rounded-none border-black font-bold h-24" />
                </div>
+
+               <div className="space-y-6 pt-4 border-t border-gray-100">
+                  <h4 className="text-[10px] font-black uppercase text-black/50">Datos Bancarios / Billetera (Opcional)</h4>
+                  <div className="grid grid-cols-2 gap-6">
+                     <div className="space-y-1">
+                        <Label className="text-[10px] font-black uppercase text-gray-400">Banco / Plataforma</Label>
+                        <Input value={editingPayment.accountData?.bankName || ""} onChange={(e) => setEditingPayment({ ...editingPayment, accountData: { ...editingPayment.accountData, bankName: e.target.value } })} className="rounded-none border-black font-bold bg-white text-black" placeholder="Ej: Banesco, Binance" />
+                     </div>
+                     <div className="space-y-1">
+                        <Label className="text-[10px] font-black uppercase text-gray-400">Titular</Label>
+                        <Input value={editingPayment.accountData?.accountHolder || ""} onChange={(e) => setEditingPayment({ ...editingPayment, accountData: { ...editingPayment.accountData, accountHolder: e.target.value } })} className="rounded-none border-black font-bold bg-white text-black" />
+                     </div>
+                     <div className="space-y-1">
+                        <Label className="text-[10px] font-black uppercase text-gray-400">Cédula / RIF</Label>
+                        <Input value={editingPayment.accountData?.identification || ""} onChange={(e) => setEditingPayment({ ...editingPayment, accountData: { ...editingPayment.accountData, identification: e.target.value } })} className="rounded-none border-black font-bold bg-white text-black" />
+                     </div>
+                     <div className="space-y-1">
+                        <Label className="text-[10px] font-black uppercase text-gray-400">Número de Cuenta / Teléfono</Label>
+                        <Input value={editingPayment.accountData?.accountNumber || ""} onChange={(e) => setEditingPayment({ ...editingPayment, accountData: { ...editingPayment.accountData, accountNumber: e.target.value } })} className="rounded-none border-black font-bold bg-white text-black" />
+                     </div>
+                  </div>
+               </div>
+
+               <div className="flex gap-6 py-4 border-t border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={!!editingPayment.hasDiscount} onCheckedChange={(checked) => setEditingPayment({ ...editingPayment, hasDiscount: checked })} className="data-[state=checked]:bg-black" />
+                    <Label className="text-[10px] font-black uppercase">Aplica Descuento</Label>
+                  </div>
+                  {editingPayment.hasDiscount && (
+                    <div className="flex-1 space-y-1 max-w-[200px]">
+                       <Label className="text-[10px] font-black uppercase text-gray-400">Descuento (%)</Label>
+                       <Input type="number" value={editingPayment.discountPercentage || 0} onChange={(e) => setEditingPayment({ ...editingPayment, discountPercentage: parseFloat(e.target.value) })} className="rounded-none border-black font-bold bg-white text-black" />
+                    </div>
+                  )}
+               </div>
             </div>
             <div className="p-6 bg-gray-50 border-t border-black flex justify-end gap-4">
                <Button variant="ghost" onClick={() => { setShowPaymentForm(false); setEditingPayment(null); }} className="rounded-none font-black uppercase text-[10px] tracking-widest">DESCARTAR</Button>
