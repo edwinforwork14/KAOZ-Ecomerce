@@ -1100,7 +1100,6 @@ export default function AdminSettingsPage() {
                     </div>
                  </div>
                )}
-            </div>
             <div className="p-6 bg-gray-50 border-t border-black flex justify-end gap-4">
                <Button variant="ghost" onClick={() => { setShowShippingForm(false); setEditingShipping(null); }} className="rounded-none font-black uppercase text-[10px] tracking-widest">DESCARTAR</Button>
                <Button onClick={() => saveShippingMethod(editingShipping)} className="rounded-none bg-black text-white h-12 px-10 font-black uppercase text-[10px] tracking-widest hover:bg-gray-800">SINCRONIZAR RUTA</Button>
