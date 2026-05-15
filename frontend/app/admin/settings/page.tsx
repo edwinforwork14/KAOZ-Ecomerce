@@ -1036,6 +1036,71 @@ export default function AdminSettingsPage() {
                  </div>
                </div>
             </div>
+               
+               {/* Campos condicionales según el tipo de ruta */}
+               {editingShipping.type === 'pickup' && (
+                 <div className="space-y-6 pt-4 border-t border-gray-100">
+                    <h4 className="text-[10px] font-black uppercase text-black/50">Datos del Punto de Retiro</h4>
+                    <div className="space-y-4">
+                       <div className="space-y-1">
+                         <Label className="text-[10px] font-black uppercase text-gray-400">Dirección Exacta</Label>
+                         <Textarea 
+                           value={editingShipping.pickupData?.address || ""} 
+                           onChange={(e) => setEditingShipping({ ...editingShipping, pickupData: { ...editingShipping.pickupData, address: e.target.value } })} 
+                           className="rounded-none border-black font-bold text-xs bg-white text-black min-h-[60px]" 
+                           placeholder="Ej: Av. Principal, C.C. El Recreo, Nivel 1, Local 12"
+                         />
+                       </div>
+                       <div className="grid grid-cols-2 gap-6">
+                         <div className="space-y-1">
+                           <Label className="text-[10px] font-black uppercase text-gray-400">Horario</Label>
+                           <Input 
+                             value={editingShipping.pickupData?.schedule || ""} 
+                             onChange={(e) => setEditingShipping({ ...editingShipping, pickupData: { ...editingShipping.pickupData, schedule: e.target.value } })} 
+                             className="rounded-none border-black font-bold bg-white text-black" 
+                             placeholder="Ej: Lun - Vie: 9am a 5pm"
+                           />
+                         </div>
+                         <div className="space-y-1">
+                           <Label className="text-[10px] font-black uppercase text-gray-400">Teléfono</Label>
+                           <Input 
+                             value={editingShipping.pickupData?.phone || ""} 
+                             onChange={(e) => setEditingShipping({ ...editingShipping, pickupData: { ...editingShipping.pickupData, phone: e.target.value } })} 
+                             className="rounded-none border-black font-bold bg-white text-black" 
+                             placeholder="Ej: 0412-1234567"
+                           />
+                         </div>
+                       </div>
+                    </div>
+                 </div>
+               )}
+
+               {editingShipping.type === 'delivery' && (
+                 <div className="space-y-6 pt-4 border-t border-gray-100">
+                    <h4 className="text-[10px] font-black uppercase text-black/50">Datos de Envío a Domicilio</h4>
+                    <div className="grid grid-cols-1 gap-6">
+                       <div className="space-y-1">
+                         <Label className="text-[10px] font-black uppercase text-gray-400">Tiempo Estimado</Label>
+                         <Input 
+                           value={editingShipping.estimatedTime || ""} 
+                           onChange={(e) => setEditingShipping({ ...editingShipping, estimatedTime: e.target.value })} 
+                           className="rounded-none border-black font-bold bg-white text-black" 
+                           placeholder="Ej: 24 a 48 horas"
+                         />
+                       </div>
+                       <div className="space-y-1">
+                         <Label className="text-[10px] font-black uppercase text-gray-400">Descripción / Políticas</Label>
+                         <Textarea 
+                           value={editingShipping.description || ""} 
+                           onChange={(e) => setEditingShipping({ ...editingShipping, description: e.target.value })} 
+                           className="rounded-none border-black font-bold text-xs bg-white text-black min-h-[60px]" 
+                           placeholder="Ej: Entregas solo en zonas céntricas..."
+                         />
+                       </div>
+                    </div>
+                 </div>
+               )}
+            </div>
             <div className="p-6 bg-gray-50 border-t border-black flex justify-end gap-4">
                <Button variant="ghost" onClick={() => { setShowShippingForm(false); setEditingShipping(null); }} className="rounded-none font-black uppercase text-[10px] tracking-widest">DESCARTAR</Button>
                <Button onClick={() => saveShippingMethod(editingShipping)} className="rounded-none bg-black text-white h-12 px-10 font-black uppercase text-[10px] tracking-widest hover:bg-gray-800">SINCRONIZAR RUTA</Button>
