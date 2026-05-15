@@ -77,6 +77,7 @@ interface BusinessSettings {
   email?: string
   phone?: string
   address?: string
+  logo?: string
 }
 
 interface PaymentMethod {
@@ -144,7 +145,7 @@ interface Settings {
     defaultMessage?: string
   }
   theme?: "light" | "dark"
-  expenses?: any[]
+  expenseCategories?: string[]
 }
 
 interface ExchangeRate {
@@ -706,7 +707,7 @@ export default function AdminSettingsPage() {
                          placeholder="EJ: 36.50"
                          value={manualRate.usd}
                          onChange={(e) => setManualRate({ usd: e.target.value })}
-                         className="h-14 rounded-none border-black/10 focus:border-black font-black text-center text-lg"
+                         className="h-14 rounded-none border-black focus:border-black font-black text-center text-lg bg-white text-black"
                        />
                        <Button 
                          onClick={() => updateExchangeRate({ usd: parseFloat(manualRate.usd) })}
@@ -755,6 +756,92 @@ export default function AdminSettingsPage() {
 
 
         {/* =========================
+            TAB: GASTOS
+        ========================== */}
+        <TabsContent value="gastos" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+              <div className="xl:col-span-8 space-y-8">
+                 <div className="bg-white border border-black p-8">
+                    <div className="flex items-center gap-3 mb-8">
+                       <div className="w-10 h-10 bg-black text-white flex items-center justify-center"><Banknote className="h-5 w-5" /></div>
+                       <div>
+                         <h3 className="text-xl font-black uppercase tracking-tighter">Categorías de Gastos</h3>
+                         <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">Protocolos de Clasificación de Salidas</p>
+                       </div>
+                    </div>
+
+                    <div className="space-y-6">
+                       <div className="flex gap-2">
+                          <Input 
+                            id="new-category"
+                            placeholder="NUEVA CATEGORÍA (EJ: PUBLICIDAD)"
+                            className="h-14 rounded-none border-black font-black uppercase tracking-widest bg-white text-black"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const input = e.currentTarget;
+                                const value = input.value.trim();
+                                if (value && !settings.expenseCategories?.includes(value)) {
+                                  const newCats = [...(settings.expenseCategories || []), value];
+                                  saveSettings({ expenseCategories: newCats });
+                                  input.value = "";
+                                }
+                              }
+                            }}
+                          />
+                          <Button 
+                            onClick={() => {
+                              const input = document.getElementById('new-category') as HTMLInputElement;
+                              const value = input.value.trim();
+                              if (value && !settings.expenseCategories?.includes(value)) {
+                                const newCats = [...(settings.expenseCategories || []), value];
+                                saveSettings({ expenseCategories: newCats });
+                                input.value = "";
+                              }
+                            }}
+                            className="h-14 rounded-none bg-black text-white px-8 font-black uppercase text-[10px]"
+                          >AGREGAR</Button>
+                       </div>
+
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {(settings.expenseCategories || []).map((cat, i) => (
+                             <div key={i} className="flex justify-between items-center p-4 bg-black/[0.02] border border-black/5 group hover:border-black transition-all">
+                                <span className="text-xs font-black uppercase tracking-widest">{cat}</span>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => {
+                                    const newCats = settings.expenseCategories?.filter(c => c !== cat);
+                                    saveSettings({ expenseCategories: newCats });
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0 text-red-500 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="xl:col-span-4 space-y-4">
+                 <div className="bg-black text-white p-8">
+                    <h4 className="text-sm font-black uppercase tracking-widest mb-4">Información de Gastos</h4>
+                    <p className="text-[10px] text-white/40 leading-relaxed uppercase font-bold">
+                       Las categorías definidas aquí serán utilizadas para clasificar todos los egresos del sistema en la sección de contabilidad operativa.
+                    </p>
+                    <div className="mt-8 pt-8 border-t border-white/10">
+                       <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-black uppercase text-white/20">Total Categorías</span>
+                          <span className="text-xl font-black text-kaosNeon">{settings.expenseCategories?.length || 0}</span>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </TabsContent>
+
+        {/* =========================
             TAB: BUSINESS
         ========================== */}
         <TabsContent value="business" className="m-0 space-y-12">
@@ -764,6 +851,60 @@ export default function AdminSettingsPage() {
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Datos de Identidad y Contacto</p>
             </div>
             
+            <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row items-center gap-8">
+               <div className="w-32 h-32 border-2 border-black bg-gray-50 flex items-center justify-center overflow-hidden relative group">
+                  {settings.business?.logo ? (
+                     <img src={settings.business.logo} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                     <div className="text-center p-4">
+                        <Building2 className="h-8 w-8 mx-auto text-black/20 mb-2" />
+                        <span className="text-[8px] font-black uppercase text-black/30">SIN LOGO</span>
+                     </div>
+                  )}
+               </div>
+               <div className="flex-1 space-y-4">
+                  <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-widest mb-1">Identidad Visual (Logo)</h4>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Se recomienda formato PNG o SVG con fondo transparente</p>
+                  </div>
+                  <div className="flex gap-2">
+                     <Input 
+                        placeholder="URL DEL LOGO (EJ: https://.../logo.png)"
+                        value={settings.business?.logo || ""}
+                        onChange={(e) => setSettings({ ...settings, business: { ...settings.business, logo: e.target.value } })}
+                        className="h-12 rounded-none border-black text-[10px] font-bold bg-white text-black"
+                     />
+                  </div>
+               </div>
+            </div>
+            
+            <div className="p-8 border-b border-gray-100 flex flex-col md:flex-row items-center gap-8">
+               <div className="w-32 h-32 border-2 border-black bg-gray-50 flex items-center justify-center overflow-hidden relative group">
+                  {settings.business?.logo ? (
+                     <img src={settings.business.logo} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                     <div className="text-center p-4">
+                        <Building className="h-8 w-8 mx-auto text-black/20 mb-2" />
+                        <span className="text-[8px] font-black uppercase text-black/30">SIN LOGO</span>
+                     </div>
+                  )}
+               </div>
+               <div className="flex-1 space-y-4">
+                  <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-widest mb-1">Identidad Visual (Logo)</h4>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Se recomienda formato PNG o SVG con fondo transparente</p>
+                  </div>
+                  <div className="flex gap-2">
+                     <Input 
+                        placeholder="URL DEL LOGO (EJ: https://.../logo.png)"
+                        value={settings.business?.logo || ""}
+                        onChange={(e) => setSettings({ ...settings, business: { ...settings.business, logo: e.target.value } })}
+                        className="h-12 rounded-none border-black text-[10px] font-bold bg-white text-black"
+                     />
+                  </div>
+               </div>
+            </div>
+            
             <div className="p-8 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
@@ -771,7 +912,7 @@ export default function AdminSettingsPage() {
                   <Input
                     value={settings.business?.name || ""}
                     onChange={(e) => setSettings({ ...settings, business: { ...settings.business, name: e.target.value } })}
-                    className="h-14 rounded-none border-black focus:ring-0 font-black uppercase tracking-tight text-lg"
+                    className="h-14 rounded-none border-black focus:ring-0 font-black uppercase tracking-tight text-lg bg-white text-black"
                   />
                 </div>
                 <div className="space-y-2">
@@ -779,7 +920,7 @@ export default function AdminSettingsPage() {
                   <Input
                     value={settings.business?.slogan || ""}
                     onChange={(e) => setSettings({ ...settings, business: { ...settings.business, slogan: e.target.value } })}
-                    className="h-14 rounded-none border-black focus:ring-0 font-bold text-gray-600"
+                    className="h-14 rounded-none border-black focus:ring-0 font-bold text-black bg-white"
                   />
                 </div>
               </div>
@@ -790,7 +931,7 @@ export default function AdminSettingsPage() {
                   <Input
                     value={settings.whatsapp?.number || ""}
                     onChange={(e) => setSettings({ ...settings, whatsapp: { ...settings.whatsapp, number: e.target.value } })}
-                    className="h-14 rounded-none border-black focus:ring-0 font-black"
+                    className="h-14 rounded-none border-black focus:ring-0 font-black bg-white text-black"
                   />
                 </div>
                 <div className="space-y-2">
@@ -798,7 +939,7 @@ export default function AdminSettingsPage() {
                   <Input
                     value={settings.business?.email || ""}
                     onChange={(e) => setSettings({ ...settings, business: { ...settings.business, email: e.target.value } })}
-                    className="h-14 rounded-none border-black focus:ring-0 font-black"
+                    className="h-14 rounded-none border-black focus:ring-0 font-black bg-white text-black"
                   />
                 </div>
                 <div className="space-y-2">
@@ -806,7 +947,7 @@ export default function AdminSettingsPage() {
                   <Input
                     value={settings.business?.phone || ""}
                     onChange={(e) => setSettings({ ...settings, business: { ...settings.business, phone: e.target.value } })}
-                    className="h-14 rounded-none border-black focus:ring-0 font-black"
+                    className="h-14 rounded-none border-black focus:ring-0 font-black bg-white text-black"
                   />
                 </div>
               </div>
@@ -816,7 +957,7 @@ export default function AdminSettingsPage() {
                 <Textarea
                   value={settings.business?.address || ""}
                   onChange={(e) => setSettings({ ...settings, business: { ...settings.business, address: e.target.value } })}
-                  className="min-h-[120px] rounded-none border-black focus:ring-0 font-bold"
+                  className="min-h-[120px] rounded-none border-black focus:ring-0 font-bold bg-white text-black"
                 />
               </div>
 
@@ -851,11 +992,11 @@ export default function AdminSettingsPage() {
                <div className="grid grid-cols-2 gap-6">
                  <div className="space-y-1">
                    <Label className="text-[10px] font-black uppercase text-gray-400">Denominación</Label>
-                   <Input value={editingPayment.name} onChange={(e) => setEditingPayment({ ...editingPayment, name: e.target.value })} className="rounded-none border-black font-black uppercase" />
+                   <Input value={editingPayment.name} onChange={(e) => setEditingPayment({ ...editingPayment, name: e.target.value })} className="rounded-none border-black font-black uppercase bg-white text-black" />
                  </div>
                  <div className="space-y-1">
                    <Label className="text-[10px] font-black uppercase text-gray-400">Descripción Pública</Label>
-                   <Input value={editingPayment.description || ""} onChange={(e) => setEditingPayment({ ...editingPayment, description: e.target.value })} className="rounded-none border-black font-bold text-xs" />
+                   <Input value={editingPayment.description || ""} onChange={(e) => setEditingPayment({ ...editingPayment, description: e.target.value })} className="rounded-none border-black font-bold text-xs bg-white text-black" />
                  </div>
                </div>
                <div className="flex gap-6 py-4 border-y border-gray-100">
@@ -896,7 +1037,7 @@ export default function AdminSettingsPage() {
                <div className="grid grid-cols-2 gap-6">
                  <div className="space-y-1">
                    <Label className="text-[10px] font-black uppercase text-gray-400">Nombre de la Ruta</Label>
-                   <Input value={editingShipping.name} onChange={(e) => setEditingShipping({ ...editingShipping, name: e.target.value })} className="rounded-none border-black font-black uppercase" />
+                   <Input value={editingShipping.name} onChange={(e) => setEditingShipping({ ...editingShipping, name: e.target.value })} className="rounded-none border-black font-black uppercase bg-white text-black" />
                  </div>
                  <div className="space-y-1">
                    <Label className="text-[10px] font-black uppercase text-gray-400">Tipo de Distribución</Label>
@@ -914,11 +1055,11 @@ export default function AdminSettingsPage() {
                <div className="grid grid-cols-2 gap-6">
                  <div className="space-y-1">
                    <Label className="text-[10px] font-black uppercase text-gray-400">Tarifa Base (BS)</Label>
-                   <Input type="number" value={editingShipping.additionalCost} onChange={(e) => setEditingShipping({ ...editingShipping, additionalCost: parseFloat(e.target.value) })} className="rounded-none border-black font-black" />
+                   <Input type="number" value={editingShipping.additionalCost} onChange={(e) => setEditingShipping({ ...editingShipping, additionalCost: parseFloat(e.target.value) })} className="rounded-none border-black font-black bg-white text-black" />
                  </div>
                  <div className="space-y-1">
                    <Label className="text-[10px] font-black uppercase text-gray-400">Umbral Gratis (BS)</Label>
-                   <Input type="number" value={editingShipping.freeFrom} onChange={(e) => setEditingShipping({ ...editingShipping, freeFrom: parseFloat(e.target.value) })} className="rounded-none border-black font-black" />
+                   <Input type="number" value={editingShipping.freeFrom} onChange={(e) => setEditingShipping({ ...editingShipping, freeFrom: parseFloat(e.target.value) })} className="rounded-none border-black font-black bg-white text-black" />
                  </div>
                </div>
             </div>

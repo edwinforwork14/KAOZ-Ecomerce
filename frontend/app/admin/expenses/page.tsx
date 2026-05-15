@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
-const expenseCategories = [
+const DEFAULT_EXPENSE_CATEGORIES = [
   "Marketing",
   "Sueldos",
   "Logística",
@@ -64,6 +64,8 @@ export default function ExpensesPage() {
     date: new Date().toISOString().split('T')[0],
     description: ""
   })
+
+  const categories = settings?.expenseCategories || DEFAULT_EXPENSE_CATEGORIES
 
   useEffect(() => {
     loadExpenses()
@@ -304,7 +306,7 @@ export default function ExpensesPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-none border-black">
-                    {expenseCategories.map(cat => (
+                    {categories.map(cat => (
                       <SelectItem key={cat} value={cat} className="text-[10px] font-black uppercase">{cat}</SelectItem>
                     ))}
                   </SelectContent>

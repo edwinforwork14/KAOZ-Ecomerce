@@ -32,30 +32,35 @@ const updateFromAPI = async (manualRate = null) => {
 
     const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
     
-    const response = await fetch(
-      "https://api.dolarvzla.com/public/exchange-rate",
-      {
-        method: "GET",
-        headers: {
-          "x-dolarvzla-key": "39bedc1d3c0c0b60fea4fc556a9936952de5673c00dd24c3b97b96fea2b1c2c1",
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    console.log("📡 [EXCHANGE SERVICE] Consultando ve.dolarapi.com...");
+    
+    const [usdRes, eurRes] = await Promise.all([
+      fetch("https://ve.dolarapi.com/v1/dolares"),
+      fetch("https://ve.dolarapi.com/v1/euros")
+    ]);
 
-    const data = await response.json();
+    const usdData = await usdRes.json();
+    const eurData = await eurRes.json();
 
-    if (data && data.current) {
+    // Buscar la tasa oficial (BCV) en los arrays
+    const bcvUsd = usdData.find(d => d.fuente === "oficial");
+    const bcvEur = eurData.find(d => d.fuente === "oficial");
+
+    if (bcvUsd) {
+      const dateStr = bcvUsd.fechaActualizacion.split('T')[0];
+      const usdValue = parseFloat(bcvUsd.promedio);
+      const eurValue = bcvEur ? parseFloat(bcvEur.promedio) : usdValue;
+
       const updatedRate = await prisma.exchangeRate.upsert({
-        where: { date: data.current.date },
+        where: { date: dateStr },
         update: {
-          usd: parseFloat(data.current.usd),
-          eur: parseFloat(data.current.eur),
+          usd: usdValue,
+          eur: eurValue,
         },
         create: {
-          date: data.current.date,
-          usd: parseFloat(data.current.usd),
-          eur: parseFloat(data.current.eur),
+          date: dateStr,
+          usd: usdValue,
+          eur: eurValue,
         }
       });
 
@@ -65,7 +70,7 @@ const updateFromAPI = async (manualRate = null) => {
       };
     }
 
-    return { success: false, message: "Estructura de datos inesperada o API desactualizada" };
+    return { success: false, message: "No se encontró la tasa oficial en el proveedor" };
   } catch (error) {
     console.error("❌ Error al actualizar tasa de cambio:", error.message);
     return { success: false, message: error.message };

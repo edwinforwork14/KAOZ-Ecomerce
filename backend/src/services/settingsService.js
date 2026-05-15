@@ -69,6 +69,9 @@ const getSettings = async () => {
             shippingMethods: [
               { id: "standard", name: "Envío Estándar", isActive: true, type: "standard", additionalCost: 5 },
               { id: "pickup", name: "Retiro en Tienda", isActive: true, type: "pickup", additionalCost: 0 }
+            ],
+            expenseCategories: [
+              "Marketing", "Sueldos", "Logística", "Suministros", "Alquiler", "Impuestos", "Otros"
             ]
           }
         });
@@ -86,7 +89,10 @@ const getSettings = async () => {
           orders: settings.orders || { prefix: "KAOZ", allowDelete: false },
           business: settings.business || { name: "KAOZ Urban Athletics" },
           whatsapp: settings.whatsapp || { number: "584120000000" },
-          theme: settings.theme || "light"
+          theme: settings.theme || "light",
+          expenseCategories: settings.expenseCategories || [
+            "Marketing", "Sueldos", "Logística", "Suministros", "Alquiler", "Impuestos", "Otros"
+          ]
         }
       });
       return await prisma.settings.findUnique({ where: { id: "global" } });

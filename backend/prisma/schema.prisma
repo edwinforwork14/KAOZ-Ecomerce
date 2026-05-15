@@ -227,6 +227,7 @@ model Settings {
   theme              String?  @default("light")
   updatedAt          DateTime @updatedAt @default(now())
   newProductDuration Int      @default(30)
+  expenseCategories  Json?
 }
 
 model CartHistory {
