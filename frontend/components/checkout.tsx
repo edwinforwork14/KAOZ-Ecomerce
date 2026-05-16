@@ -283,7 +283,10 @@ export default function Checkout() {
       const result = await api.createOrder(orderData)
       if (result.success) {
         const message = generateWhatsAppMessage(result.order.orderNumber)
-        const phoneNumber = settings?.whatsapp?.number || brandConfig.contact.whatsapp
+        const settingsNumber = settings?.whatsapp?.number?.replace(/\D/g, '')
+        const phoneNumber = (settingsNumber && settingsNumber !== '00000000') 
+          ? settings.whatsapp.number 
+          : brandConfig.contact.whatsapp
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
         await api.updateOrderWhatsApp(result.order._id)
         setShowOrderConfirmation(true)
