@@ -17,7 +17,7 @@ export const cleanImageUrl = (url: string) => {
 }
 
 
-console.log("🚀 KAOZ API initialized with BACKEND_URL:", BACKEND_URL);
+console.log("🚀 KAOS API initialized with BACKEND_URL:", BACKEND_URL);
 
 // === CATEGORIES ===
 export async function getCategories() {

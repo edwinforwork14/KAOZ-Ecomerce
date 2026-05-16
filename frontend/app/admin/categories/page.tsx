@@ -509,7 +509,7 @@ export default function AdminCategoriesPage() {
             <div className="p-8 bg-black text-white">
               <div className="flex items-center gap-3 mb-2">
                  <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40">ESTRUCTURA DE DATOS • KAOZ</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40">ESTRUCTURA DE DATOS • KAOS</span>
               </div>
               <div className="flex justify-between items-center">
                 <h2 className="text-4xl font-black uppercase tracking-tighter leading-none">

@@ -378,7 +378,7 @@ export default function AdminSettingsPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Core de Operaciones • KAOZ</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Core de Operaciones • KAOS</span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
             Settings
@@ -506,7 +506,7 @@ export default function AdminSettingsPage() {
                          </div>
                          <Switch 
                            checked={settings.orders?.allowDelete || false} 
-                           onCheckedChange={(v) => saveSettings({ orders: { ...(settings.orders || { prefix: "KAOZ", allowDelete: false }), allowDelete: v }})}
+                           onCheckedChange={(v) => saveSettings({ orders: { ...(settings.orders || { prefix: "KAOS", allowDelete: false }), allowDelete: v }})}
                            className="data-[state=checked]:bg-kaosNeon"
                          />
                       </div>
@@ -515,11 +515,11 @@ export default function AdminSettingsPage() {
                          <div className="flex gap-2">
                             <Input 
                               value={settings.orders?.prefix || ""} 
-                              onChange={(e) => setSettings({...settings, orders: {...(settings.orders || { prefix: "KAOZ", allowDelete: false }), prefix: e.target.value.toUpperCase()}})}
+                              onChange={(e) => setSettings({...settings, orders: {...(settings.orders || { prefix: "KAOS", allowDelete: false }), prefix: e.target.value.toUpperCase()}})}
                               className="h-14 rounded-none border-white/10 bg-white/5 text-white focus:border-kaosNeon font-black text-center tracking-widest uppercase"
                             />
                             <Button 
-                              onClick={() => saveSettings({ orders: settings.orders || { prefix: "KAOZ", allowDelete: false } })}
+                              onClick={() => saveSettings({ orders: settings.orders || { prefix: "KAOS", allowDelete: false } })}
                               className="h-14 rounded-none bg-kaosNeon text-black px-8 font-black uppercase text-[10px]"
                             >ACTUALIZAR</Button>
                          </div>

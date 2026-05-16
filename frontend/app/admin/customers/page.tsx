@@ -206,7 +206,7 @@ export default function CustomersPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Control de Audiencia • KAOZ</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/60">Control de Audiencia • KAOS</span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
             Clientes

@@ -34,7 +34,7 @@ export default function LoadingScreen() {
               transition={{ duration: 2, ease: "easeOut" }}
               className="absolute inset-0 flex items-center justify-center whitespace-nowrap text-[20vw] font-black uppercase tracking-tighter text-black select-none pointer-events-none"
             >
-              KAOZ SPORT
+              KAOS SPORT
             </motion.div>
 
             {/* Main Logo Text */}
@@ -61,7 +61,7 @@ export default function LoadingScreen() {
                     ease: "easeInOut" 
                   }}
                 >
-                  Z
+                  S
                 </motion.span>
               </motion.h1>
               
@@ -110,7 +110,7 @@ export default function LoadingScreen() {
             transition={{ delay: 0.5 }}
             className="absolute top-10 left-10 text-[10px] font-mono tracking-widest text-black/20"
           >
-            EST. 2026 / KAOZ-SYST-V2
+            EST. 2026 / KAOS-SYST-V2
           </motion.div>
           <motion.div 
             initial={{ opacity: 0 }}

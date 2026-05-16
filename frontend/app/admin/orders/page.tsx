@@ -208,7 +208,7 @@ export default function OrdersPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Logística de Transacciones • KAOZ</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Logística de Transacciones • KAOS</span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">Gestión de Pedidos</h1>
           <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest mt-2">Control centralizado de operaciones comerciales</p>

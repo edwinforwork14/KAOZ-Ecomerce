@@ -1,5 +1,5 @@
 export const brandConfig = {
-  name: "KAOZ",
+  name: "KAOS",
   tagline: "Elegancia y calidad en cada detalle",
   description: "Somos una marca de ropa deportiva y casual que va contigo a todas partes. No hay nada a lo que no nos adaptemos, por eso te invitamos a ser parte de nuestros KAOS",
   url: "https://kaoz-sport.com", // URL sugerida
@@ -22,9 +22,9 @@ export const brandConfig = {
     }
   },
   seo: {
-    title: "KAOZ | Ropa Deportiva Minimalista y Elegante en Valencia",
-    description: "Descubre KAOZ, la mejor marca de ropa deportiva en Valencia. Diseños minimalistas y cómodos para hombre, mujer y niños. Calidad premium para tu entrenamiento.",
-    keywords: "KAOZ, ropa deportiva Valencia, moda deportiva minimalista, ropa deportiva hombre, ropa deportiva mujer, ropa deportiva niños, leggings premium, camisetas entrenamiento Valencia",
+    title: "KAOS | Ropa Deportiva Minimalista y Elegante en Valencia",
+    description: "Descubre KAOS, la mejor marca de ropa deportiva en Valencia. Diseños minimalistas y cómodos para hombre, mujer y niños. Calidad premium para tu entrenamiento.",
+    keywords: "KAOS, ropa deportiva Valencia, moda deportiva minimalista, ropa deportiva hombre, ropa deportiva mujer, ropa deportiva niños, leggings premium, camisetas entrenamiento Valencia",
     ogImage: "/og-image.png",
     twitterHandle: "@kaoz_sport"
   },

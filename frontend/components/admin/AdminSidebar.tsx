@@ -277,7 +277,7 @@ export default function AdminSidebar() {
         {/* Mobile Header */}
         {isMobile && (
           <div className="p-6 flex items-center justify-between border-b border-white/5">
-            <span className="text-xl font-black uppercase tracking-tighter text-white">KAOZ</span>
+            <span className="text-xl font-black uppercase tracking-tighter text-white">KAOS</span>
             <button onClick={() => setIsOpen(false)} className="text-white/40 hover:text-white">
               <X className="h-6 w-6" />
             </button>
@@ -293,7 +293,7 @@ export default function AdminSidebar() {
                </div>
                {!isCollapsed && (
                  <div className="flex flex-col">
-                   <span className="text-sm font-black uppercase tracking-tighter text-white">KAOZ CONTROL</span>
+                   <span className="text-sm font-black uppercase tracking-tighter text-white">KAOS CONTROL</span>
                    <span className="text-[8px] font-black text-kaosNeon uppercase tracking-widest">SISTEMA v2.5</span>
                  </div>
                )}

@@ -318,7 +318,7 @@ export default function ProductsPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Gestión de Activos • KAOZ</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Gestión de Activos • KAOS</span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
             Catálogo Maestro
@@ -442,7 +442,7 @@ export default function ProductsPage() {
                 {/* Info Container */}
                 <div className="p-5 flex flex-col flex-1 border-t border-black/5 group-hover:border-black transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                     <span className="text-[9px] font-black text-black/20 uppercase tracking-[0.2em]">{product.brand || 'KAOZ URBAN'}</span>
+                     <span className="text-[9px] font-black text-black/20 uppercase tracking-[0.2em]">{product.brand || 'KAOS URBAN'}</span>
                      <span className={cn(
                         "text-[9px] font-black px-1.5 py-0.5 border",
                         totalStock === 0 ? "border-red-500 text-red-500" : "border-black/10 text-black/40"
@@ -494,7 +494,7 @@ export default function ProductsPage() {
                              <div>
                                 <p className="text-xs font-black uppercase tracking-tight">{product.name}</p>
                                 <div className="flex items-center gap-2">
-                                   <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">{product.brand || 'KAOZ'}</p>
+                                   <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">{product.brand || 'KAOS'}</p>
                                    <span className="text-[8px] text-black/20">•</span>
                                    <p className="text-[9px] font-black text-kaosNeon uppercase tracking-widest">{product.category?.name || 'SIN CAT.'}</p>
                                 </div>
@@ -560,7 +560,7 @@ export default function ProductsPage() {
           <DialogHeader className="bg-black text-white p-8">
             <div className="flex items-center gap-3 mb-2">
                <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-               <span className="text-[10px] font-black uppercase tracking-widest text-white/40">PROTOCOLO DE REGISTRO • KAOZ</span>
+               <span className="text-[10px] font-black uppercase tracking-widest text-white/40">PROTOCOLO DE REGISTRO • KAOS</span>
             </div>
             <DialogTitle className="text-5xl font-black uppercase tracking-tighter leading-none">
               {editingProduct ? "MODIFICAR ACTIVO" : "NUEVO REGISTRO"}
