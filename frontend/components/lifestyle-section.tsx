@@ -2,10 +2,10 @@ import AnimatedSection from "./animated-section"
 
 export default function LifestyleSection() {
   const items = [
-    { name: "Acuarela", position: "36% 61%" },
-    { name: "Quotes", position: "55% 61%" },
-    { name: "Funky & Colorido", position: "74% 61%" },
-    { name: "Con Flow", position: "92% 61%" },
+    { name: "Acuarela", src: "/nuevo/WhatsApp Image 2026-05-16 at 11.05.36 AM.jpeg" },
+    { name: "Quotes", src: "/nuevo/WhatsApp Image 2026-05-16 at 11.05.36 AM (1).jpeg" },
+    { name: "Funky & Colorido", src: "/nuevo/WhatsApp Image 2026-05-16 at 11.05.36 AM (2).jpeg" },
+    { name: "Con Flow", src: "/nuevo/WhatsApp Image 2026-05-16 at 11.05.36 AM (3).jpeg" },
   ]
 
   return (
@@ -19,7 +19,7 @@ export default function LifestyleSection() {
               className="text-kaosNeon text-3xl mb-6 tracking-wide"
               style={{ fontFamily: "'Permanent Marker', cursive" }}
             >
-              Kaos contigo
+              KAOS contigo
             </p>
             <p className="text-base text-gray-600 mb-8 leading-relaxed font-sans font-medium">
               Explora nuestros estampados, tecnologías en telas dry-fit y con protección UV.
@@ -38,8 +38,7 @@ export default function LifestyleSection() {
                     <img 
                       alt={item.name} 
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" 
-                      src="https://lh3.googleusercontent.com/aida/ADBb0uj46qIOice25s0wgyOd-LWnDeeM714ClVTSkgFmiKINOqICN7ryrVzJXi2KnKtRTHVlW5O0MkHLfZhKcKbseqUF-wGctwnzRG9UdCxQ1zsGgHlTpyhKmVSpUm59_pY0tI0hB3fV03rfoM8-dI7r12Kfc4fDKJAMJTbh6sRJXS-GojAuprxcm2ab8PL3d0xbnenw4N5lZONHF3_7vha7rinJjOF0N5POrpaHCf5EOiY_jvlK3dkpRJZBIAWybkiOBl045I3DXqosiGg" 
-                      style={{ objectPosition: item.position }}
+                      src={item.src} 
                     />
                   </div>
                   <p className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">{item.name}</p>

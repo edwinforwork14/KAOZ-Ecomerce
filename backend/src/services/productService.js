@@ -41,6 +41,7 @@ const createProduct = async (productData, files = []) => {
   try {
     console.log("🛠️ [ProductService] Iniciando PERSISTENCIA de producto");
     console.log("📊 [ProductService] Cantidad de variantes a crear:", productData.variants?.length || 0);
+    
     // 1. Preparar imágenes generales
     let imagesData = [];
     
@@ -69,35 +70,47 @@ const createProduct = async (productData, files = []) => {
       if (!hasMain) imagesData[0].isMain = true;
     }
 
-    // 2. Crear el producto en la base de datos
-    const product = await prisma.product.create({
-      data: {
-        name: productData.name,
-        description: productData.description || "",
-        price: parseFloat(productData.price) || 0,
-        originalPrice: productData.originalPrice ? parseFloat(productData.originalPrice) : null,
-        categoryId: productData.categoryId || productData.category || null,
-        subcategoryId: productData.subcategoryId || productData.subcategory || null,
-        brand: productData.brand || "KAOZ",
-        isActive: productData.isActive ?? true,
-        isNew: productData.isNew ?? false,
-        markedAsNewAt: productData.isNew ? new Date() : null,
-        tags: productData.tags || [],
-        features: productData.features || {},
-        images: {
-          create: imagesData
-        },
-        variants: {
-          create: (productData.variants || []).map(v => ({
+    // 2. Usar transacción para manejar la creación secuencial y asegurar productId en imágenes
+    // Esto resuelve el error "Argument product is missing" al crear imágenes dentro de variantes
+    return await prisma.$transaction(async (tx) => {
+      // 2.1 Crear el producto base
+      const product = await tx.product.create({
+        data: {
+          name: productData.name,
+          description: productData.description || "",
+          price: parseFloat(productData.price) || 0,
+          originalPrice: productData.originalPrice ? parseFloat(productData.originalPrice) : null,
+          categoryId: productData.categoryId || productData.category || null,
+          subcategoryId: productData.subcategoryId || productData.subcategory || null,
+          brand: productData.brand || "KAOZ",
+          isActive: productData.isActive ?? true,
+          isNew: productData.isNew ?? false,
+          markedAsNewAt: productData.isNew ? new Date() : null,
+          tags: productData.tags || [],
+          features: productData.features || {},
+        }
+      });
+
+      // 2.2 Crear imágenes generales vinculadas al producto
+      if (imagesData.length > 0) {
+        await tx.productImage.createMany({
+          data: imagesData.map(img => ({
+            url: img.url,
+            alt: img.alt,
+            isMain: img.isMain,
+            productId: product.id
+          }))
+        });
+      }
+
+      // 2.3 Crear variantes y sus tallas/imágenes
+      const variants = productData.variants || [];
+      for (const v of variants) {
+        const variant = await tx.productVariant.create({
+          data: {
             color: v.color || "N/A",
             colorHex: v.colorHex || "#000000",
-            images: {
-              create: (v.images || []).map(img => ({
-                url: img.url,
-                alt: productData.name,
-                isMain: img.isMain || false
-              }))
-            },
+            productId: product.id,
             sizes: {
               create: (v.sizes || []).map(s => ({
                 size: s.size,
@@ -105,21 +118,37 @@ const createProduct = async (productData, files = []) => {
                 sku: s.sku || null
               }))
             }
-          }))
-        }
-      },
-      include: {
-        images: true,
-        variants: {
-          include: {
-            sizes: true,
-            images: true
           }
+        });
+
+        // 2.4 Crear imágenes de la variante vinculadas a producto y variante
+        if (v.images && Array.isArray(v.images) && v.images.length > 0) {
+          await tx.productImage.createMany({
+            data: v.images.map(img => ({
+              url: img.url,
+              alt: productData.name,
+              isMain: img.isMain || false,
+              productId: product.id,
+              variantId: variant.id
+            }))
+          });
         }
       }
-    });
 
-    return product;
+      // 3. Retornar el producto completo con todas sus relaciones para la respuesta
+      return await tx.product.findUnique({
+        where: { id: product.id },
+        include: {
+          images: true,
+          variants: {
+            include: {
+              sizes: true,
+              images: true
+            }
+          }
+        }
+      });
+    });
   } catch (error) {
     console.error("Error in ProductService.createProduct:", error);
     throw error;
