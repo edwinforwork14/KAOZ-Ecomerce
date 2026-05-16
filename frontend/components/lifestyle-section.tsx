@@ -2,10 +2,10 @@ import AnimatedSection from "./animated-section"
 
 export default function LifestyleSection() {
   const items = [
-    { name: "Acuarela", src: "/nuevo/WhatsApp Image 2026-05-16 at 11.05.36 AM.jpeg" },
-    { name: "Quotes", src: "/nuevo/WhatsApp Image 2026-05-16 at 11.05.36 AM (1).jpeg" },
-    { name: "Funky & Colorido", src: "/nuevo/WhatsApp Image 2026-05-16 at 11.05.36 AM (2).jpeg" },
-    { name: "Con Flow", src: "/nuevo/WhatsApp Image 2026-05-16 at 11.05.36 AM (3).jpeg" },
+    { name: "Acuarela", src: "/nuevo/drop-acuarela.jpg" },
+    { name: "Quotes", src: "/nuevo/drop-quotes.jpg" },
+    { name: "Funky & Colorido", src: "/nuevo/drop-funky.jpg" },
+    { name: "Con Flow", src: "/nuevo/drop-flow.jpg" },
   ]
 
   return (

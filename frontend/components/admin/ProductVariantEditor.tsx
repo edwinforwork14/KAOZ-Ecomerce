@@ -141,7 +141,7 @@ export function ProductVariantEditor({ variants, onChange, availableSizes = [] }
           <h3 className="text-lg font-medium text-white">Variantes y Stock</h3>
           <p className="text-sm text-zinc-400">Gestiona los colores, imágenes y existencias por talla.</p>
         </div>
-        <Button onClick={addVariant} variant="outline" className="border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800">
+        <Button type="button" onClick={addVariant} variant="outline" className="border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800">
           <Plus className="mr-2 h-4 w-4" />
           Añadir Variante
         </Button>
@@ -183,6 +183,7 @@ export function ProductVariantEditor({ variants, onChange, availableSizes = [] }
                     </div>
                   </AccordionTrigger>
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
                     onClick={(e) => {
@@ -236,6 +237,7 @@ export function ProductVariantEditor({ variants, onChange, availableSizes = [] }
                             <div key={imgIdx} className="group relative aspect-square rounded-lg border border-zinc-800 bg-zinc-900">
                               <img src={cleanImageUrl(img.url)} alt="Variant" className="h-full w-full object-cover rounded-lg" />
                               <button
+                                type="button"
                                 onClick={() => removeImage(vIdx, imgIdx)}
                                 className="absolute -right-1 -top-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
                               >
@@ -269,6 +271,7 @@ export function ProductVariantEditor({ variants, onChange, availableSizes = [] }
                       <div className="flex items-center justify-between">
                         <Label className="text-zinc-400">Tallas e Inventario</Label>
                         <Button
+                          type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => addSize(vIdx)}
@@ -309,6 +312,7 @@ export function ProductVariantEditor({ variants, onChange, availableSizes = [] }
                                 </TableCell>
                                 <TableCell className="py-2">
                                   <Button
+                                    type="button"
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => removeSize(vIdx, sIdx)}
