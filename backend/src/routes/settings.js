@@ -19,6 +19,7 @@ const {
   updateNewProductStatus,
   getPublicSettings,
 } = require("../controllers/settingsController");
+const zernioController = require("../controllers/zernioController");
 const { protect, authorize } = require("../middleware/auth");
 
 // Ruta pública para obtener configuraciones
@@ -30,6 +31,13 @@ router.use(protect, authorize("admin"));
 // Settings generales
 router.get("/", getSettings);
 router.put("/", updateSettings);
+
+// Zernio Instagram Integration
+router.get("/zernio", zernioController.getZernioConfig);
+router.post("/zernio/connect", zernioController.connectZernio);
+router.post("/zernio/disconnect", zernioController.disconnectZernio);
+router.post("/zernio/sync", zernioController.syncZernio);
+router.put("/zernio/configure", zernioController.updateZernioConfig);
 
 // Payment Methods
 router.get("/payment-methods", getPaymentMethods);

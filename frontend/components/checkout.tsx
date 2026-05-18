@@ -284,8 +284,10 @@ export default function Checkout() {
       if (result.success) {
         const message = generateWhatsAppMessage(result.order.orderNumber)
         const settingsNumber = settings?.whatsapp?.number?.replace(/\D/g, '')
-        const phoneNumber = (settingsNumber && settingsNumber !== '00000000') 
-          ? settings.whatsapp.number 
+        // Si el número no existe, o tiene una cadena de ceros (placeholder), usamos el de la marca
+        const isPlaceholder = settingsNumber?.includes('000000')
+        const phoneNumber = (settingsNumber && !isPlaceholder) 
+          ? (settings?.whatsapp?.number || brandConfig.contact.whatsapp)
           : brandConfig.contact.whatsapp
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
         await api.updateOrderWhatsApp(result.order._id)

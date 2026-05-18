@@ -1,12 +1,54 @@
+import { useState, useEffect } from "react"
+import { api, cleanImageUrl } from "@/lib/api"
 import AnimatedSection from "./animated-section"
 
+const DEFAULT_ITEMS = [
+  { name: "Acuarela", src: "/nuevo/drop-acuarela.jpg" },
+  { name: "Quotes", src: "/nuevo/drop-quotes.jpg" },
+  { name: "Funky & Colorido", src: "/nuevo/drop-funky.jpg" },
+  { name: "Con Flow", src: "/nuevo/drop-flow.jpg" },
+]
+
 export default function LifestyleSection() {
-  const items = [
-    { name: "Acuarela", src: "/nuevo/drop-acuarela.jpg" },
-    { name: "Quotes", src: "/nuevo/drop-quotes.jpg" },
-    { name: "Funky & Colorido", src: "/nuevo/drop-funky.jpg" },
-    { name: "Con Flow", src: "/nuevo/drop-flow.jpg" },
-  ]
+  const [items, setItems] = useState<{ name: string; src: string }[]>(DEFAULT_ITEMS)
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const result = await api.getPublicSettings()
+        if (result.success && result.settings?.lifestyleDropImages?.length > 0) {
+          const formatted = result.settings.lifestyleDropImages.map((img: any) => ({
+            name: img.name || "Nuevo Drop",
+            src: cleanImageUrl(img.src)
+          }))
+          setItems(formatted)
+        }
+      } catch (error) {
+        console.error("Error loading lifestyle images:", error)
+      }
+    }
+    fetchImages()
+  }, [])
+
+  // Limitar a un máximo de 5 imágenes en el Home Page
+  const displayItems = items.slice(0, 5)
+
+  // Determinar clases de grid responsivas y centradas según la cantidad de imágenes
+  const getGridClass = (count: number) => {
+    switch (count) {
+      case 1:
+        return "grid-cols-1 max-w-xs mx-auto"
+      case 2:
+        return "grid-cols-2 max-w-2xl mx-auto"
+      case 3:
+        return "grid-cols-2 md:grid-cols-3"
+      case 5:
+        return "grid-cols-2 md:grid-cols-5"
+      case 4:
+      default:
+        return "grid-cols-2 md:grid-cols-4"
+    }
+  }
 
   return (
     <AnimatedSection>
@@ -31,8 +73,8 @@ export default function LifestyleSection() {
           
           {/* Right Side Gallery */}
           <div className="lg:col-span-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {items.map((item, idx) => (
+            <div className={`grid gap-4 ${getGridClass(displayItems.length)}`}>
+              {displayItems.map((item, idx) => (
                 <div key={idx} className="space-y-3">
                   <div className="rounded-2xl overflow-hidden aspect-[4/6] shadow-md hover:shadow-xl transition-all duration-500">
                     <img 

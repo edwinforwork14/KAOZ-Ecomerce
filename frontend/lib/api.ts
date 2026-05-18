@@ -745,6 +745,21 @@ export const api = {
   createCategory,
   updateCategory,
   deleteCategory,
+  tempUpload: async (formData: FormData) => {
+    try {
+      const headers = await getAuthHeaders()
+      const { 'Content-Type': _, ...authHeaders } = headers
+      const response = await fetch(`${API_BASE_URL}/admin/temp-upload`, {
+        method: "POST",
+        headers: authHeaders,
+        body: formData,
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error in tempUpload:", error)
+      return { success: false, message: error.message }
+    }
+  },
   // === BULK PRODUCTS ===
   initBulkSession: async () => {
     try {
@@ -846,6 +861,80 @@ export const api = {
       return await response.json()
     } catch (error: any) {
       console.error("Error deleting expense:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  // === ZERNIO INSTAGRAM INTEGRATION ===
+  getZernioConfig: async () => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/settings/zernio`, { headers })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error fetching Zernio configuration:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  connectZernio: async (apiKey: string) => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/settings/zernio/connect`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ apiKey })
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error connecting to Zernio:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  disconnectZernio: async () => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/settings/zernio/disconnect`, {
+        method: 'POST',
+        headers
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error disconnecting Zernio:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  syncZernio: async () => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/settings/zernio/sync`, {
+        method: 'POST',
+        headers
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error synchronizing Zernio:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  updateZernioConfig: async (limit: number) => {
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/settings/zernio/configure`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ limit })
+      })
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error updating Zernio configuration:", error)
+      return { success: false, error: error.message }
+    }
+  },
+  getInstagramPosts: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/public/instagram-posts`)
+      return await response.json()
+    } catch (error: any) {
+      console.error("Error fetching public Instagram posts:", error)
       return { success: false, error: error.message }
     }
   }

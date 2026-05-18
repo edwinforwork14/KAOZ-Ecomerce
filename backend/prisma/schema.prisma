@@ -228,6 +228,8 @@ model Settings {
   updatedAt          DateTime @updatedAt @default(now())
   newProductDuration Int      @default(30)
   expenseCategories  Json?
+  zernioConfig       Json?
+  lifestyleDropImages Json?
 }
 
 model CartHistory {

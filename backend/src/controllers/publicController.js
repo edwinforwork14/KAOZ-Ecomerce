@@ -166,3 +166,117 @@ exports.getCategory = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+// ================= INSTAGRAM FEED (ZERNIO) =================
+const zernioService = require("../services/zernioService");
+
+exports.getInstagramPosts = async (req, res) => {
+  try {
+    const settings = await prisma.settings.findUnique({
+      where: { id: "global" }
+    });
+
+    const zernioConfig = settings?.zernioConfig || {};
+
+    if (zernioConfig.connected && Array.isArray(zernioConfig.posts) && zernioConfig.posts.length > 0) {
+      // Trigger background sync if last sync was more than 1 hour ago (non-blocking)
+      const lastSynced = zernioConfig.lastSyncedAt ? new Date(zernioConfig.lastSyncedAt) : new Date(0);
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      
+      if (lastSynced < oneHourAgo) {
+        console.log("⏱️ [PUBLIC API] La caché de posts tiene más de 1 hora. Iniciando sincronización en segundo plano...");
+        zernioService.syncZernioData(false).catch(err => {
+          console.error("❌ [PUBLIC API] Error en sincronización de fondo:", err.message);
+        });
+      }
+
+      return res.json({
+        success: true,
+        source: "zernio",
+        username: zernioConfig.username || "kaos.vzla",
+        posts: zernioConfig.posts
+      });
+    }
+
+    // Fallback Mock Posts (High quality streetwear fashion)
+    const fallbacks = [
+      {
+        id: "mock_1",
+        picture: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80",
+        permalink: "https://instagram.com/kaos.vzla",
+        message: "STREET CULTURE FOR THE UNTAMED. Nueva colección disponible online. #kaos #streetwear",
+        likeCount: 245,
+        commentCount: 18,
+        createdTime: new Date(Date.now() - 3600000 * 2).toISOString()
+      },
+      {
+        id: "mock_2",
+        picture: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&auto=format&fit=crop&q=80",
+        permalink: "https://instagram.com/kaos.vzla",
+        message: "Detalles que definen identidad. KAOS Oversized Hoodie en gris asfalto. Disponible ahora.",
+        likeCount: 312,
+        commentCount: 24,
+        createdTime: new Date(Date.now() - 3600000 * 12).toISOString()
+      },
+      {
+        id: "mock_3",
+        picture: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&auto=format&fit=crop&q=80",
+        permalink: "https://instagram.com/kaos.vzla",
+        message: "No sigas las reglas, crea las tuyas. Drop 02 / Outfits completos en el link de la bio.",
+        likeCount: 189,
+        commentCount: 12,
+        createdTime: new Date(Date.now() - 3600000 * 24).toISOString()
+      },
+      {
+        id: "mock_4",
+        picture: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&auto=format&fit=crop&q=80",
+        permalink: "https://instagram.com/kaos.vzla",
+        message: "Urban vibes & premium aesthetics. Envíos gratis a todo el país para compras superiores a 1500 Bs.",
+        likeCount: 420,
+        commentCount: 45,
+        createdTime: new Date(Date.now() - 3600000 * 36).toISOString()
+      },
+      {
+        id: "mock_5",
+        picture: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&auto=format&fit=crop&q=80",
+        permalink: "https://instagram.com/kaos.vzla",
+        message: "Minimalism is an attitude. KAOS Cargo Pants & Utility Vest. Estilo sin esfuerzo.",
+        likeCount: 278,
+        commentCount: 15,
+        createdTime: new Date(Date.now() - 3600000 * 48).toISOString()
+      },
+      {
+        id: "mock_6",
+        picture: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&auto=format&fit=crop&q=80",
+        permalink: "https://instagram.com/kaos.vzla",
+        message: "Diseñado para resistir. Calidad premium en cada hilo. Descubre los nuevos ingresos.",
+        likeCount: 356,
+        commentCount: 29,
+        createdTime: new Date(Date.now() - 3600000 * 72).toISOString()
+      },
+      {
+        id: "mock_7",
+        picture: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600&auto=format&fit=crop&q=80",
+        permalink: "https://instagram.com/kaos.vzla",
+        message: "THE FUTURE IS NOW. Únete a la cultura. Visita nuestro manifesto corporativo para saber más.",
+        likeCount: 512,
+        commentCount: 52,
+        createdTime: new Date(Date.now() - 3600000 * 96).toISOString()
+      }
+    ];
+
+    res.json({
+      success: true,
+      source: "fallback",
+      username: "kaos.vzla",
+      posts: fallbacks
+    });
+  } catch (error) {
+    console.error("❌ [PUBLIC CONTROLLER] Error en getInstagramPosts:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Error al obtener las publicaciones de Instagram",
+      error: error.message
+    });
+  }
+};

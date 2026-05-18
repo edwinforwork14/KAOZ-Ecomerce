@@ -262,7 +262,8 @@ exports.getPublicSettings = async (req, res) => {
           { id: "pickup", name: "Retiro en Tienda (Default)", isActive: true, type: "pickup", additionalCost: 0 }
         ],
         business: settings.business || {},
-        whatsapp: settings.whatsapp || ""
+        whatsapp: settings.whatsapp || "",
+        lifestyleDropImages: settings.lifestyleDropImages || []
       },
       exchangeRate: exchangeRate || { usd: 1, eur: 1 }
     };

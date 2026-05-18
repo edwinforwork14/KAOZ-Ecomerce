@@ -27,7 +27,9 @@ import {
   Bell,
   Search,
   ExternalLink,
-  Banknote
+  Banknote,
+  Instagram,
+  Image as ImageIcon
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { brandConfig } from "@/lib/config"
@@ -121,6 +123,26 @@ const menuGroups: MenuGroup[] = [
             title: "Exchange",
             href: "/admin/settings?tab=exchange",
             icon: DollarSign
+          },
+          {
+            title: "Gastos",
+            href: "/admin/settings?tab=gastos",
+            icon: Banknote
+          },
+          {
+            title: "Identidad",
+            href: "/admin/settings?tab=business",
+            icon: Building2
+          },
+          {
+            title: "Instagram",
+            href: "/admin/settings?tab=zernio",
+            icon: Instagram
+          },
+          {
+            title: "Nuevo Drop",
+            href: "/admin/settings?tab=lifestyle",
+            icon: ImageIcon
           }
         ]
       }

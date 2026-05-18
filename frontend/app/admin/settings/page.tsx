@@ -26,7 +26,12 @@ import {
   Zap,
   Globe,
   Bell,
-  MessageSquare
+  MessageSquare,
+  Instagram,
+  Eye,
+  EyeOff,
+  Activity,
+  Image as ImageIcon
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -37,7 +42,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { api } from "@/lib/api"
+import { api, cleanImageUrl } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
@@ -146,6 +151,7 @@ interface Settings {
   }
   theme?: "light" | "dark"
   expenseCategories?: string[]
+  lifestyleDropImages?: Array<{ name: string; src: string }>
 }
 
 interface ExchangeRate {
@@ -203,6 +209,14 @@ export default function AdminSettingsPage() {
 
   const [settings, setSettings] = useState<Settings | null>(null)
 
+  // Zernio config state
+  const [zernioConfig, setZernioConfig] = useState<any>(null)
+  const [loadingZernio, setLoadingZernio] = useState(false)
+  const [zernioApiKeyInput, setZernioApiKeyInput] = useState("")
+  const [showZernioKey, setShowZernioKey] = useState(false)
+  const [zernioLimitInput, setZernioLimitInput] = useState(7)
+  const [syncingZernio, setSyncingZernio] = useState(false)
+
   // Edit modals
   const [editingPayment, setEditingPayment] = useState<PaymentMethod | null>(null)
   const [editingShipping, setEditingShipping] = useState<ShippingMethod | null>(null)
@@ -259,6 +273,152 @@ export default function AdminSettingsPage() {
 
   const handleTabChange = (value: string) => {
     router.push(`/admin/settings?tab=${value}`)
+  }
+
+  // === ZERNIO HANDLERS ===
+  useEffect(() => {
+    if (currentTab === "zernio") {
+      loadZernioConfig()
+    }
+  }, [currentTab])
+
+  const loadZernioConfig = async () => {
+    setLoadingZernio(true)
+    try {
+      const res = await api.getZernioConfig()
+      if (res?.success && res.config) {
+        setZernioConfig(res.config)
+        setZernioLimitInput(res.config.limit || 7)
+      }
+    } catch (error) {
+      toast({
+        title: "ERROR DE CONEXIÓN",
+        description: "No se pudo recuperar la configuración de Zernio",
+        variant: "destructive"
+      })
+    } finally {
+      setLoadingZernio(false)
+    }
+  }
+
+  const handleConnectZernio = async () => {
+    if (!zernioApiKeyInput.trim()) {
+      toast({
+        title: "API KEY REQUERIDA",
+        description: "Introduce una API Key válida para establecer el enlace",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setLoadingZernio(true)
+    try {
+      const res = await api.connectZernio(zernioApiKeyInput)
+      if (res?.success && res.config) {
+        setZernioConfig(res.config)
+        setZernioApiKeyInput("")
+        toast({
+          title: "ENLACE COMPLETO",
+          description: res.message || "Instagram conectado con éxito"
+        })
+      } else {
+        toast({
+          title: "FALLO DE CONEXIÓN",
+          description: res.message || "No se pudo establecer el enlace",
+          variant: "destructive"
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "ERROR CRÍTICO",
+        description: error.message || "Ocurrió un error al conectar",
+        variant: "destructive"
+      })
+    } finally {
+      setLoadingZernio(false)
+    }
+  }
+
+  const handleDisconnectZernio = async () => {
+    if (!confirm("¿Estás seguro de que deseas desconectar la integración de Instagram? Se borrarán la API Key y los posts cacheados.")) {
+      return
+    }
+
+    setLoadingZernio(true)
+    try {
+      const res = await api.disconnectZernio()
+      if (res?.success && res.config) {
+        setZernioConfig(res.config)
+        toast({
+          title: "DESCONECTADO",
+          description: "La integración se ha desactivado correctamente"
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "ERROR",
+        description: error.message || "No se pudo desconectar",
+        variant: "destructive"
+      })
+    } finally {
+      setLoadingZernio(false)
+    }
+  }
+
+  const handleSyncZernio = async () => {
+    setSyncingZernio(true)
+    try {
+      const res = await api.syncZernio()
+      if (res?.success && res.config) {
+        setZernioConfig(res.config)
+        toast({
+          title: "SINCRONIZACIÓN EXITOSA",
+          description: "Publicaciones e historial actualizados"
+        })
+      } else {
+        toast({
+          title: "ERROR DE SINCRONIZACIÓN",
+          description: res.message || "No se pudo forzar la sincronización",
+          variant: "destructive"
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "ERROR CRÍTICO",
+        description: error.message || "Falló el protocolo de sincronización",
+        variant: "destructive"
+      })
+    } finally {
+      setSyncingZernio(false)
+    }
+  }
+
+  const handleUpdateZernioConfig = async () => {
+    setLoadingZernio(true)
+    try {
+      const res = await api.updateZernioConfig(zernioLimitInput)
+      if (res?.success && res.config) {
+        setZernioConfig(res.config)
+        toast({
+          title: "CONFIGURACIÓN ACTUALIZADA",
+          description: "Los cambios se guardaron y se regeneró la caché de posts"
+        })
+      } else {
+        toast({
+          title: "FALLO AL GUARDAR",
+          description: res.message || "No se pudo actualizar el límite",
+          variant: "destructive"
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "ERROR",
+        description: error.message || "Ocurrió un error al actualizar",
+        variant: "destructive"
+      })
+    } finally {
+      setLoadingZernio(false)
+    }
   }
 
   const updateExchangeRate = async (manualData?: { usd: number, eur?: number }) => {
@@ -406,6 +566,8 @@ export default function AdminSettingsPage() {
             { id: "exchange", label: "DIVISAS", icon: DollarSign },
             { id: "gastos", label: "GASTOS", icon: Banknote },
             { id: "business", label: "IDENTIDAD", icon: Building },
+            { id: "zernio", label: "INSTAGRAM", icon: Instagram },
+            { id: "lifestyle", label: "NUEVO DROP", icon: ImageIcon },
           ].map(tab => (
             <TabsTrigger 
               key={tab.id}
@@ -945,6 +1107,414 @@ export default function AdminSettingsPage() {
                 </Button>
               </div>
             </div>
+          </div>
+        </TabsContent>
+
+        {/* =========================
+            TAB: ZERNIO (INSTAGRAM)
+        ========================== */}
+        <TabsContent value="zernio" className="m-0 space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          {loadingZernio && !zernioConfig ? (
+            <div className="border border-black bg-white p-16 text-center space-y-4">
+              <Loader2 className="h-10 w-10 animate-spin mx-auto text-black" />
+              <span className="block text-[10px] font-black uppercase tracking-widest text-black/50">CARGANDO PROTOCOLOS DE INSTAGRAM...</span>
+            </div>
+          ) : (
+            <>
+              {/* Connection Status Banner */}
+              {zernioConfig?.connected ? (
+                <div className="border border-black bg-white p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
+                  {/* Glowing neon green accent line on top */}
+                  <div className="absolute top-0 left-0 w-full h-[4px] bg-green-500"></div>
+                  <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 border-2 border-black flex items-center justify-center bg-green-50 shrink-0">
+                      <Instagram className="h-8 w-8 text-black animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[8px] font-black uppercase tracking-widest bg-green-500 text-white px-3 py-1">CONEXIÓN ONLINE</span>
+                        <h3 className="text-2xl font-black uppercase tracking-tighter">@{zernioConfig.username || "kaos.vzla"}</h3>
+                      </div>
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-2">
+                        VINCULADO A: {zernioConfig.displayName || "KAOS CREATIVE ACCOUNT"} • Sincronizado: {zernioConfig.lastSyncedAt ? new Date(zernioConfig.lastSyncedAt).toLocaleString("es-VE", { timeZone: "America/Caracas" }) : "PENDIENTE"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 w-full md:w-auto">
+                    <Button 
+                      onClick={handleSyncZernio} 
+                      disabled={syncingZernio || loadingZernio}
+                      className="flex-1 md:flex-initial h-12 rounded-none border border-black bg-white text-black hover:bg-gray-50 px-6 font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                    >
+                      {syncingZernio ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                      SINCRONIZAR
+                    </Button>
+                    <Button 
+                      onClick={handleDisconnectZernio} 
+                      disabled={loadingZernio}
+                      className="flex-1 md:flex-initial h-12 rounded-none bg-red-600 text-white hover:bg-red-700 px-6 font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_0px_rgba(220,38,38,0.15)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                    >
+                      DESVINCULAR
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="border border-black bg-white p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
+                  {/* Stiff red accent line on top */}
+                  <div className="absolute top-0 left-0 w-full h-[4px] bg-red-500"></div>
+                  <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 border-2 border-black flex items-center justify-center bg-red-50 shrink-0">
+                      <Instagram className="h-8 w-8 text-black opacity-30" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[8px] font-black uppercase tracking-widest bg-red-500 text-white px-3 py-1">CONEXIÓN OFFLINE</span>
+                        <h3 className="text-2xl font-black uppercase tracking-tighter text-gray-400">SIN INTEGRACIÓN</h3>
+                      </div>
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-2">
+                        VINCULA LA API KEY DE ZERNIO PARA SINCRONIZAR PUBLICACIONES DE INSTAGRAM EN EL HOME PAGE
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* API Key Panel when disconnected */}
+              {!zernioConfig?.connected && (
+                <div className="border border-black bg-white p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
+                  <h3 className="text-lg font-black uppercase tracking-tighter mb-2">Establecer Enlace</h3>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">INGRESA EL PROTOCOLO DE AUTENTICACIÓN DE ZERNIO</p>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 relative">
+                      <Input
+                        type={showZernioKey ? "text" : "password"}
+                        placeholder="INTRODUCE TU API KEY DE ZERNIO (sk_...)"
+                        value={zernioApiKeyInput}
+                        onChange={(e) => setZernioApiKeyInput(e.target.value)}
+                        className="h-14 rounded-none border-black font-mono text-xs uppercase bg-white text-black pr-12 focus:ring-0 focus:border-black"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowZernioKey(!showZernioKey)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+                      >
+                        {showZernioKey ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                    <Button
+                      onClick={handleConnectZernio}
+                      disabled={loadingZernio || !zernioApiKeyInput.trim()}
+                      className="h-14 rounded-none bg-black text-white px-10 font-black uppercase text-[10px] tracking-widest hover:bg-gray-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                    >
+                      {loadingZernio ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                      ESTABLECER ENLACE
+                    </Button>
+                  </div>
+                  <div className="mt-4 p-4 bg-gray-50 border border-black/5 text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                    Nota: La API Key de Zernio es necesaria para sincronizar tus publicaciones de forma segura. Puedes generarla en tu panel de Zernio.com.
+                  </div>
+                </div>
+              )}
+
+              {/* Sync Configuration & Preview Grid */}
+              {zernioConfig?.connected && (
+                <div className="border border-black bg-white p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
+                  <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 border-b border-black/10 pb-6 mb-6">
+                    <div>
+                      <h3 className="text-lg font-black uppercase tracking-tighter">Publicaciones Sincronizadas</h3>
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                        VISTA PREVIA DE LAS PUBLICACIONES EN CACHÉ DEL SISTEMA
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">POSTS A MOSTRAR</span>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={20}
+                          value={zernioLimitInput}
+                          onChange={(e) => setZernioLimitInput(clampNumber(parseInt(e.target.value) || 7, 1, 20))}
+                          className="w-20 h-10 rounded-none border-black font-black text-center focus:ring-0 focus:border-black text-xs bg-white text-black"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleUpdateZernioConfig}
+                        disabled={loadingZernio}
+                        className="h-10 rounded-none bg-black text-white px-6 font-black uppercase text-[10px] tracking-widest hover:bg-gray-800 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                      >
+                        {loadingZernio ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : "APLICAR AFECCIÓN"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {zernioConfig.posts && zernioConfig.posts.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2">
+                      {zernioConfig.posts.map((post: any, idx: number) => (
+                        <a 
+                          key={post.id || idx} 
+                          href={post.permalink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="aspect-square overflow-hidden bg-gray-100 border border-black/10 group relative block"
+                        >
+                          <img
+                            alt={`Preview ${idx + 1}`}
+                            src={post.picture}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-between p-3 text-white font-mono text-[9px]">
+                            <div className="line-clamp-3 leading-tight uppercase font-bold text-white/90">
+                              {post.message || "SIN DESCRIPCIÓN"}
+                            </div>
+                            <div className="flex justify-between font-black text-kaosNeon pt-2 border-t border-white/10">
+                              <span>❤️ {post.likeCount}</span>
+                              <span>💬 {post.commentCount}</span>
+                            </div>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="border border-dashed border-black/20 p-16 text-center bg-gray-50">
+                      <span className="text-[10px] font-black uppercase text-black/30">SIN PUBLICACIONES EN CACHÉ. HAZ CLICK EN SINCRONIZAR PARA CARGAR TU FEED.</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Terminal Logs Viewer */}
+              <div className="border border-black bg-white p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-black text-white flex items-center justify-center"><Activity className="h-4 w-4" /></div>
+                  <div>
+                    <h3 className="text-lg font-black uppercase tracking-tighter">Terminal de Diagnóstico</h3>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                      HISTORIAL DE EVENTOS Y LOGS DE LA API DE ZERNIO
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-black text-white p-6 rounded-none font-mono text-[9px] leading-relaxed max-h-[250px] overflow-y-auto custom-scrollbar border border-black shadow-inner">
+                  {zernioConfig?.logs && zernioConfig.logs.length > 0 ? (
+                    <div className="space-y-2">
+                      {zernioConfig.logs.map((log: any, idx: number) => (
+                        <div 
+                          key={idx} 
+                          className={cn(
+                            "pb-2 border-b border-white/5 last:border-b-0 flex items-start gap-3",
+                            log.type === "error" ? "text-red-400" : log.type === "warning" ? "text-yellow-400" : "text-gray-300"
+                          )}
+                        >
+                          <span className="text-white/30 shrink-0 font-bold">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                          <span className="shrink-0 font-black uppercase tracking-widest text-[8px] bg-white/10 px-1 py-0.2 rounded-none">
+                            {log.type}
+                          </span>
+                          <span className="font-bold uppercase tracking-wide leading-tight">{log.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-white/20 text-center py-8 uppercase font-bold tracking-widest">
+                      NO SE ENCONTRARON EVENTOS REGISTRADOS
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </TabsContent>
+
+        {/* =========================
+            TAB: LIFESTYLE (NUEVO DROP)
+        ========================== */}
+        <TabsContent value="lifestyle" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="bg-white border border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
+             <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-black/10 pb-6 mb-6 gap-4">
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 bg-black text-white flex items-center justify-center"><ImageIcon className="h-5 w-5" /></div>
+                   <div>
+                     <h3 className="text-xl font-black uppercase tracking-tighter">Lookbook / Nuevo Drop</h3>
+                     <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">Control visual del home page</p>
+                   </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      const defaults = [
+                        { name: "Acuarela", src: "/nuevo/drop-acuarela.jpg" },
+                        { name: "Quotes", src: "/nuevo/drop-quotes.jpg" },
+                        { name: "Funky & Colorido", src: "/nuevo/drop-funky.jpg" },
+                        { name: "Con Flow", src: "/nuevo/drop-flow.jpg" },
+                      ]
+                      setSettings({ ...settings, lifestyleDropImages: defaults })
+                    }}
+                    variant="outline"
+                    className="rounded-none h-12 border-black/20 hover:border-black text-[10px] font-black uppercase tracking-widest"
+                  >
+                    Restaurar Predeterminados
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const newImages = [...(settings.lifestyleDropImages || []), { name: "Nuevo Look", src: "" }]
+                      setSettings({ ...settings, lifestyleDropImages: newImages })
+                    }}
+                    className="bg-black text-white rounded-none h-12 px-6 text-[10px] font-black uppercase tracking-widest hover:bg-kaosNeon hover:text-black transition-all"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Agregar Item
+                  </Button>
+                </div>
+             </div>
+
+             <div className="space-y-6">
+                {(!settings.lifestyleDropImages || settings.lifestyleDropImages.length === 0) ? (
+                   <div className="border border-dashed border-black/20 p-16 text-center bg-gray-50">
+                     <span className="text-[10px] font-black uppercase text-black/30 block mb-4">No hay imágenes configuradas para la sección nuevo drop.</span>
+                     <Button
+                       onClick={() => {
+                         const defaults = [
+                           { name: "Acuarela", src: "/nuevo/drop-acuarela.jpg" },
+                           { name: "Quotes", src: "/nuevo/drop-quotes.jpg" },
+                           { name: "Funky & Colorido", src: "/nuevo/drop-funky.jpg" },
+                           { name: "Con Flow", src: "/nuevo/drop-flow.jpg" },
+                         ]
+                         setSettings({ ...settings, lifestyleDropImages: defaults })
+                       }}
+                       className="bg-black text-white rounded-none h-10 px-6 text-[10px] font-black uppercase tracking-widest"
+                     >
+                       Cargar Valores por Defecto
+                     </Button>
+                   </div>
+                ) : (
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {(settings.lifestyleDropImages || []).map((img, idx) => {
+                         const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+                            const file = e.target.files?.[0]
+                            if (!file) return
+                            const formData = new FormData()
+                            formData.append("images", file)
+                            toast({ title: "Subiendo...", description: "Cargando archivo al servidor..." })
+                            try {
+                               const res = await api.tempUpload(formData)
+                               if (res.success && res.url) {
+                                  const updated = [...(settings.lifestyleDropImages || [])]
+                                  updated[idx] = { ...updated[idx], src: res.url }
+                                  setSettings({ ...settings, lifestyleDropImages: updated })
+                                  toast({ title: "Completado", description: "Imagen subida correctamente" })
+                               } else {
+                                  toast({ title: "Error", description: "No se pudo subir la imagen", variant: "destructive" })
+                               }
+                            } catch (err) {
+                               toast({ title: "Error", description: "Fallo la conexión con el servidor", variant: "destructive" })
+                            }
+                         }
+
+                         const moveItem = (dir: "up" | "down") => {
+                            const updated = [...(settings.lifestyleDropImages || [])]
+                            const targetIdx = dir === "up" ? idx - 1 : idx + 1
+                            if (targetIdx < 0 || targetIdx >= updated.length) return
+                            const temp = updated[idx]
+                            updated[idx] = updated[targetIdx]
+                            updated[targetIdx] = temp
+                            setSettings({ ...settings, lifestyleDropImages: updated })
+                         }
+
+                         return (
+                            <div key={idx} className="border border-black bg-gray-50/50 p-4 space-y-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] relative flex flex-col justify-between">
+                               <div className="space-y-4">
+                                  <div className="aspect-[4/5] bg-white border border-black/10 overflow-hidden relative group">
+                                     {img.src ? (
+                                        <img src={cleanImageUrl(img.src)} alt={img.name} className="w-full h-full object-cover" />
+                                     ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center text-black/20 text-[9px] font-black uppercase">Sin Imagen</div>
+                                     )}
+                                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
+                                        <label className="bg-white text-black text-[9px] font-black uppercase px-4 py-2 hover:bg-kaosNeon hover:text-black cursor-pointer tracking-wider transition-colors border border-black">
+                                           Subir Archivo
+                                           <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+                                        </label>
+                                     </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                     <Label className="text-[8px] font-black uppercase text-black/40">Título / Nombre</Label>
+                                     <Input
+                                        value={img.name}
+                                        onChange={(e) => {
+                                           const updated = [...(settings.lifestyleDropImages || [])]
+                                           updated[idx] = { ...updated[idx], name: e.target.value }
+                                           setSettings({ ...settings, lifestyleDropImages: updated })
+                                        }}
+                                        className="h-10 rounded-none border-black font-black uppercase text-[10px]"
+                                        placeholder="Ej: Acuarela"
+                                     />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                     <Label className="text-[8px] font-black uppercase text-black/40">Enlace de la Imagen (URL)</Label>
+                                     <Input
+                                        value={img.src}
+                                        onChange={(e) => {
+                                           const updated = [...(settings.lifestyleDropImages || [])]
+                                           updated[idx] = { ...updated[idx], src: e.target.value }
+                                           setSettings({ ...settings, lifestyleDropImages: updated })
+                                        }}
+                                        className="h-10 rounded-none border-black text-xs font-mono"
+                                        placeholder="Ej: https://... o /uploads/..."
+                                     />
+                                  </div>
+                               </div>
+
+                               <div className="flex justify-between items-center gap-2 pt-4 border-t border-black/5 mt-4">
+                                  <div className="flex gap-1">
+                                     <Button
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={idx === 0}
+                                        onClick={() => moveItem("up")}
+                                        className="h-8 w-8 p-0 rounded-none border-black/20 hover:border-black"
+                                     >
+                                        ↑
+                                     </Button>
+                                     <Button
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={idx === (settings.lifestyleDropImages || []).length - 1}
+                                        onClick={() => moveItem("down")}
+                                        className="h-8 w-8 p-0 rounded-none border-black/20 hover:border-black"
+                                     >
+                                        ↓
+                                     </Button>
+                                  </div>
+                                  <Button
+                                     size="sm"
+                                     variant="ghost"
+                                     onClick={() => {
+                                        const updated = (settings.lifestyleDropImages || []).filter((_, i) => i !== idx)
+                                        setSettings({ ...settings, lifestyleDropImages: updated })
+                                     }}
+                                     className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-none font-black text-[9px] uppercase tracking-wider"
+                                  >
+                                     Eliminar
+                                  </Button>
+                               </div>
+                            </div>
+                         )
+                      })}
+                   </div>
+                )}
+             </div>
+
+             <div className="flex justify-end pt-8 border-t border-black/10 mt-8">
+                <Button
+                  onClick={() => saveSettings({ lifestyleDropImages: settings.lifestyleDropImages })}
+                  disabled={saving}
+                  className="bg-black text-white h-14 px-10 rounded-none font-black uppercase text-[11px] tracking-widest hover:bg-kaosNeon hover:text-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.15)] active:translate-x-1 active:translate-y-1 active:shadow-none"
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                  Guardar Estructura Lookbook
+                </Button>
+             </div>
           </div>
         </TabsContent>
       </Tabs>
