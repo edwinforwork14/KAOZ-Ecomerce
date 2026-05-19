@@ -274,7 +274,7 @@ export default function CustomersPage() {
         ) : (
           customers.map((customer) => (
             <div 
-              key={customer._id} 
+              key={customer.id || customer._id} 
               className="flex flex-col md:flex-row items-center gap-8 p-8 transition-all border border-neutral-200 shadow-sm hover:border-neutral-400 group relative bg-white rounded-none"
               onClick={() => handleViewCustomer(customer)}
             >
@@ -338,7 +338,8 @@ export default function CustomersPage() {
         setSelectedCustomer(null)
         setCartHistory([])
       }}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col rounded-none border-neutral-200 bg-white text-neutral-900 shadow-2xl p-0">
+        <DialogContent className="max-w-5xl h-[85vh] max-h-[90vh] overflow-hidden flex flex-col rounded-none border-neutral-200 bg-white text-neutral-900 shadow-2xl p-0">
+          <DialogTitle className="sr-only">Expediente de Cliente</DialogTitle>
           {selectedCustomer && (
             <>
               <div className="p-8 bg-neutral-900 text-white flex justify-between items-center">
@@ -361,7 +362,7 @@ export default function CustomersPage() {
               </div>
 
               <div className="flex-1 overflow-hidden flex flex-col bg-white">
-                <Tabs defaultValue="info" className="w-full flex-1 flex flex-col">
+                <Tabs defaultValue="info" className="w-full flex-1 flex flex-col min-h-0">
                   <TabsList className="grid w-full grid-cols-3 rounded-none border-b border-neutral-200 p-0 bg-neutral-50 h-16">
                     <TabsTrigger value="info" className="rounded-none border-r border-neutral-200 data-[state=active]:bg-neutral-900 data-[state=active]:text-white font-bold text-[10px] uppercase tracking-widest h-full transition-all">
                       Información Base
@@ -437,7 +438,7 @@ export default function CustomersPage() {
                       {selectedCustomer.orders && selectedCustomer.orders.length > 0 ? (
                         <div className="space-y-4">
                           {selectedCustomer.orders.map((order: any) => (
-                            <div key={order._id} className="border border-neutral-200 p-6 bg-white hover:border-neutral-400 hover:shadow-md transition-all shadow-sm rounded-none">
+                            <div key={order.id || order._id || order.orderNumber} className="border border-neutral-200 p-6 bg-white hover:border-neutral-400 hover:shadow-md transition-all shadow-sm rounded-none">
                               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div>
                                   <div className="flex items-center gap-3 mb-1">

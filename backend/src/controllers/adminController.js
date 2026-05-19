@@ -400,59 +400,135 @@ exports.restoreOrder = async (req, res) => {
 exports.getAllCustomers = async (req, res) => {
   try {
     const { page = 1, limit = 20, search } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const take = parseInt(limit);
 
-    const where = {
-      role: "user",
-      OR: search ? [
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-      ] : undefined
-    };
-
-    const [customers, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          createdAt: true,
-          orders: {
-            where: { isDeleted: false },
-            select: { total: true }
-          }
+    // 1. Obtener todos los usuarios registrados con rol "user"
+    const registeredUsers = await prisma.user.findMany({
+      where: {
+        role: "user"
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+        orders: {
+          where: { isDeleted: false },
+          select: { total: true }
         }
-      }),
-      prisma.user.count({ where })
-    ]);
+      }
+    });
 
-    const customersWithStats = customers.map(customer => {
-      const orderCount = customer.orders.length;
-      const totalSpent = customer.orders.reduce((sum, order) => sum + (order.total || 0), 0);
-      return {
-        ...customer,
+    // Mapear los usuarios registrados a su formato final
+    const registeredCustomersMap = new Map();
+    registeredUsers.forEach(u => {
+      const orderCount = u.orders.length;
+      const totalSpent = u.orders.reduce((sum, o) => sum + (o.total || 0), 0);
+      registeredCustomersMap.set(u.email.toLowerCase().trim(), {
+        _id: u.id,
+        id: u.id,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        email: u.email,
+        phone: u.phone,
+        createdAt: u.createdAt,
         orderCount,
         totalSpent,
-        orders: undefined // Limpiar lista de órdenes cruda
-      };
+        isGuest: false
+      });
     });
+
+    // 2. Obtener todas las órdenes que no estén eliminadas para extraer datos de invitados
+    const allOrders = await prisma.order.findMany({
+      where: { isDeleted: false },
+      select: {
+        id: true,
+        orderNumber: true,
+        customerInfo: true,
+        total: true,
+        createdAt: true,
+        userId: true
+      }
+    });
+
+    // Mapa para acumular clientes invitados
+    const guestCustomersMap = new Map();
+
+    allOrders.forEach(order => {
+      let info = order.customerInfo;
+      if (typeof info === 'string') {
+        try {
+          info = JSON.parse(info);
+        } catch (e) {}
+      }
+
+      if (info && info.email) {
+        const email = info.email.toLowerCase().trim();
+        
+        // Si ya está registrado en User, sus estadísticas ya se calcularon arriba.
+        // Pero si no está registrado, lo acumulamos como cliente invitado (guest)
+        if (!registeredCustomersMap.has(email)) {
+          if (!guestCustomersMap.has(email)) {
+            guestCustomersMap.set(email, {
+              _id: `guest-${email}`,
+              id: `guest-${email}`,
+              firstName: info.firstName || "Cliente",
+              lastName: info.lastName || "Invitado",
+              email: info.email,
+              phone: info.phone || "",
+              createdAt: order.createdAt,
+              orderCount: 1,
+              totalSpent: order.total || 0,
+              isGuest: true
+            });
+          } else {
+            const guest = guestCustomersMap.get(email);
+            guest.orderCount += 1;
+            guest.totalSpent += order.total || 0;
+            if (order.createdAt < guest.createdAt) {
+              guest.createdAt = order.createdAt; // La fecha más antigua
+            }
+          }
+        }
+      }
+    });
+
+    // Combinar ambas fuentes
+    let allCustomersList = [
+      ...Array.from(registeredCustomersMap.values()),
+      ...Array.from(guestCustomersMap.values())
+    ];
+
+    // Aplicar filtro de búsqueda si existe
+    if (search) {
+      const s = search.toLowerCase();
+      allCustomersList = allCustomersList.filter(c => 
+        (c.firstName && c.firstName.toLowerCase().includes(s)) ||
+        (c.lastName && c.lastName.toLowerCase().includes(s)) ||
+        (c.email && c.email.toLowerCase().includes(s)) ||
+        (c.phone && c.phone.toLowerCase().includes(s))
+      );
+    }
+
+    // Ordenar por fecha de creación descendente
+    allCustomersList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    // Paginación en memoria
+    const total = allCustomersList.length;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
+    const paginatedCustomers = allCustomersList.slice(skip, skip + take);
 
     res.json({
       success: true,
-      customers: customersWithStats,
+      customers: paginatedCustomers,
       total,
       totalPages: Math.ceil(total / take),
       currentPage: parseInt(page),
     });
   } catch (error) {
+    console.error("Error al obtener clientes:", error);
     res.status(500).json({
       success: false,
       message: "Error al obtener clientes",
@@ -464,6 +540,57 @@ exports.getAllCustomers = async (req, res) => {
 exports.getCustomerDetails = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Si es un cliente invitado (id empieza con 'guest-')
+    if (id.startsWith("guest-")) {
+      const email = id.replace("guest-", "");
+      
+      // Obtener todas las órdenes no eliminadas de este correo usando búsqueda en JSON
+      const orders = await prisma.order.findMany({
+        where: {
+          isDeleted: false,
+          customerInfo: {
+            path: ['email'],
+            string_contains: email
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { items: true }
+      });
+
+      if (orders.length === 0) {
+        return res.status(404).json({ success: false, message: "Cliente invitado no encontrado" });
+      }
+
+      // Reconstruir los datos a partir del último pedido
+      const latestOrder = orders[0];
+      let info = latestOrder.customerInfo;
+      if (typeof info === 'string') {
+        try {
+          info = JSON.parse(info);
+        } catch (e) {}
+      }
+
+      const totalSpent = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+
+      const customer = {
+        _id: id,
+        id: id,
+        firstName: info.firstName || "Cliente",
+        lastName: info.lastName || "Invitado",
+        email: info.email || email,
+        phone: info.phone || "",
+        createdAt: latestOrder.createdAt,
+        orders,
+        orderCount: orders.length,
+        totalSpent,
+        isGuest: true
+      };
+
+      return res.json({ success: true, customer });
+    }
+
+    // Caso de usuario registrado normal
     const customer = await prisma.user.findUnique({
       where: { id },
       include: {
@@ -476,10 +603,58 @@ exports.getCustomerDetails = async (req, res) => {
     });
 
     if (!customer) {
+      // Intentar buscar si por alguna razón el ID es el correo y es un invitado
+      const email = id;
+      const orders = await prisma.order.findMany({
+        where: {
+          isDeleted: false,
+          customerInfo: {
+            path: ['email'],
+            string_contains: email
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { items: true }
+      });
+
+      if (orders.length > 0) {
+        const latestOrder = orders[0];
+        let info = latestOrder.customerInfo;
+        if (typeof info === 'string') {
+          try {
+            info = JSON.parse(info);
+          } catch (e) {}
+        }
+        const totalSpent = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+        const guestCustomer = {
+          _id: `guest-${email}`,
+          id: `guest-${email}`,
+          firstName: info.firstName || "Cliente",
+          lastName: info.lastName || "Invitado",
+          email: info.email || email,
+          phone: info.phone || "",
+          createdAt: latestOrder.createdAt,
+          orders,
+          orderCount: orders.length,
+          totalSpent,
+          isGuest: true
+        };
+        return res.json({ success: true, customer: guestCustomer });
+      }
+
       return res.status(404).json({ success: false, message: "Cliente no encontrado" });
     }
 
-    res.json({ success: true, customer });
+    const orderCount = customer.orders.length;
+    const totalSpent = customer.orders.reduce((sum, order) => sum + (order.total || 0), 0);
+
+    const customerWithStats = {
+      ...customer,
+      orderCount,
+      totalSpent
+    };
+
+    res.json({ success: true, customer: customerWithStats });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -488,8 +663,21 @@ exports.getCustomerDetails = async (req, res) => {
 exports.getCustomerCartHistory = async (req, res) => {
   try {
     const { customerId } = req.params;
+    
+    let whereClause = { userId: customerId };
+    
+    if (customerId.startsWith("guest-")) {
+      const email = customerId.replace("guest-", "");
+      whereClause = {
+        OR: [
+          { userId: customerId },
+          { userId: email }
+        ]
+      };
+    }
+
     const history = await prisma.cartHistory.findMany({
-      where: { userId: customerId },
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
       take: 50
     });

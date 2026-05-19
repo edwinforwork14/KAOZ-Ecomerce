@@ -68,14 +68,15 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.3em]">
-            © {currentYear} {brandConfig.name}. STRICTLY ENGINEERED IN VENEZUELA.
-          </p>
-          <div className="flex gap-10 text-[9px] text-gray-500 font-bold uppercase tracking-[0.3em]">
-            <button className="hover:text-white transition-colors">Términos</button>
-            <button className="hover:text-white transition-colors">Privacidad</button>
-          </div>
+        <div className="pt-6 border-t border-white/5 flex justify-center items-center w-full">
+          <a 
+            href="https://untitledtechcompany.io" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.3em] hover:text-kaosNeon transition-colors text-center"
+          >
+            Hecho con 💜 por Untitled Tech Company
+          </a>
         </div>
       </div>
     </footer>

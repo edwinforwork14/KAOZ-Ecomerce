@@ -88,7 +88,6 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
               DASHBOARD
             </Link>
           )}
-          <button className="hover:underline text-[10px] uppercase">¿NECESITAS AYUDA?</button>
           
           {user ? (
             <DropdownMenu>
@@ -168,10 +167,6 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
           {/* Right Nav */}
           <div className="flex items-center justify-end gap-6 w-1/3 font-sans">
             <div className="hidden lg:flex gap-8 text-[11px] font-bold uppercase tracking-[0.15em] mr-4">
-              <button onClick={() => handleNavClick("empresas")} className="relative py-1 group hover:text-gray-500 transition-colors">
-                Empresas
-                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-kaosNeon transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-              </button>
               <button onClick={() => handleNavClick("sale")} className="relative py-1 group hover:text-gray-500 transition-colors">
                 Nuevos
                 <span className="absolute bottom-0 left-0 w-full h-[2px] bg-kaosNeon transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>

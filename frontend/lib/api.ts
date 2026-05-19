@@ -118,6 +118,30 @@ export async function getAllCustomers() {
   }
 }
 
+export async function getCustomerDetails(id: string) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/customers/${id}`, { headers })
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error fetching customer details:", error)
+    return { success: false, error }
+  }
+}
+
+export async function getCustomerCartHistory(id: string) {
+  try {
+    const headers = await getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/admin/customers/${id}/cart-history`, { headers })
+    const data = await response.json()
+    return data
+  } catch (error: any) {
+    console.error("Error fetching customer cart history:", error)
+    return { success: false, error }
+  }
+}
+
 // === PRODUCTS ===
 export async function getProducts(params?: any) {
   try {
@@ -743,6 +767,8 @@ export const api = {
   deleteOrder,
   restoreOrder,
   getAllCustomers,
+  getCustomerDetails,
+  getCustomerCartHistory,
   getAdminCategories,
   createCategory,
   updateCategory,
