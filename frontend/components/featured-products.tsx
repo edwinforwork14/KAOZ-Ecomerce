@@ -22,6 +22,7 @@ import {
   ChevronRight,
   Plus,
   Minus,
+  Flame,
 } from "lucide-react"
 import {
   Sheet,
@@ -90,6 +91,7 @@ export default function FeaturedProducts({
   const [showAllColors, setShowAllColors] = useState(false)
   const [filtersLoading, setFiltersLoading] = useState(true)
   const [viewMode, setViewMode] = useState<3 | 4>(3)
+  const [filterNewProducts, setFilterNewProducts] = useState(false)
 
   const loadFilters = useCallback(async () => {
     try {
@@ -148,15 +150,21 @@ export default function FeaturedProducts({
   }
 
   useEffect(() => {
-    if (Array.isArray(categories) && categories.length > 0) {
-      if (!categoryProp || categoryProp === "shop" || categoryProp === "home") {
-        setSelectedCategoryId("")
-      } else {
-        const id = categoryIdFromSlug(categoryProp)
-        if (id) {
-          setSelectedCategoryId(id)
-        } else {
+    if (categoryProp === "nuevos") {
+      setFilterNewProducts(true)
+      setSelectedCategoryId("")
+    } else {
+      setFilterNewProducts(false)
+      if (Array.isArray(categories) && categories.length > 0) {
+        if (!categoryProp || categoryProp === "shop" || categoryProp === "home") {
           setSelectedCategoryId("")
+        } else {
+          const id = categoryIdFromSlug(categoryProp)
+          if (id) {
+            setSelectedCategoryId(id)
+          } else {
+            setSelectedCategoryId("")
+          }
         }
       }
     }
@@ -177,6 +185,7 @@ export default function FeaturedProducts({
         brands: selectedBrands.join(","),
         minPrice: priceRange[0],
         maxPrice: priceRange[1],
+        isNew: filterNewProducts ? "true" : undefined,
       }
 
       console.log("📡 [SHOP] Cargando productos con parámetros:", params)
@@ -201,6 +210,7 @@ export default function FeaturedProducts({
     selectedSizes,
     selectedBrands,
     priceRange,
+    filterNewProducts,
   ])
 
   useEffect(() => {
@@ -213,8 +223,9 @@ export default function FeaturedProducts({
     let count = selectedColors.length + selectedSizes.length + (selectedCategoryId ? 1 : 0)
     if (selectedSubcategory) count++
     if (searchTerm) count++
+    if (filterNewProducts) count++
     return count
-  }, [selectedColors, selectedSizes, selectedCategoryId, selectedSubcategory, searchTerm])
+  }, [selectedColors, selectedSizes, selectedCategoryId, selectedSubcategory, searchTerm, filterNewProducts])
 
   const clearFilters = () => {
     setSelectedColors([])
@@ -225,6 +236,7 @@ export default function FeaturedProducts({
     setSearchTerm("")
     setPriceRange(priceBounds)
     setPriceRangeUI(priceBounds)
+    setFilterNewProducts(false)
   }
 
   const handleSliderChange = (value: number[]) => {
@@ -351,6 +363,29 @@ export default function FeaturedProducts({
             </button>
           )}
         </div>
+      </motion.div>
+
+      {/* Nuevos Drops Toggle */}
+      <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+        <button
+          onClick={() => {
+            setFilterNewProducts(prev => !prev)
+            setCurrentPage(1)
+          }}
+          className={`w-full flex items-center justify-between p-5 rounded-[24px] border transition-all duration-300 ${
+            filterNewProducts 
+              ? "bg-kaosNeon text-black border-kaosNeon shadow-[0_10px_20px_rgba(212,255,0,0.15)] scale-[1.02]" 
+              : "bg-gray-50/80 text-gray-500 hover:bg-gray-100 border-gray-100 shadow-sm"
+          }`}
+        >
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+            <Flame className={`w-4 h-4 transition-transform duration-500 ${filterNewProducts ? "scale-125 animate-pulse text-black" : "text-gray-400"}`} />
+            NUEVOS DROPS
+          </span>
+          <div className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-300 flex items-center ${filterNewProducts ? "bg-black" : "bg-gray-200"}`}>
+            <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-300 ${filterNewProducts ? "translate-x-4" : "translate-x-0"}`} />
+          </div>
+        </button>
       </motion.div>
 
       {/* Categories */}

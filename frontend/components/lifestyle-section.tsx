@@ -2,6 +2,10 @@ import { useState, useEffect } from "react"
 import { api, cleanImageUrl } from "@/lib/api"
 import AnimatedSection from "./animated-section"
 
+interface LifestyleSectionProps {
+  onExploreClick?: (category: string) => void
+}
+
 const DEFAULT_ITEMS = [
   { name: "Acuarela", src: "/nuevo/drop-acuarela.jpg" },
   { name: "Quotes", src: "/nuevo/drop-quotes.jpg" },
@@ -9,7 +13,7 @@ const DEFAULT_ITEMS = [
   { name: "Con Flow", src: "/nuevo/drop-flow.jpg" },
 ]
 
-export default function LifestyleSection() {
+export default function LifestyleSection({ onExploreClick }: LifestyleSectionProps) {
   const [items, setItems] = useState<{ name: string; src: string }[]>(DEFAULT_ITEMS)
 
   useEffect(() => {
@@ -66,7 +70,10 @@ export default function LifestyleSection() {
             <p className="text-base text-gray-600 mb-8 leading-relaxed font-sans font-medium">
               Explora nuestros estampados, tecnologías en telas dry-fit y con protección UV.
             </p>
-            <button className="bg-black text-white px-10 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:bg-kaosNeon hover:text-black transition-all shadow-lg">
+            <button 
+              onClick={() => onExploreClick?.("nuevos")}
+              className="bg-black text-white px-10 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:bg-kaosNeon hover:text-black transition-all shadow-lg"
+            >
               Ver mas
             </button>
           </div>

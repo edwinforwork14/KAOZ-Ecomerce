@@ -51,7 +51,7 @@ import { cn } from "@/lib/utils"
 // =====================
 
 type CurrencyCode = "EUR" | "USD" | "VES"
-type CurrencySymbol = "€" | "$" | "Bs"
+type CurrencySymbol = "â¬" | "$" | "Bs"
 
 interface CurrencySettings {
   symbol: CurrencySymbol
@@ -163,11 +163,11 @@ interface ExchangeRate {
 const shippingTypes = [
   { value: "delivery", label: "Delivery" },
   { value: "pickup", label: "Retiro en Tienda" },
-  { value: "standard", label: "Estándar" },
+  { value: "standard", label: "EstÃ¡ndar" },
 ] as const
 
 function getCurrencySymbolByCode(code: CurrencyCode): CurrencySymbol {
-  if (code === "EUR") return "€"
+  if (code === "EUR") return "â¬"
   if (code === "USD") return "$"
   return "Bs"
 }
@@ -292,8 +292,8 @@ export default function AdminSettingsPage() {
       }
     } catch (error) {
       toast({
-        title: "ERROR DE CONEXIÓN",
-        description: "No se pudo recuperar la configuración de Zernio",
+        title: "ERROR DE CONEXIÃN",
+        description: "No se pudo recuperar la configuraciÃ³n de Zernio",
         variant: "destructive"
       })
     } finally {
@@ -305,7 +305,7 @@ export default function AdminSettingsPage() {
     if (!zernioApiKeyInput.trim()) {
       toast({
         title: "API KEY REQUERIDA",
-        description: "Introduce una API Key válida para establecer el enlace",
+        description: "Introduce una API Key vÃ¡lida para establecer el enlace",
         variant: "destructive"
       })
       return
@@ -319,19 +319,19 @@ export default function AdminSettingsPage() {
         setZernioApiKeyInput("")
         toast({
           title: "ENLACE COMPLETO",
-          description: res.message || "Instagram conectado con éxito"
+          description: res.message || "Instagram conectado con Ã©xito"
         })
       } else {
         toast({
-          title: "FALLO DE CONEXIÓN",
+          title: "FALLO DE CONEXIÃN",
           description: res.message || "No se pudo establecer el enlace",
           variant: "destructive"
         })
       }
     } catch (error: any) {
       toast({
-        title: "ERROR CRÍTICO",
-        description: error.message || "Ocurrió un error al conectar",
+        title: "ERROR CRÃTICO",
+        description: error.message || "OcurriÃ³ un error al conectar",
         variant: "destructive"
       })
     } finally {
@@ -340,7 +340,7 @@ export default function AdminSettingsPage() {
   }
 
   const handleDisconnectZernio = async () => {
-    if (!confirm("¿Estás seguro de que deseas desconectar la integración de Instagram? Se borrarán la API Key y los posts cacheados.")) {
+    if (!confirm("Â¿EstÃ¡s seguro de que deseas desconectar la integraciÃ³n de Instagram? Se borrarÃ¡n la API Key y los posts cacheados.")) {
       return
     }
 
@@ -351,7 +351,7 @@ export default function AdminSettingsPage() {
         setZernioConfig(res.config)
         toast({
           title: "DESCONECTADO",
-          description: "La integración se ha desactivado correctamente"
+          description: "La integraciÃ³n se ha desactivado correctamente"
         })
       }
     } catch (error: any) {
@@ -372,20 +372,20 @@ export default function AdminSettingsPage() {
       if (res?.success && res.config) {
         setZernioConfig(res.config)
         toast({
-          title: "SINCRONIZACIÓN EXITOSA",
+          title: "SINCRONIZACIÃN EXITOSA",
           description: "Publicaciones e historial actualizados"
         })
       } else {
         toast({
-          title: "ERROR DE SINCRONIZACIÓN",
-          description: res.message || "No se pudo forzar la sincronización",
+          title: "ERROR DE SINCRONIZACIÃN",
+          description: res.message || "No se pudo forzar la sincronizaciÃ³n",
           variant: "destructive"
         })
       }
     } catch (error: any) {
       toast({
-        title: "ERROR CRÍTICO",
-        description: error.message || "Falló el protocolo de sincronización",
+        title: "ERROR CRÃTICO",
+        description: error.message || "FallÃ³ el protocolo de sincronizaciÃ³n",
         variant: "destructive"
       })
     } finally {
@@ -400,20 +400,20 @@ export default function AdminSettingsPage() {
       if (res?.success && res.config) {
         setZernioConfig(res.config)
         toast({
-          title: "CONFIGURACIÓN ACTUALIZADA",
-          description: "Los cambios se guardaron y se regeneró la caché de posts"
+          title: "CONFIGURACIÃN ACTUALIZADA",
+          description: "Los cambios se guardaron y se regenerÃ³ la cachÃ© de posts"
         })
       } else {
         toast({
           title: "FALLO AL GUARDAR",
-          description: res.message || "No se pudo actualizar el límite",
+          description: res.message || "No se pudo actualizar el lÃ­mite",
           variant: "destructive"
         })
       }
     } catch (error: any) {
       toast({
         title: "ERROR",
-        description: error.message || "Ocurrió un error al actualizar",
+        description: error.message || "OcurriÃ³ un error al actualizar",
         variant: "destructive"
       })
     } finally {
@@ -470,13 +470,13 @@ export default function AdminSettingsPage() {
         await loadAll()
         setEditingPayment(null)
         setShowPaymentForm(false)
-        toast({ title: "PASARELA ACTIVA", description: "MÉTODO DE PAGO CONFIGURADO" })
+        toast({ title: "PASARELA ACTIVA", description: "MÃTODO DE PAGO CONFIGURADO" })
       }
     } catch (error) { }
   }
 
   const deletePaymentMethod = async (methodId: string) => {
-    if (!confirm("¿DESVINCULAR MÉTODO DE PAGO?")) return
+    if (!confirm("Â¿DESVINCULAR MÃTODO DE PAGO?")) return
     try {
       const result = await api.deletePaymentMethod(methodId)
       if (result?.success) {
@@ -498,13 +498,13 @@ export default function AdminSettingsPage() {
         await loadAll()
         setEditingShipping(null)
         setShowShippingForm(false)
-        toast({ title: "RUTA GUARDADA", description: "LOGÍSTICA ACTUALIZADA" })
+        toast({ title: "RUTA GUARDADA", description: "LOGÃSTICA ACTUALIZADA" })
       }
     } catch (error) { }
   }
 
   const deleteShippingMethod = async (methodId: string) => {
-    if (!confirm("¿ELIMINAR RUTA LOGÍSTICA?")) return
+    if (!confirm("Â¿ELIMINAR RUTA LOGÃSTICA?")) return
     try {
       const result = await api.deleteShippingMethod(methodId)
       if (result?.success) {
@@ -521,7 +521,7 @@ export default function AdminSettingsPage() {
           <div className="w-16 h-1 bg-neutral-100 overflow-hidden">
             <div className="w-full h-full bg-neutral-900 animate-progress-fast"></div>
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] animate-pulse text-neutral-500">Estableciendo Enlaces Críticos...</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] animate-pulse text-neutral-500">Estableciendo Enlaces CrÃ­ticos...</p>
         </div>
       </div>
     )
@@ -538,12 +538,12 @@ export default function AdminSettingsPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-2 bg-neutral-400 animate-pulse"></div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-450">Core de Operaciones • KAOS</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-450">Core de Operaciones â¢ KAOS</span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none text-neutral-900">
-            Configuración
+            ConfiguraciÃ³n
           </h1>
-          <p className="text-[10px] font-bold text-neutral-450 uppercase tracking-widest mt-2">Protocolos de Configuración Maestro</p>
+          <p className="text-[10px] font-bold text-neutral-450 uppercase tracking-widest mt-2">Protocolos de ConfiguraciÃ³n Maestro</p>
         </div>
         <div className="flex items-center gap-6">
            <div className="flex flex-col items-end">
@@ -562,7 +562,7 @@ export default function AdminSettingsPage() {
           {[
             { id: "general", label: "SISTEMA", icon: SettingsIcon },
             { id: "payment", label: "FINANZAS", icon: CreditCard },
-            { id: "shipping", label: "LOGÍSTICA", icon: Truck },
+            { id: "shipping", label: "LOGÃSTICA", icon: Truck },
             { id: "exchange", label: "DIVISAS", icon: DollarSign },
             { id: "gastos", label: "GASTOS", icon: Banknote },
             { id: "business", label: "IDENTIDAD", icon: Building },
@@ -589,8 +589,8 @@ export default function AdminSettingsPage() {
                    <div className="flex items-center gap-3 mb-8">
                       <div className="w-10 h-10 bg-neutral-100 text-neutral-500 border border-neutral-200 flex items-center justify-center"><Zap className="h-5 w-5" /></div>
                       <div>
-                        <h3 className="text-lg font-bold text-neutral-850 uppercase tracking-tight">Parámetros Globales</h3>
-                        <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Configuración Base del Entorno</p>
+                        <h3 className="text-lg font-bold text-neutral-850 uppercase tracking-tight">ParÃ¡metros Globales</h3>
+                        <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">ConfiguraciÃ³n Base del Entorno</p>
                       </div>
                    </div>
 
@@ -611,7 +611,7 @@ export default function AdminSettingsPage() {
                                </SelectTrigger>
                                <SelectContent className="rounded-none border-neutral-200 bg-white">
                                  <SelectItem value="USD" className="font-bold text-[10px] uppercase">USD ($)</SelectItem>
-                                 <SelectItem value="EUR" className="font-bold text-[10px] uppercase">EUR (€)</SelectItem>
+                                 <SelectItem value="EUR" className="font-bold text-[10px] uppercase">EUR (â¬)</SelectItem>
                                  <SelectItem value="VES" className="font-bold text-[10px] uppercase">VES (Bs)</SelectItem>
                                </SelectContent>
                             </Select>
@@ -619,7 +619,7 @@ export default function AdminSettingsPage() {
                          <div className="flex items-center justify-between p-5 bg-neutral-50 border border-neutral-200 shadow-sm">
                             <div className="space-y-1">
                                <Label className="text-[10px] font-bold uppercase tracking-widest text-neutral-750">Dual Pricing (BS)</Label>
-                               <p className="text-[8px] font-bold text-neutral-400 uppercase">Mostrar conversión a moneda local</p>
+                               <p className="text-[8px] font-bold text-neutral-400 uppercase">Mostrar conversiÃ³n a moneda local</p>
                             </div>
                             <Switch 
                               checked={settings.currency?.showBsPrice || false} 
@@ -631,7 +631,7 @@ export default function AdminSettingsPage() {
 
                       <div className="space-y-6">
                          <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-neutral-450">Expiración Etiqueta "NUEVO" (Días)</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-neutral-450">ExpiraciÃ³n Etiqueta "NUEVO" (DÃ­as)</Label>
                             <div className="flex gap-2">
                                <Input 
                                  type="number" 
@@ -655,7 +655,7 @@ export default function AdminSettingsPage() {
                       <div className="w-10 h-10 bg-neutral-850 text-neutral-300 border border-neutral-750 flex items-center justify-center"><ShieldCheck className="h-5 w-5" /></div>
                       <div>
                         <h3 className="text-lg font-bold uppercase tracking-tight text-white">Seguridad de Transacciones</h3>
-                        <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Protocolos de Gestión de Órdenes</p>
+                        <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Protocolos de GestiÃ³n de Ãrdenes</p>
                       </div>
                    </div>
 
@@ -663,7 +663,7 @@ export default function AdminSettingsPage() {
                       <div className="flex items-center justify-between p-6 border border-neutral-800 bg-neutral-950/45 shadow-sm">
                          <div className="space-y-1">
                             <Label className="text-[10px] font-bold uppercase tracking-widest text-white">Borrado de Pedidos</Label>
-                            <p className="text-[8px] font-bold text-neutral-400 uppercase">Habilitar eliminación física de registros</p>
+                            <p className="text-[8px] font-bold text-neutral-400 uppercase">Habilitar eliminaciÃ³n fÃ­sica de registros</p>
                          </div>
                          <Switch 
                            checked={settings.orders?.allowDelete || false} 
@@ -717,8 +717,8 @@ export default function AdminSettingsPage() {
         <TabsContent value="payment" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
            <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-neutral-200 pb-6 gap-4">
               <div>
-                 <h2 className="text-3xl font-black uppercase tracking-tighter text-neutral-900">Gestión de Cobranza</h2>
-                 <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Protocolos de Recepción y Verificación de Fondos</p>
+                 <h2 className="text-3xl font-black uppercase tracking-tighter text-neutral-900">GestiÃ³n de Cobranza</h2>
+                 <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Protocolos de RecepciÃ³n y VerificaciÃ³n de Fondos</p>
               </div>
               <Button 
                 onClick={() => {
@@ -756,7 +756,7 @@ export default function AdminSettingsPage() {
                        </div>
                        
                        <div className="space-y-2 mt-auto">
-                          <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest line-clamp-2">{method.description || "Canal de pago estándar"}</p>
+                          <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest line-clamp-2">{method.description || "Canal de pago estÃ¡ndar"}</p>
                           <div className="flex gap-2">
                              {method.requiresProof && <span className="text-[7px] font-bold border border-neutral-200 px-1.5 py-0.5 uppercase text-neutral-450 bg-neutral-50">REQUIERE COMPROBANTE</span>}
                              {method.hasDiscount && <span className="text-[7px] font-bold bg-neutral-900 text-white px-1.5 py-0.5 uppercase">-{method.discountPercentage}% OFF</span>}
@@ -770,13 +770,13 @@ export default function AdminSettingsPage() {
 
 
         {/* =========================
-            TAB: SHIPPING (LOGÍSTICA)
+            TAB: SHIPPING (LOGÃSTICA)
         ========================== */}
         <TabsContent value="shipping" className="m-0 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
            <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-200 pb-6 gap-4">
               <div>
-                 <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Canales de Distribución</h2>
-                 <p className="text-xs text-zinc-500">Configuración de Rutas, Costos y Puntos de Entrega</p>
+                 <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Canales de DistribuciÃ³n</h2>
+                 <p className="text-xs text-zinc-500">ConfiguraciÃ³n de Rutas, Costos y Puntos de Entrega</p>
               </div>
               <Button 
                 onClick={() => {
@@ -819,7 +819,7 @@ export default function AdminSettingsPage() {
                              <span className="text-sm font-semibold text-zinc-900">{method.additionalCost > 0 ? formatMoney(currencySymbol, method.additionalCost) : "SIN COSTO"}</span>
                           </div>
                           <div className="flex justify-between items-end border-b border-zinc-100 pb-1.5">
-                             <span className="text-xs text-zinc-400 font-medium">Envío Gratis Desde</span>
+                             <span className="text-xs text-zinc-400 font-medium">EnvÃ­o Gratis Desde</span>
                              <span className="text-sm font-semibold text-zinc-900">{formatMoney(currencySymbol, method.freeFrom)}</span>
                           </div>
                        </div>
@@ -890,7 +890,7 @@ export default function AdminSettingsPage() {
               {/* History Graph / List Placeholder */}
               <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-6">
                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-zinc-900">Log de Variación</h3>
+                    <h3 className="text-lg font-bold text-zinc-900">Log de VariaciÃ³n</h3>
                     <Globe className="h-5 w-5 text-zinc-400" />
                  </div>
                  
@@ -924,8 +924,8 @@ export default function AdminSettingsPage() {
                     <div className="flex items-center gap-3 mb-8">
                        <div className="w-10 h-10 bg-zinc-100 text-zinc-700 flex items-center justify-center rounded-lg border border-zinc-200"><Banknote className="h-5 w-5" /></div>
                        <div>
-                          <h3 className="text-lg font-bold text-zinc-900">Categorías de Gastos</h3>
-                          <p className="text-xs text-zinc-400 font-medium">Protocolos de Clasificación de Salidas</p>
+                          <h3 className="text-lg font-bold text-zinc-900">CategorÃ­as de Gastos</h3>
+                          <p className="text-xs text-zinc-400 font-medium">Protocolos de ClasificaciÃ³n de Salidas</p>
                        </div>
                     </div>
 
@@ -933,7 +933,7 @@ export default function AdminSettingsPage() {
                        <div className="flex gap-2">
                           <Input 
                             id="new-category"
-                            placeholder="NUEVA CATEGORÍA (EJ: PUBLICIDAD)"
+                            placeholder="NUEVA CATEGORÃA (EJ: PUBLICIDAD)"
                             className="h-11 rounded-md border-zinc-200 focus:border-zinc-400 font-semibold text-xs tracking-wider bg-white text-black"
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
@@ -985,13 +985,13 @@ export default function AdminSettingsPage() {
 
               <div className="xl:col-span-4 space-y-4">
                  <div className="bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl p-6">
-                    <h4 className="text-sm font-bold text-zinc-900 mb-4">Información de Gastos</h4>
+                    <h4 className="text-sm font-bold text-zinc-900 mb-4">InformaciÃ³n de Gastos</h4>
                     <p className="text-xs text-zinc-500 leading-relaxed font-normal">
-                       Las categorías definidas aquí serán utilizadas para clasificar todos los egresos del sistema en la sección de contabilidad operativa.
+                       Las categorÃ­as definidas aquÃ­ serÃ¡n utilizadas para clasificar todos los egresos del sistema en la secciÃ³n de contabilidad operativa.
                     </p>
                     <div className="mt-8 pt-8 border-t border-zinc-200">
                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-zinc-400 font-semibold">Total Categorías</span>
+                          <span className="text-xs text-zinc-400 font-semibold">Total CategorÃ­as</span>
                           <span className="text-lg font-bold text-zinc-900">{settings.expenseCategories?.length || 0}</span>
                        </div>
                     </div>
@@ -1043,7 +1043,7 @@ export default function AdminSettingsPage() {
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Razón Social / Marca</label>
+                  <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">RazÃ³n Social / Marca</label>
                   <Input
                     value={settings.business?.name || ""}
                     onChange={(e) => setSettings({ ...settings, business: { ...(settings.business || {}), name: e.target.value } })}
@@ -1078,7 +1078,7 @@ export default function AdminSettingsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Teléfono Contacto</label>
+                  <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">TelÃ©fono Contacto</label>
                   <Input
                     value={settings.business?.phone || ""}
                     onChange={(e) => setSettings({ ...settings, business: { ...(settings.business || {}), phone: e.target.value } })}
@@ -1088,7 +1088,7 @@ export default function AdminSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Centro de Operaciones (Dirección)</label>
+                <label className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">Centro de Operaciones (DirecciÃ³n)</label>
                 <Textarea
                   value={settings.business?.address || ""}
                   onChange={(e) => setSettings({ ...settings, business: { ...(settings.business || {}), address: e.target.value } })}
@@ -1131,11 +1131,11 @@ export default function AdminSettingsPage() {
                     </div>
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] font-semibold tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded">CONEXIÓN ONLINE</span>
+                        <span className="text-[10px] font-semibold tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded">CONEXIÃN ONLINE</span>
                         <h3 className="text-lg font-bold text-gray-900">@{zernioConfig.username || "kaos.vzla"}</h3>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        Vinculado a: {zernioConfig.displayName || "KAOS CREATIVE ACCOUNT"} • Sincronizado: {zernioConfig.lastSyncedAt ? new Date(zernioConfig.lastSyncedAt).toLocaleString("es-VE", { timeZone: "America/Caracas" }) : "PENDIENTE"}
+                        Vinculado a: {zernioConfig.displayName || "KAOS CREATIVE ACCOUNT"} â¢ Sincronizado: {zernioConfig.lastSyncedAt ? new Date(zernioConfig.lastSyncedAt).toLocaleString("es-VE", { timeZone: "America/Caracas" }) : "PENDIENTE"}
                       </p>
                     </div>
                   </div>
@@ -1166,8 +1166,8 @@ export default function AdminSettingsPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-semibold tracking-wide bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded">CONEXIÓN OFFLINE</span>
-                        <h3 className="text-lg font-bold text-gray-400">SIN INTEGRACIÓN</h3>
+                        <span className="text-[10px] font-semibold tracking-wide bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded">CONEXIÃN OFFLINE</span>
+                        <h3 className="text-lg font-bold text-gray-400">SIN INTEGRACIÃN</h3>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
                         Vincula la API Key de Zernio para sincronizar publicaciones de Instagram en el Home Page
@@ -1182,7 +1182,7 @@ export default function AdminSettingsPage() {
                 <div className="border border-gray-200 bg-white p-6 rounded-lg shadow-sm space-y-4">
                   <div>
                     <h3 className="text-base font-bold text-gray-900">Establecer Enlace</h3>
-                    <p className="text-xs text-gray-500">Ingresa el protocolo de autenticación de Zernio</p>
+                    <p className="text-xs text-gray-500">Ingresa el protocolo de autenticaciÃ³n de Zernio</p>
                   </div>
                   <div className="flex flex-col md:flex-row gap-3">
                     <div className="flex-1 relative">
@@ -1223,7 +1223,7 @@ export default function AdminSettingsPage() {
                     <div>
                       <h3 className="text-base font-bold text-gray-900">Publicaciones Sincronizadas</h3>
                       <p className="text-xs text-gray-500">
-                        Vista previa de las publicaciones en caché del sistema
+                        Vista previa de las publicaciones en cachÃ© del sistema
                       </p>
                     </div>
                     <div className="flex items-center gap-3 self-end sm:self-auto">
@@ -1265,11 +1265,11 @@ export default function AdminSettingsPage() {
                           />
                           <div className="absolute inset-0 bg-gray-950/95 opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col justify-between p-3 text-white text-xs">
                             <div className="line-clamp-3 leading-tight text-gray-200 font-semibold">
-                              {post.message || "SIN DESCRIPCIÓN"}
+                              {post.message || "SIN DESCRIPCIÃN"}
                             </div>
                             <div className="flex justify-between font-bold text-gray-300 pt-2 border-t border-gray-800">
-                              <span>❤️ {post.likeCount}</span>
-                              <span>💬 {post.commentCount}</span>
+                              <span>â¤ï¸ {post.likeCount}</span>
+                              <span>ð¬ {post.commentCount}</span>
                             </div>
                           </div>
                         </a>
@@ -1277,7 +1277,7 @@ export default function AdminSettingsPage() {
                     </div>
                   ) : (
                     <div className="border border-dashed border-gray-200 p-12 text-center bg-gray-50 rounded-lg">
-                      <span className="text-xs text-gray-400 font-medium">Sin publicaciones en caché. Haz click en sincronizar para cargar tu feed.</span>
+                      <span className="text-xs text-gray-400 font-medium">Sin publicaciones en cachÃ©. Haz click en sincronizar para cargar tu feed.</span>
                     </div>
                   )}
                 </div>
@@ -1288,7 +1288,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-gray-100 text-gray-600 rounded flex items-center justify-center"><Activity className="h-4 w-4" /></div>
                   <div>
-                    <h3 className="text-base font-bold text-gray-900">Terminal de Diagnóstico</h3>
+                    <h3 className="text-base font-bold text-gray-900">Terminal de DiagnÃ³stico</h3>
                     <p className="text-xs text-gray-500">
                       Historial de eventos y logs de la API de Zernio
                     </p>
@@ -1372,7 +1372,7 @@ export default function AdminSettingsPage() {
              <div className="space-y-6">
                 {(!settings.lifestyleDropImages || settings.lifestyleDropImages.length === 0) ? (
                    <div className="border border-dashed border-gray-200 rounded-lg p-12 text-center bg-gray-50">
-                     <span className="text-xs text-gray-400 font-medium block mb-4">No hay imágenes configuradas para la sección nuevo drop.</span>
+                     <span className="text-xs text-gray-400 font-medium block mb-4">No hay imÃ¡genes configuradas para la secciÃ³n nuevo drop.</span>
                      <Button
                        onClick={() => {
                          const defaults = [
@@ -1408,7 +1408,7 @@ export default function AdminSettingsPage() {
                                   toast({ title: "Error", description: "No se pudo subir la imagen", variant: "destructive" })
                                }
                             } catch (err) {
-                               toast({ title: "Error", description: "Fallo la conexión con el servidor", variant: "destructive" })
+                               toast({ title: "Error", description: "Fallo la conexiÃ³n con el servidor", variant: "destructive" })
                             }
                          }
 
@@ -1440,7 +1440,7 @@ export default function AdminSettingsPage() {
                                   </div>
 
                                   <div className="space-y-1">
-                                     <Label className="text-xs font-semibold text-gray-500">Título / Nombre</Label>
+                                     <Label className="text-xs font-semibold text-gray-500">TÃ­tulo / Nombre</Label>
                                      <Input
                                         value={img.name}
                                         onChange={(e) => {
@@ -1477,7 +1477,7 @@ export default function AdminSettingsPage() {
                                         onClick={() => moveItem("up")}
                                         className="h-8 w-8 p-0 rounded-md border-gray-300 hover:border-gray-400 hover:bg-gray-50"
                                      >
-                                        ↑
+                                        â
                                      </Button>
                                      <Button
                                         size="sm"
@@ -1486,7 +1486,7 @@ export default function AdminSettingsPage() {
                                         onClick={() => moveItem("down")}
                                         className="h-8 w-8 p-0 rounded-md border-gray-300 hover:border-gray-400 hover:bg-gray-50"
                                      >
-                                        ↓
+                                        â
                                      </Button>
                                   </div>
                                   <Button
@@ -1537,11 +1537,11 @@ export default function AdminSettingsPage() {
             <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
                <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-1">
-                   <Label className="text-xs font-semibold text-gray-500">Denominación</Label>
+                   <Label className="text-xs font-semibold text-gray-500">DenominaciÃ³n</Label>
                    <Input value={editingPayment.name} onChange={(e) => setEditingPayment({ ...editingPayment, name: e.target.value })} className="rounded-md border-gray-300 font-semibold text-xs bg-white text-gray-900 focus-visible:ring-2 focus-visible:ring-gray-250 focus-visible:border-gray-400" />
                  </div>
                  <div className="space-y-1">
-                   <Label className="text-xs font-semibold text-gray-500">Descripción Pública</Label>
+                   <Label className="text-xs font-semibold text-gray-500">DescripciÃ³n PÃºblica</Label>
                    <Input value={editingPayment.description || ""} onChange={(e) => setEditingPayment({ ...editingPayment, description: e.target.value })} className="rounded-md border-gray-300 font-medium text-xs bg-white text-gray-900 focus-visible:ring-2 focus-visible:ring-gray-250 focus-visible:border-gray-400" />
                  </div>
                </div>
@@ -1556,7 +1556,7 @@ export default function AdminSettingsPage() {
                   </div>
                </div>
                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-gray-500">Instrucciones de Operación</Label>
+                  <Label className="text-xs font-semibold text-gray-500">Instrucciones de OperaciÃ³n</Label>
                   <Textarea value={editingPayment.instructions || ""} onChange={(e) => setEditingPayment({ ...editingPayment, instructions: e.target.value })} className="rounded-md border-gray-300 font-medium text-xs h-24 focus-visible:ring-2 focus-visible:ring-gray-250 focus-visible:border-gray-400" />
                </div>
 
@@ -1572,11 +1572,11 @@ export default function AdminSettingsPage() {
                         <Input value={editingPayment.accountData?.accountHolder || ""} onChange={(e) => setEditingPayment({ ...editingPayment, accountData: { ...editingPayment.accountData, accountHolder: e.target.value } })} className="rounded-md border-gray-300 font-medium text-xs bg-white text-gray-900 focus-visible:ring-2 focus-visible:ring-gray-250 focus-visible:border-gray-400" />
                      </div>
                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold text-gray-500">Cédula / RIF</Label>
+                        <Label className="text-xs font-semibold text-gray-500">CÃ©dula / RIF</Label>
                         <Input value={editingPayment.accountData?.identification || ""} onChange={(e) => setEditingPayment({ ...editingPayment, accountData: { ...editingPayment.accountData, identification: e.target.value } })} className="rounded-md border-gray-300 font-medium text-xs bg-white text-gray-900 focus-visible:ring-2 focus-visible:ring-gray-250 focus-visible:border-gray-400" />
                      </div>
                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold text-gray-500">Número de Cuenta / Teléfono</Label>
+                        <Label className="text-xs font-semibold text-gray-500">NÃºmero de Cuenta / TelÃ©fono</Label>
                         <Input value={editingPayment.accountData?.accountNumber || ""} onChange={(e) => setEditingPayment({ ...editingPayment, accountData: { ...editingPayment.accountData, accountNumber: e.target.value } })} className="rounded-md border-gray-300 font-medium text-xs bg-white text-gray-900 focus-visible:ring-2 focus-visible:ring-gray-250 focus-visible:border-gray-400" />
                      </div>
                   </div>
@@ -1621,18 +1621,29 @@ export default function AdminSettingsPage() {
                    <Input value={editingShipping.name} onChange={(e) => setEditingShipping({ ...editingShipping, name: e.target.value })} className="rounded-md border-gray-300 font-semibold text-xs bg-white text-gray-900 focus-visible:ring-2 focus-visible:ring-gray-250 focus-visible:border-gray-400" />
                  </div>
                  <div className="space-y-1">
-                   <Label className="text-xs font-semibold text-gray-500">Tipo de Distribución</Label>
-                   <Select value={editingShipping.type} onValueChange={(v) => setEditingShipping({ ...editingShipping, type: v as any, requiresAddress: v !== "pickup" })}>
-                     <SelectTrigger className="rounded-md border-gray-300 font-semibold text-xs h-9 bg-white text-gray-900">
-                       <SelectValue />
-                     </SelectTrigger>
-                     <SelectContent className="rounded-md border-gray-250">
-                        <SelectItem value="delivery" className="font-semibold text-xs">ENVÍO A DOMICILIO</SelectItem>
-                        <SelectItem value="pickup" className="font-semibold text-xs">RETIRO EN PUNTO</SelectItem>
-                     </SelectContent>
-                   </Select>
+                   <Label className="text-xs font-semibold text-gray-500">Tipo de DistribuciÃ³n</Label>
+                   <select 
+                     value={editingShipping.type} 
+                     onChange={(e) => setEditingShipping({ ...editingShipping, type: e.target.value as any, requiresAddress: e.target.value !== "pickup" })}
+                     className="w-full rounded-md border border-gray-300 font-semibold text-xs h-9 bg-white text-gray-950 px-3 outline-none focus:border-zinc-450 focus:ring-1 focus:ring-zinc-450"
+                   >
+                     <option value="delivery">ENVÍO A DOMICILIO (DELIVERY)</option>
+                     <option value="pickup">RETIRO EN PUNTO (PICKUP)</option>
+                     <option value="standard">ENVÍO ESTÁNDAR (STANDARD)</option>
+                   </select>
                  </div>
                </div>
+
+                <div className="flex gap-6 py-3 border-y border-gray-100">
+                  <div className="flex items-center gap-2">
+                     <Switch 
+                       checked={!!editingShipping.isActive} 
+                       onCheckedChange={(checked) => setEditingShipping({ ...editingShipping, isActive: checked })} 
+                       className="data-[state=checked]:bg-gray-900" 
+                     />
+                     <Label className="text-xs font-semibold text-gray-700">Ruta Activa</Label>
+                  </div>
+                </div>
                <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-1">
                    <Label className="text-xs font-semibold text-gray-500">Tarifa Base (BS)</Label>
@@ -1644,13 +1655,13 @@ export default function AdminSettingsPage() {
                  </div>
                </div>
                
-               {/* Campos condicionales según el tipo de ruta */}
+               {/* Campos condicionales segÃºn el tipo de ruta */}
                {editingShipping.type === 'pickup' && (
                  <div className="space-y-4 pt-4 border-t border-gray-100 animate-in fade-in duration-200">
                     <h4 className="text-xs font-bold text-gray-750">Datos del Punto de Retiro</h4>
                     <div className="space-y-4">
                        <div className="space-y-1">
-                         <Label className="text-xs font-semibold text-gray-500">Dirección Exacta</Label>
+                         <Label className="text-xs font-semibold text-gray-500">DirecciÃ³n Exacta</Label>
                          <Textarea 
                            value={editingShipping.pickupData?.address || ""} 
                            onChange={(e) => setEditingShipping({ ...editingShipping, pickupData: { ...editingShipping.pickupData, address: e.target.value } })} 
@@ -1669,7 +1680,7 @@ export default function AdminSettingsPage() {
                            />
                          </div>
                          <div className="space-y-1">
-                           <Label className="text-xs font-semibold text-gray-500">Teléfono</Label>
+                           <Label className="text-xs font-semibold text-gray-500">TelÃ©fono</Label>
                            <Input 
                              value={editingShipping.pickupData?.phone || ""} 
                              onChange={(e) => setEditingShipping({ ...editingShipping, pickupData: { ...editingShipping.pickupData, phone: e.target.value } })} 
@@ -1684,7 +1695,7 @@ export default function AdminSettingsPage() {
 
                {editingShipping.type === 'delivery' && (
                  <div className="space-y-4 pt-4 border-t border-gray-100 animate-in fade-in duration-200">
-                    <h4 className="text-xs font-bold text-gray-750">Datos de Envío a Domicilio</h4>
+                    <h4 className="text-xs font-bold text-gray-750">Datos de EnvÃ­o a Domicilio</h4>
                     <div className="space-y-4">
                        <div className="space-y-1">
                          <Label className="text-xs font-semibold text-gray-500">Tiempo Estimado</Label>
@@ -1696,12 +1707,12 @@ export default function AdminSettingsPage() {
                          />
                        </div>
                        <div className="space-y-1">
-                         <Label className="text-xs font-semibold text-gray-500">Descripción / Políticas</Label>
+                         <Label className="text-xs font-semibold text-gray-500">DescripciÃ³n / PolÃ­ticas</Label>
                          <Textarea 
                            value={editingShipping.description || ""} 
                            onChange={(e) => setEditingShipping({ ...editingShipping, description: e.target.value })} 
                            className="rounded-md border-gray-300 font-medium text-xs bg-white text-gray-900 min-h-[60px] focus-visible:ring-2 focus-visible:ring-gray-250 focus-visible:border-gray-400" 
-                           placeholder="Ej: Entregas solo en zonas céntricas..."
+                           placeholder="Ej: Entregas solo en zonas cÃ©ntricas..."
                          />
                        </div>
                     </div>

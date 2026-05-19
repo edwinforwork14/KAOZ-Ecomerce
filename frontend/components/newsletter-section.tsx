@@ -4,10 +4,12 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { MessageCircle, ChevronLeft, ChevronRight } from "lucide-react"
 import { brandConfig } from "@/lib/config"
+import { api } from "@/lib/api"
 import AnimatedSection from "./animated-section"
 
 export default function NewsletterSection() {
   const [currentImage, setCurrentImage] = useState(0)
+  const [whatsappNumber, setWhatsappNumber] = useState(brandConfig.contact.whatsapp)
   
   const featuredImages = [
     "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=800",
@@ -23,8 +25,26 @@ export default function NewsletterSection() {
     return () => clearInterval(timer)
   }, [])
 
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const result = await api.getPublicSettings()
+        if (result.success && result.settings?.whatsapp?.number) {
+          const settingsNumber = result.settings.whatsapp.number.replace(/\D/g, '')
+          const isPlaceholder = settingsNumber.includes('000000')
+          if (settingsNumber && !isPlaceholder) {
+            setWhatsappNumber(result.settings.whatsapp.number)
+          }
+        }
+      } catch (error) {
+        console.error('Error loading settings in uniforms section:', error)
+      }
+    }
+    loadSettings()
+  }, [])
+
   const whatsappMessage = encodeURIComponent("Hola, Kaos! Quiero confeccionar y personalizar mis uniformes con ustedes. Dame más información ℹ️")
-  const whatsappLink = `https://wa.me/${brandConfig.contact.whatsapp}?text=${whatsappMessage}`
+  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
 
   return (
     <AnimatedSection>

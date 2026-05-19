@@ -323,7 +323,7 @@ export default function ProductDetail({ product: initialProduct, onBack, onCheck
                 <button 
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`flex-1 rounded-full h-16 font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 transition-all duration-300 shadow-xl ${
+                  className={`w-full sm:flex-1 rounded-full h-16 shrink-0 font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 transition-all duration-300 shadow-xl ${
                     isOutOfStock
                       ? "bg-gray-100 text-gray-400 border-2 border-gray-200 cursor-not-allowed shadow-none"
                       : isAdded 

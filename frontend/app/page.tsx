@@ -112,7 +112,7 @@ export default function Home() {
           </AnimatedSection>
           
           <AnimatedSection>
-            <LifestyleSection />
+            <LifestyleSection onExploreClick={handleNavClick} />
           </AnimatedSection>
           
           <AnimatedSection>
