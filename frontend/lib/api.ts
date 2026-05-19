@@ -740,6 +740,8 @@ export const api = {
   getFilterOptions,
   getAllOrders,
   updateOrderStatus,
+  deleteOrder,
+  restoreOrder,
   getAllCustomers,
   getAdminCategories,
   createCategory,

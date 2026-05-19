@@ -223,10 +223,10 @@ export default function AdminSidebar() {
             className={cn(
               "w-full flex items-center transition-all duration-300",
               isCollapsed ? "justify-center py-4" : "px-4 py-3 gap-3",
-              isChildActive ? "text-kaosNeon" : "text-white/40 hover:text-white"
+              isChildActive ? "text-white font-bold" : "text-neutral-400 hover:text-white"
             )}
           >
-            <Icon className={cn("h-4 w-4 shrink-0", isChildActive && "text-kaosNeon")} />
+            <Icon className={cn("h-4 w-4 shrink-0", isChildActive ? "text-kaosNeon" : "text-neutral-400")} />
             {!isCollapsed && (
               <>
                 <span className="flex-1 text-left text-[10px] font-black uppercase tracking-widest">{item.title}</span>
@@ -252,11 +252,11 @@ export default function AdminSidebar() {
           "relative flex items-center transition-all duration-300",
           isCollapsed ? "justify-center py-4" : cn(isChild ? "px-4 py-2" : "px-4 py-3", "gap-3"),
           isActive 
-            ? "text-black bg-kaosNeon font-black shadow-[4px_0_0_0_#D9FF00]" 
-            : "text-white/40 hover:text-white hover:bg-white/5 font-bold"
+            ? "text-white bg-white/10 font-bold border-l-2 border-kaosNeon" 
+            : "text-neutral-400 hover:text-white hover:bg-white/5 font-bold"
         )}
       >
-        <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-black")} />
+        <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-kaosNeon" : "text-neutral-400")} />
         {!isCollapsed && (
           <>
             <span className={cn("flex-1 text-[10px] font-black uppercase tracking-widest whitespace-nowrap", isChild && "text-[9px]")}>
@@ -291,7 +291,7 @@ export default function AdminSidebar() {
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 bg-[#0A0A0A] bg-black border-r border-white/5 flex flex-col transition-all duration-500 ease-in-out lg:relative",
+          "fixed inset-y-0 left-0 z-40 bg-[#0B0C0E] border-r border-neutral-900 flex flex-col transition-all duration-500 ease-in-out lg:relative",
           isCollapsed ? "w-20" : "w-64",
           isMobile ? (isOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"
         )}
@@ -329,14 +329,14 @@ export default function AdminSidebar() {
 
           {/* Premium Profile Section */}
           <div className={cn(
-            "flex items-center gap-4 bg-white/5 p-4 border border-white/5 hover:border-white/10 transition-all group cursor-pointer",
+            "flex items-center gap-4 bg-white/[0.02] p-4 border border-white/5 hover:border-white/[0.08] transition-all group cursor-pointer",
             isCollapsed && "justify-center p-2"
           )}>
             <div className="relative">
-              <div className="w-10 h-10 bg-white/10 flex items-center justify-center font-black text-white text-xs border border-white/10 group-hover:border-kaosNeon transition-colors">
+              <div className="w-10 h-10 bg-white/10 flex items-center justify-center font-black text-white text-xs border border-white/10 group-hover:border-neutral-500 transition-colors">
                  {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
               </div>
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-kaosNeon border-2 border-[#0A0A0A] rounded-full"></div>
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-kaosNeon border-2 border-[#0B0C0E] rounded-full"></div>
             </div>
             {!isCollapsed && (
               <div className="flex flex-1 flex-col min-w-0">
@@ -372,7 +372,7 @@ export default function AdminSidebar() {
              className={cn(
                "w-full flex items-center transition-all duration-300",
                isCollapsed ? "justify-center py-4" : "px-4 py-3 gap-3",
-               "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white"
+               "text-neutral-400 hover:text-red-500 bg-transparent hover:bg-red-500/10 border border-transparent hover:border-red-500/20"
              )}
            >
               <LogOut className="h-4 w-4" />
@@ -380,11 +380,11 @@ export default function AdminSidebar() {
            </button>
            
            {!isCollapsed && (
-             <Link href="/" className="flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 transition-all group">
+             <Link href="/" className="flex items-center justify-between px-4 py-3 bg-white/[0.02] border border-white/5 hover:bg-white/[0.08] hover:text-white text-neutral-400 transition-all group">
                 <div className="flex items-center gap-3 text-white/40 group-hover:text-white">
                    <ExternalLink className="h-3 w-3" />
                    <span className="text-[9px] font-black uppercase tracking-widest">Ver Tienda</span>
-                </div>
+                 </div>
                 <div className="w-1 h-1 bg-kaosNeon rounded-full animate-pulse"></div>
              </Link>
            )}

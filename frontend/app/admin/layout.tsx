@@ -39,7 +39,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-[#f4f4f5]">
+    <div className="flex h-screen bg-[#F9FAFB]">
       <Suspense fallback={<div className="w-64 bg-black" />}>
         <AdminSidebar />
       </Suspense>

@@ -296,10 +296,10 @@ export default function ProductsPage() {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-1 bg-black overflow-hidden">
-            <div className="w-full h-full bg-kaosNeon animate-progress-fast"></div>
+          <div className="w-16 h-1 bg-neutral-100 overflow-hidden">
+            <div className="w-full h-full bg-neutral-900 animate-progress-fast"></div>
           </div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Sincronizando Inventario...</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse text-neutral-500">Sincronizando Inventario...</p>
         </div>
       </div>
     )
@@ -314,16 +314,16 @@ export default function ProductsPage() {
   return (
     <div className="p-4 md:p-8 space-y-8 bg-transparent min-h-screen">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-black/10 pb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-neutral-200 pb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Gestión de Activos • KAOS</span>
+            <div className="w-2 h-2 bg-neutral-400 animate-pulse"></div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Gestión de Activos • KAOS</span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
             Catálogo Maestro
           </h1>
-          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest mt-2 flex items-center gap-2">
+          <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-2 flex items-center gap-2">
              <Package className="h-3 w-3" /> {toNumber(totalProducts)} Unidades de Inventario Registradas
           </p>
         </div>
@@ -331,7 +331,7 @@ export default function ProductsPage() {
           <Button
             variant="default"
             onClick={() => router.push("/admin/products/bulk")}
-            className="bg-black text-white hover:bg-kaosNeon hover:text-black border-2 border-black rounded-none h-14 px-8 text-[10px] font-black uppercase tracking-widest transition-all shadow-[4px_4px_0_rgba(0,0,0,0.1)]"
+            className="bg-neutral-900 text-white hover:bg-neutral-800 border border-neutral-300 rounded-none h-14 px-8 text-[10px] font-bold uppercase tracking-widest transition-all"
           >
             <Upload className="h-4 w-4 mr-2" />
             Carga Masiva
@@ -355,7 +355,7 @@ export default function ProductsPage() {
               setGeneralImages([])
               setIsDialogOpen(true)
             }}
-            className="bg-black text-white rounded-none h-14 px-8 text-[10px] font-black uppercase tracking-widest hover:bg-kaosNeon hover:text-black transition-all shadow-[4px_4px_0_rgba(0,0,0,0.2)] active:translate-y-1 active:shadow-none"
+            className="bg-neutral-900 text-white rounded-none h-14 px-8 text-[10px] font-bold uppercase tracking-widest hover:bg-neutral-800 transition-all"
           >
             <Plus className="h-4 w-4 mr-2" />
             Nuevo Producto
@@ -367,39 +367,39 @@ export default function ProductsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
          <div className="lg:col-span-8 flex flex-col md:flex-row gap-4">
             <div className="relative flex-1 group">
-               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 h-4 w-4 group-focus-within:text-kaosNeon transition-colors" />
+               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-300 h-4 w-4 group-focus-within:text-neutral-500 transition-colors" />
                <Input
                   placeholder="FILTRAR POR NOMBRE, SKU O MARCA..."
                   value={search}
                   onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                  className="pl-12 h-14 rounded-none border-black/10 focus:border-black transition-all uppercase text-[10px] font-black tracking-widest bg-black/[0.02]"
+                  className="pl-12 h-14 rounded-none border-neutral-200 focus:border-neutral-400 transition-all uppercase text-[10px] font-bold tracking-widest bg-neutral-50"
                />
             </div>
             <div className="flex gap-2">
                <Select value={itemsPerPage.toString()} onValueChange={(v) => { setItemsPerPage(parseInt(v)); setCurrentPage(1); }}>
-                  <SelectTrigger className="w-[140px] h-14 rounded-none border-black/10 font-black text-[10px] uppercase tracking-widest bg-white">
+                  <SelectTrigger className="w-[140px] h-14 rounded-none border-neutral-200 font-bold text-[10px] uppercase tracking-widest bg-white text-neutral-800">
                      <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-none border-black bg-white text-black dark:bg-slate-900 dark:text-white">
+                  <SelectContent className="rounded-none border-neutral-200 bg-white text-neutral-800">
                      <SelectItem value="12">12 UDS / PÁG</SelectItem>
                      <SelectItem value="24">24 UDS / PÁG</SelectItem>
                      <SelectItem value="48">48 UDS / PÁG</SelectItem>
                   </SelectContent>
                </Select>
-               <div className="flex border border-black/10 bg-white">
-                  <Button variant="ghost" onClick={() => setViewMode("grid")} className={cn("h-14 w-14 rounded-none p-0", viewMode === "grid" && "bg-black text-white")}><LayoutGrid className="h-5 w-5" /></Button>
-                  <Button variant="ghost" onClick={() => setViewMode("list")} className={cn("h-14 w-14 rounded-none p-0", viewMode === "list" && "bg-black text-white")}><List className="h-5 w-5" /></Button>
+               <div className="flex border border-neutral-200 bg-white">
+                  <Button variant="ghost" onClick={() => setViewMode("grid")} className={cn("h-14 w-14 rounded-none p-0 hover:bg-neutral-50", viewMode === "grid" && "bg-neutral-900 text-white hover:bg-neutral-900")}><LayoutGrid className="h-5 w-5" /></Button>
+                  <Button variant="ghost" onClick={() => setViewMode("list")} className={cn("h-14 w-14 rounded-none p-0 hover:bg-neutral-50", viewMode === "list" && "bg-neutral-900 text-white hover:bg-neutral-900")}><List className="h-5 w-5" /></Button>
                </div>
             </div>
          </div>
          <div className="lg:col-span-4 flex gap-4">
-             <div className="flex-1 bg-black text-white p-4 flex flex-col justify-center">
-                <span className="text-[8px] font-black uppercase tracking-widest text-white/40">Valor de Inventario</span>
-                <p className="text-2xl font-black tracking-tighter text-kaosNeon">{currencySymbol}{stats.totalValue.toLocaleString()}</p>
+             <div className="flex-1 bg-white border border-neutral-200 text-neutral-900 p-4 flex flex-col justify-center">
+                <span className="text-[8px] font-bold uppercase tracking-widest text-neutral-400">Valor de Inventario</span>
+                <p className="text-2xl font-black tracking-tighter text-neutral-900">{currencySymbol}{stats.totalValue.toLocaleString()}</p>
              </div>
-            <div className="flex-1 bg-white border border-black/10 p-4 flex flex-col justify-center">
-               <span className="text-[8px] font-black uppercase tracking-widest text-black/20">Alertas de Stock</span>
-               <p className="text-2xl font-black tracking-tighter text-red-500">{stats.criticalItems.toString().padStart(2, '0')} CRÍTICOS</p>
+            <div className="flex-1 bg-white border border-neutral-200 p-4 flex flex-col justify-center">
+               <span className="text-[8px] font-bold uppercase tracking-widest text-neutral-400">Alertas de Stock</span>
+               <p className="text-2xl font-black tracking-tighter text-red-600">{stats.criticalItems.toString().padStart(2, '0')} CRÍTICOS</p>
             </div>
          </div>
       </div>
@@ -416,66 +416,66 @@ export default function ProductsPage() {
              const firstImage = product?.images?.[0]?.url || product?.variants?.[0]?.images?.[0]?.url
 
             return (
-              <div key={product.id || product._id} className="group relative bg-white border border-black/5 hover:border-black transition-all duration-500 flex flex-col">
+              <div key={product.id || product._id} className="group relative bg-white border border-neutral-200 hover:border-neutral-400 shadow-sm transition-all duration-300 flex flex-col">
                 {/* Image Container */}
-                <div className="relative aspect-[4/5] overflow-hidden bg-slate-50">
+                <div className="relative aspect-[4/5] overflow-hidden bg-neutral-50">
                   {firstImage ? (
-                    <img src={firstImage} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" />
+                    <img src={firstImage} alt={product.name} className="w-full h-full object-cover group-hover:scale-102 transition-all duration-500" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-black/5"><ImageIcon className="h-16 w-16" /></div>
+                    <div className="w-full h-full flex items-center justify-center text-neutral-300"><ImageIcon className="h-12 w-12" /></div>
                   )}
                   
                   {/* Badges Overlay */}
                   <div className="absolute top-4 left-4 flex flex-col gap-1">
-                     {product.isNew && <Badge className="rounded-none bg-kaosNeon text-black border-none text-[8px] font-black uppercase tracking-widest">NUEVO</Badge>}
-                     {product.isFeatured && <Badge className="rounded-none bg-black text-white border-none text-[8px] font-black uppercase tracking-widest">HOT</Badge>}
+                     {product.isNew && <Badge className="rounded-none bg-neutral-100 text-neutral-800 border border-neutral-200 text-[8px] font-bold uppercase tracking-widest">NUEVO</Badge>}
+                     {product.isFeatured && <Badge className="rounded-none bg-neutral-900 text-white border-none text-[8px] font-bold uppercase tracking-widest">HOT</Badge>}
                   </div>
 
-                  <div className="absolute bottom-4 left-4 right-4 translate-y-20 group-hover:translate-y-0 transition-all duration-500 flex gap-1 opacity-0 group-hover:opacity-100">
-                     <Button onClick={() => handleEdit(product)} className="flex-1 bg-black text-white rounded-none text-[9px] font-black uppercase h-10 hover:bg-kaosNeon hover:text-black">EDITAR</Button>
+                  <div className="absolute bottom-4 left-4 right-4 translate-y-20 group-hover:translate-y-0 transition-all duration-300 flex gap-1 opacity-0 group-hover:opacity-100">
+                     <Button onClick={() => handleEdit(product)} className="flex-1 bg-neutral-900 text-white rounded-none text-[9px] font-bold uppercase h-10 hover:bg-neutral-800">EDITAR</Button>
                      {settings?.orders?.allowDelete && (
-                       <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" className="w-10 rounded-none bg-red-600 h-10 p-0"><Trash2 className="h-4 w-4" /></Button>
+                       <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" className="w-10 rounded-none bg-red-50 text-red-650 hover:bg-red-100 hover:text-red-700 h-10 p-0 border border-red-150"><Trash2 className="h-4 w-4" /></Button>
                      )}
                   </div>
                 </div>
 
                 {/* Info Container */}
-                <div className="p-5 flex flex-col flex-1 border-t border-black/5 group-hover:border-black transition-colors">
+                <div className="p-5 flex flex-col flex-1 border-t border-neutral-100 group-hover:border-neutral-200 transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                     <span className="text-[9px] font-black text-black/20 uppercase tracking-[0.2em]">{product.brand || 'KAOS URBAN'}</span>
+                     <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-[0.2em]">{product.brand || 'KAOS URBAN'}</span>
                      <span className={cn(
-                        "text-[9px] font-black px-1.5 py-0.5 border",
-                        totalStock === 0 ? "border-red-500 text-red-500" : "border-black/10 text-black/40"
+                        "text-[9px] font-bold px-1.5 py-0.5 border rounded-[2px]",
+                        totalStock === 0 ? "border-red-200 text-red-600 bg-red-50/50" : "border-neutral-200 text-neutral-500 bg-neutral-50"
                      )}>STOCK: {totalStock}</span>
                   </div>
-                  <h3 className="text-[13px] font-black uppercase tracking-tight line-clamp-1 mb-4 flex-1">{product.name}</h3>
+                  <h3 className="text-[13px] font-bold uppercase tracking-tight text-neutral-800 line-clamp-1 mb-4 flex-1">{product.name}</h3>
                   <div className="flex items-center justify-between mt-auto">
-                     <p className="text-xl font-black">${toNumber(product.price).toFixed(0)}</p>
+                     <p className="text-xl font-black text-neutral-900">${toNumber(product.price).toFixed(0)}</p>
                      <div className="flex gap-1">
                         {variantsArr.slice(0, 4).map((v: any, i: number) => (
-                           <div key={i} className="w-2 h-2 border border-black/10" style={{ backgroundColor: v.colorHex }} />
+                           <div key={i} className="w-2.5 h-2.5 border border-neutral-200 rounded-full" style={{ backgroundColor: v.colorHex }} />
                         ))}
                      </div>
                   </div>
                 </div>
               </div>
             )
-          })}
+           })}
         </div>
       ) : (
         /* List Display */
-        <div className="bg-white border border-black">
+        <div className="bg-white border border-neutral-200 shadow-sm overflow-hidden">
           <table className="w-full text-left">
-             <thead className="bg-black text-white border-b border-black">
+             <thead className="bg-neutral-50 text-neutral-700 border-b border-neutral-200">
                 <tr>
-                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest">Elemento de Inventario</th>
-                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest">Estado Catálogo</th>
-                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest">Disponibilidad</th>
-                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest">Valor Unitario</th>
-                   <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-right">Protocolos</th>
+                   <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-widest text-neutral-550">Elemento de Inventario</th>
+                   <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-widest text-neutral-550">Estado Catálogo</th>
+                   <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-widest text-neutral-550">Disponibilidad</th>
+                   <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-widest text-neutral-550">Valor Unitario</th>
+                   <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-widest text-neutral-550 text-right">Protocolos</th>
                 </tr>
              </thead>
-             <tbody className="divide-y divide-black/5">
+             <tbody className="divide-y divide-neutral-200">
                 {products.map((product) => {
                   if (!product) return null
                   const variantsArr = Array.isArray(product?.variants) ? product.variants : []
@@ -483,20 +483,20 @@ export default function ProductsPage() {
                     sum + (Array.isArray(v.sizes) ? v.sizes : []).reduce((s: number, size: any) => s + toNumber(size?.stock, 0), 0), 0
                   )
                   return (
-                    <tr key={product.id || product._id} className="hover:bg-black/[0.01] transition-all group">
+                    <tr key={product.id || product._id} className="hover:bg-neutral-50/50 transition-all group">
                        <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
-                             <div className="w-14 h-14 bg-slate-50 border border-black/5 overflow-hidden flex-shrink-0">
+                             <div className="w-14 h-14 bg-neutral-50 border border-neutral-200 overflow-hidden flex-shrink-0">
                                  {(product.images?.[0]?.url || product.variants?.[0]?.images?.[0]?.url) && (
-                                   <img src={product.images?.[0]?.url || product.variants?.[0]?.images?.[0]?.url} className="w-full h-full object-cover group-hover:scale-110 transition-all" />
+                                   <img src={product.images?.[0]?.url || product.variants?.[0]?.images?.[0]?.url} className="w-full h-full object-cover group-hover:scale-105 transition-all" />
                                  )}
                              </div>
                              <div>
-                                <p className="text-xs font-black uppercase tracking-tight">{product.name}</p>
+                                <p className="text-xs font-bold uppercase tracking-tight text-neutral-800">{product.name}</p>
                                 <div className="flex items-center gap-2">
-                                   <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">{product.brand || 'KAOS'}</p>
-                                   <span className="text-[8px] text-black/20">•</span>
-                                   <p className="text-[9px] font-black text-kaosNeon uppercase tracking-widest">{product.category?.name || 'SIN CAT.'}</p>
+                                   <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">{product.brand || 'KAOS'}</p>
+                                   <span className="text-[8px] text-neutral-300">•</span>
+                                   <p className="text-[9px] font-bold text-neutral-600 uppercase tracking-widest">{product.category?.name || 'SIN CAT.'}</p>
                                 </div>
                              </div>
                           </div>
@@ -506,29 +506,29 @@ export default function ProductsPage() {
                               <Switch 
                                 checked={product.isActive} 
                                 onCheckedChange={() => toggleProductStatus(product)}
-                                className="data-[state=checked]:bg-kaosNeon data-[state=unchecked]:bg-black/10"
+                                className="data-[state=checked]:bg-neutral-900 data-[state=unchecked]:bg-neutral-200"
                               />
                               <Badge className={cn(
-                                "rounded-none border-none text-[8px] font-black uppercase tracking-widest px-2 py-1",
-                                product.isActive ? "bg-kaosNeon text-black" : "bg-black text-white"
+                                "rounded-none border text-[8px] font-bold uppercase tracking-widest px-2 py-0.5",
+                                product.isActive ? "bg-neutral-100 text-neutral-800 border-neutral-200" : "bg-neutral-900 text-white border-transparent"
                               )}>
                                  {product.isActive ? "ACTIVO" : "OFFLINE"}
                               </Badge>
                            </div>
                         </td>
                        <td className="px-6 py-4">
-                          <div className={cn("text-[10px] font-black uppercase tracking-widest", totalStock < 5 ? "text-red-500" : "text-black/40")}>
+                          <div className={cn("text-[10px] font-bold uppercase tracking-widest", totalStock < 5 ? "text-red-500" : "text-neutral-500")}>
                              {totalStock} Unidades
                           </div>
                        </td>
                        <td className="px-6 py-4">
-                          <p className="text-sm font-black">${toNumber(product.price).toFixed(2)}</p>
+                          <p className="text-sm font-black text-neutral-900">${toNumber(product.price).toFixed(2)}</p>
                        </td>
                        <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
-                             <Button onClick={() => handleEdit(product)} variant="outline" size="sm" className="rounded-none border-black/10 hover:border-black h-10 w-10 p-0"><Edit className="h-4 w-4" /></Button>
+                             <Button onClick={() => handleEdit(product)} variant="outline" size="sm" className="rounded-none border-neutral-200 hover:border-neutral-400 hover:bg-neutral-50 h-10 w-10 p-0 text-neutral-600"><Edit className="h-4 w-4" /></Button>
                              {settings?.orders?.allowDelete && (
-                               <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" size="sm" className="rounded-none bg-black text-white h-10 w-10 p-0 hover:bg-red-600"><Trash2 className="h-4 w-4" /></Button>
+                               <Button onClick={() => handleDelete(product.id || product._id)} variant="destructive" size="sm" className="rounded-none bg-red-50 text-red-655 hover:bg-red-100 border border-transparent hover:border-red-150 h-10 w-10 p-0"><Trash2 className="h-4 w-4" /></Button>
                              )}
                           </div>
                        </td>
@@ -541,44 +541,44 @@ export default function ProductsPage() {
       )}
 
       {/* Modern Pagination Section */}
-      <div className="flex flex-col md:flex-row items-center justify-between border-t border-black/10 pt-12 gap-8">
-         <div className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20">
+      <div className="flex flex-col md:flex-row items-center justify-between border-t border-neutral-200 pt-12 gap-8">
+         <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400">
             Página {currentPage} de {totalPages} • Total {stats.totalProducts || totalProducts} Registros
          </div>
          <div className="flex gap-1">
-            <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="rounded-none border-black/10 h-12 w-12 p-0 hover:border-black" variant="outline"><ChevronLeft className="h-5 w-5" /></Button>
+            <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="rounded-none border-neutral-200 h-12 w-12 p-0 hover:border-neutral-400 hover:bg-neutral-50" variant="outline"><ChevronLeft className="h-5 w-5" /></Button>
             {Array.from({ length: totalPages }).map((_, i) => (
-               <Button key={i} onClick={() => handlePageChange(i + 1)} className={cn("rounded-none h-12 w-12 p-0 text-[10px] font-black transition-all", currentPage === i + 1 ? "bg-black text-white" : "bg-white border-black/10 hover:border-black")}>{i + 1}</Button>
+               <Button key={i} onClick={() => handlePageChange(i + 1)} className={cn("rounded-none h-12 w-12 p-0 text-[10px] font-bold transition-all", currentPage === i + 1 ? "bg-neutral-900 text-white hover:bg-neutral-800" : "bg-white border-neutral-200 hover:border-neutral-400 text-neutral-700 hover:bg-neutral-50")}>{i + 1}</Button>
             ))}
-            <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="rounded-none border-black/10 h-12 w-12 p-0 hover:border-black" variant="outline"><ChevronRight className="h-5 w-5" /></Button>
+            <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="rounded-none border-neutral-200 h-12 w-12 p-0 hover:border-neutral-400 hover:bg-neutral-50" variant="outline"><ChevronRight className="h-5 w-5" /></Button>
          </div>
       </div>
 
       {/* Product Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col rounded-none border-black bg-white dark:bg-slate-950 text-black dark:text-white shadow-[20px_20px_0_rgba(0,0,0,1)] dark:shadow-[20px_20px_0_rgba(255,255,255,0.05)] p-0">
-          <DialogHeader className="bg-black text-white p-8">
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden flex flex-col rounded-none border-neutral-200 bg-white text-neutral-900 shadow-2xl p-0">
+          <DialogHeader className="bg-neutral-900 text-white p-8">
             <div className="flex items-center gap-3 mb-2">
-               <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-               <span className="text-[10px] font-black uppercase tracking-widest text-white/40">PROTOCOLO DE REGISTRO • KAOS</span>
+               <div className="w-2 h-2 bg-white animate-pulse"></div>
+               <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">PROTOCOLO DE REGISTRO • KAOS</span>
             </div>
-            <DialogTitle className="text-5xl font-black uppercase tracking-tighter leading-none">
+            <DialogTitle className="text-5xl font-black uppercase tracking-tighter leading-none text-white">
               {editingProduct ? "MODIFICAR ACTIVO" : "NUEVO REGISTRO"}
             </DialogTitle>
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col p-8">
-            <TabsList className="grid w-full grid-cols-4 mb-10 bg-slate-100 dark:bg-white/5 rounded-none p-1">
-              <TabsTrigger value="basic" className="rounded-none font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-kaosNeon dark:data-[state=active]:text-black transition-all">
+            <TabsList className="grid w-full grid-cols-4 mb-10 bg-neutral-100 rounded-none p-1">
+              <TabsTrigger value="basic" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-neutral-900 data-[state=active]:text-white transition-all text-neutral-600">
                 01. Básico
               </TabsTrigger>
-              <TabsTrigger value="pricing" className="rounded-none font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-kaosNeon dark:data-[state=active]:text-black transition-all">
+              <TabsTrigger value="pricing" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-neutral-900 data-[state=active]:text-white transition-all text-neutral-600">
                 02. Precio
               </TabsTrigger>
-              <TabsTrigger value="variants" className="rounded-none font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-kaosNeon dark:data-[state=active]:text-black transition-all">
+              <TabsTrigger value="variants" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-neutral-900 data-[state=active]:text-white transition-all text-neutral-600">
                 03. Variantes
               </TabsTrigger>
-              <TabsTrigger value="images" className="rounded-none font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-kaosNeon dark:data-[state=active]:text-black transition-all">
+              <TabsTrigger value="images" className="rounded-none font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-neutral-900 data-[state=active]:text-white transition-all text-neutral-600">
                 04. Multimedia (Opcional)
               </TabsTrigger>
             </TabsList>
@@ -588,44 +588,44 @@ export default function ProductsPage() {
               <TabsContent value="basic" className="space-y-6 mt-0">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Nombre del Producto</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Nombre del Producto</Label>
                     <Input
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="rounded-none border-black/10 focus:border-black dark:border-white/10 dark:focus:border-kaosNeon font-bold uppercase text-xs bg-transparent text-black dark:text-white"
+                      className="rounded-none border-neutral-200 focus:border-neutral-450 font-bold uppercase text-xs bg-transparent text-neutral-800"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Marca</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Marca</Label>
                     <Input
                       value={formData.brand}
                       onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                      className="rounded-none border-black/10 focus:border-black dark:border-white/10 dark:focus:border-kaosNeon font-bold uppercase text-xs bg-transparent text-black dark:text-white"
+                      className="rounded-none border-neutral-200 focus:border-neutral-450 font-bold uppercase text-xs bg-transparent text-neutral-800"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Descripción Técnica</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Descripción Técnica</Label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={4}
-                    className="rounded-none border-black/10 focus:border-black dark:border-white/10 dark:focus:border-kaosNeon text-xs font-medium bg-transparent text-black dark:text-white"
+                    className="rounded-none border-neutral-200 focus:border-neutral-450 text-xs font-medium bg-transparent text-neutral-800"
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="industrial-stat-label">Categoría</Label>
+                    <Label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Categoría</Label>
                     <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                      <SelectTrigger className="rounded-none border-gray-200 font-bold text-xs uppercase">
+                      <SelectTrigger className="rounded-none border-neutral-200 font-bold text-xs uppercase text-neutral-800 bg-white">
                         <SelectValue placeholder="Seleccionar..." />
                       </SelectTrigger>
-                      <SelectContent className="rounded-none border-black bg-white text-black dark:bg-slate-900 dark:text-white">
+                      <SelectContent className="rounded-none border-neutral-200 bg-white text-neutral-800">
                         {parentCategories.map((cat: any) => (
                           <SelectItem key={cat.id || cat._id} value={cat.id || cat._id} className="text-xs font-bold uppercase">{cat.name}</SelectItem>
                         ))}
@@ -633,43 +633,43 @@ export default function ProductsPage() {
                     </Select>
                   </div>
                   <div className="grid grid-cols-3 gap-6 pt-6 col-span-2">
-                    <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 border border-black/5">
+                    <div className="flex items-center justify-between p-4 bg-neutral-50 border border-neutral-100">
                       <div className="space-y-0.5">
-                        <Label className="text-[10px] font-black uppercase">Activo</Label>
+                        <Label className="text-[10px] font-black uppercase text-neutral-700">Activo</Label>
                         <p className="text-[8px] font-bold opacity-40 uppercase">Venta Directa</p>
                       </div>
                       <Switch 
                         checked={formData.isActive} 
                         onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                        className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-kaosNeon"
+                        className="data-[state=checked]:bg-neutral-900"
                       />
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 border border-black/5">
+                    <div className="flex items-center justify-between p-4 bg-neutral-50 border border-neutral-100">
                       <div className="space-y-0.5">
-                        <Label className="text-[10px] font-black uppercase">Destacado</Label>
+                        <Label className="text-[10px] font-black uppercase text-neutral-700">Destacado</Label>
                         <p className="text-[8px] font-bold opacity-40 uppercase">Sección Hot</p>
                       </div>
                       <Switch 
                         checked={formData.isFeatured} 
                         onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
-                        className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-kaosNeon"
+                        className="data-[state=checked]:bg-neutral-900"
                       />
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 border border-black/5">
+                    <div className="flex items-center justify-between p-4 bg-neutral-50 border border-neutral-100">
                       <div className="space-y-0.5">
-                        <Label className="text-[10px] font-black uppercase">Insignia Nuevo</Label>
+                        <Label className="text-[10px] font-black uppercase text-neutral-700">Insignia Nuevo</Label>
                         <p className="text-[8px] font-bold opacity-40 uppercase">Tag Novedad</p>
                       </div>
                       <Switch 
                         checked={formData.isNew} 
                         onCheckedChange={(checked) => setFormData({ ...formData, isNew: checked })}
-                        className="data-[state=checked]:bg-black dark:data-[state=checked]:bg-kaosNeon"
+                        className="data-[state=checked]:bg-neutral-900"
                       />
                     </div>
                   </div>
 
-                  <div className="col-span-2 space-y-4 pt-4 border-t border-black/5">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40">Tallas del Producto</Label>
+                  <div className="col-span-2 space-y-4 pt-4 border-t border-neutral-150">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Tallas del Producto</Label>
                     <div className="flex flex-wrap gap-2">
                       {["UNIQUE", "S", "M", "L", "XL", "XXL", "38", "40", "42", "44"].map((size) => {
                         const isSelected = formData.globalSizes?.includes(size) || false
@@ -687,10 +687,10 @@ export default function ProductsPage() {
                               setFormData({ ...formData, globalSizes: newSizes })
                             }}
                             className={cn(
-                              "rounded-none h-10 px-4 font-black text-[10px] tracking-widest transition-all",
+                              "rounded-none h-10 px-4 font-bold text-[10px] tracking-widest transition-all",
                               isSelected 
-                                ? "bg-black text-white border-black dark:bg-kaosNeon dark:text-black dark:border-kaosNeon" 
-                                : "bg-transparent border-black/10 hover:border-black"
+                                ? "bg-neutral-900 text-white border-neutral-900 hover:bg-neutral-800" 
+                                : "bg-transparent border-neutral-200 hover:border-neutral-400 text-neutral-600 hover:bg-neutral-50"
                             )}
                           >
                             {size}
@@ -699,7 +699,7 @@ export default function ProductsPage() {
                       })}
                       <Input
                         placeholder="AÑADIR TALLA..."
-                        className="w-32 h-10 rounded-none border-black/10 text-[10px] font-black uppercase placeholder:text-black/20"
+                        className="w-32 h-10 rounded-none border-neutral-200 text-[10px] font-bold uppercase placeholder:text-neutral-300 text-neutral-800"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault()
@@ -720,25 +720,25 @@ export default function ProductsPage() {
               <TabsContent value="pricing" className="space-y-8 mt-0">
                  <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-black/60 dark:text-white/60">Precio Normal con Descuento ({currencySymbol})</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                        className="rounded-none border-black dark:border-kaosNeon h-20 text-4xl font-black bg-transparent text-black dark:text-white"
-                        required
-                      />
+                       <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Precio Normal con Descuento ({currencySymbol})</Label>
+                       <Input
+                         type="number"
+                         step="0.01"
+                         value={formData.price}
+                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                         className="rounded-none border-neutral-200 focus:border-neutral-450 h-20 text-4xl font-black bg-transparent text-neutral-900"
+                         required
+                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="industrial-stat-label">Precio Anterior / Tachado</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={formData.originalPrice}
-                        onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                        className="rounded-none border-gray-200 h-16 text-xl font-bold text-gray-400"
-                      />
+                       <Label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Precio Anterior / Tachado</Label>
+                       <Input
+                         type="number"
+                         step="0.01"
+                         value={formData.originalPrice}
+                         onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+                         className="rounded-none border-neutral-200 focus:border-neutral-450 h-16 text-xl font-bold text-neutral-400 bg-transparent"
+                       />
                     </div>
                  </div>
               </TabsContent>
@@ -756,15 +756,15 @@ export default function ProductsPage() {
               <TabsContent value="images" className="space-y-8 mt-0">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div className="col-span-full">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40 mb-4 block">Multimedia del Producto (Imagen Principal y Galería)</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-4 block">Multimedia del Producto (Imagen Principal y Galería)</Label>
                   </div>
                   {generalImages.map((img, idx) => (
                     <div key={idx} className={cn(
-                      "group relative aspect-square rounded-none border bg-zinc-50 overflow-hidden",
-                      img.isMain ? "border-kaosNeon ring-2 ring-kaosNeon" : "border-black"
+                      "group relative aspect-square rounded-none border bg-neutral-50 overflow-hidden",
+                      img.isMain ? "border-neutral-900 ring-1 ring-neutral-900" : "border-neutral-200"
                     )}>
-                      <img src={cleanImageUrl(img.url)} alt="General" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                      <img src={cleanImageUrl(img.url)} alt="General" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                         <Button 
                           type="button" 
                           variant={img.isMain ? "default" : "outline"}
@@ -776,7 +776,7 @@ export default function ProductsPage() {
                             }))
                             setGeneralImages(newImages)
                           }}
-                          className="rounded-none h-8 px-3 font-black text-[9px] uppercase tracking-widest bg-white text-black hover:bg-kaosNeon hover:text-black border-none"
+                          className="rounded-none h-8 px-3 font-bold text-[9px] uppercase tracking-widest bg-white text-neutral-900 hover:bg-neutral-100 border-none"
                         >
                           {img.isMain ? 'PRINCIPAL' : 'DEFINIR PRINCIPAL'}
                         </Button>
@@ -785,33 +785,33 @@ export default function ProductsPage() {
                           variant="destructive"
                           size="icon"
                           onClick={() => removeGeneralImage(img._id || img.id || idx)}
-                          className="rounded-none h-8 w-8 bg-red-600 hover:bg-red-700 border-none"
+                          className="rounded-none h-8 w-8 bg-red-50 text-red-650 hover:bg-red-100 border-none"
                         >
-                          <Trash2 className="h-4 w-4 text-white" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                       {img.isMain && (
-                        <div className="absolute top-0 left-0 bg-kaosNeon text-black px-2 py-1 text-[8px] font-black uppercase italic">
-                          MAIN ASSET
+                        <div className="absolute top-0 left-0 bg-neutral-900 text-white px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider">
+                          ASSET PRINCIPAL
                         </div>
                       )}
                     </div>
                   ))}
                   
-                  <label className="aspect-square border-2 border-dashed border-black/10 hover:border-kaosNeon flex flex-col items-center justify-center cursor-pointer hover:bg-kaosNeon/5 transition-all group relative overflow-hidden">
-                    <Upload className="h-8 w-8 mb-2 text-black/20 group-hover:text-black transition-colors" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-black/40 group-hover:text-black text-center px-2">Añadir Activos<br/>Multimedia</span>
+                  <label className="aspect-square border-2 border-dashed border-neutral-200 hover:border-neutral-400 flex flex-col items-center justify-center cursor-pointer hover:bg-neutral-50 transition-all group relative overflow-hidden">
+                    <Upload className="h-8 w-8 mb-2 text-neutral-300 group-hover:text-neutral-500 transition-colors" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 group-hover:text-neutral-600 text-center px-2">Añadir Activos<br/>Multimedia</span>
                     <input type="file" multiple accept="image/*" onChange={handleGeneralImageChange} className="hidden" />
                   </label>
                 </div>
               </TabsContent>
             </form>
 
-            <DialogFooter className="bg-slate-50 dark:bg-white/5 p-8 mt-auto flex flex-col md:flex-row gap-4 border-t border-black/10">
-              <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="rounded-none font-black uppercase text-[10px] tracking-[0.2em] h-14 px-8 hover:bg-black hover:text-white transition-all">
+            <DialogFooter className="bg-neutral-50 p-8 mt-auto flex flex-col md:flex-row gap-4 border-t border-neutral-200">
+              <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="rounded-none font-bold uppercase text-[10px] tracking-widest h-14 px-8 border border-neutral-200 hover:bg-neutral-100 hover:text-neutral-900 transition-all text-neutral-600">
                  CANCELAR PROTOCOLO
               </Button>
-              <Button onClick={handleSubmit} disabled={saving} className="rounded-none bg-black text-white dark:bg-kaosNeon dark:text-black h-14 px-12 font-black uppercase text-[10px] tracking-[0.2em] hover:bg-gray-800 dark:hover:bg-white transition-all shadow-[8px_8px_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none">
+              <Button onClick={handleSubmit} disabled={saving} className="rounded-none bg-neutral-900 text-white h-14 px-12 font-bold uppercase text-[10px] tracking-widest hover:bg-neutral-800 transition-all">
                  {saving ? 'PROCESANDO...' : editingProduct ? 'ACTUALIZAR REGISTRO' : 'CONFIRMAR REGISTRO'}
               </Button>
             </DialogFooter>

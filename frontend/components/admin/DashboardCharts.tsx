@@ -17,7 +17,7 @@ import {
   Area
 } from "recharts"
 
-const COLORS = ["#D9FF00", "#111111", "#888888", "#E5E5E5", "#333333"]
+const COLORS = ["#18181B", "#52525B", "#71717A", "#A1A1AA", "#D4D4D8"]
 
 export function CategoryDistributionChart({ data }: { data: any[] }) {
   return (
@@ -29,9 +29,9 @@ export function CategoryDistributionChart({ data }: { data: any[] }) {
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={60}
-            outerRadius={80}
-            paddingAngle={5}
+            innerRadius={65}
+            outerRadius={85}
+            paddingAngle={4}
             dataKey="value"
           >
             {data.map((entry, index) => (
@@ -40,15 +40,16 @@ export function CategoryDistributionChart({ data }: { data: any[] }) {
           </Pie>
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: '#000', 
+              backgroundColor: '#18181B', 
               border: 'none', 
-              borderRadius: '0', 
+              borderRadius: '2px', 
               color: '#fff',
               fontSize: '10px',
-              fontWeight: '900',
-              textTransform: 'uppercase'
+              fontWeight: '700',
+              textTransform: 'uppercase',
+              padding: '8px 12px'
             }}
-            itemStyle={{ color: '#D9FF00' }}
+            itemStyle={{ color: '#fff' }}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -56,8 +57,8 @@ export function CategoryDistributionChart({ data }: { data: any[] }) {
       <div className="mt-4 grid grid-cols-2 gap-2">
         {data.map((item, index) => (
           <div key={item.name} className="flex items-center gap-2">
-            <div className="w-2 h-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-            <span className="text-[9px] font-black uppercase tracking-tighter truncate">{item.name}</span>
+            <div className="w-2.5 h-2.5" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-600 truncate">{item.name}</span>
           </div>
         ))}
       </div>
@@ -76,28 +77,29 @@ export function PaymentMethodsChart({ data }: { data: any[] }) {
             type="category" 
             axisLine={false} 
             tickLine={false}
-            tick={{ fontSize: 10, fontWeight: 900, fill: '#000' }}
+            tick={{ fontSize: 9, fontWeight: 700, fill: '#71717A' }}
             width={80}
           />
           <Tooltip 
-            cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+            cursor={{ fill: 'rgba(0,0,0,0.02)' }}
             contentStyle={{ 
-              backgroundColor: '#000', 
+              backgroundColor: '#18181B', 
               border: 'none', 
-              borderRadius: '0', 
+              borderRadius: '2px', 
               color: '#fff',
               fontSize: '10px',
-              fontWeight: '900'
+              fontWeight: '700',
+              padding: '8px 12px'
             }}
           />
-          <Bar dataKey="total" fill="#D9FF00" radius={[0, 0, 0, 0]} barSize={20} />
+          <Bar dataKey="total" fill="#18181B" radius={[0, 0, 0, 0]} barSize={16} />
         </BarChart>
       </ResponsiveContainer>
     </div>
   )
 }
 
-export function MiniTrendChart({ data, color = "#000" }: { data: number[], color?: string }) {
+export function MiniTrendChart({ data, color = "#71717A" }: { data: number[], color?: string }) {
   const chartData = data.map((val, i) => ({ value: val }))
   return (
     <div className="h-8 w-16">
@@ -107,8 +109,8 @@ export function MiniTrendChart({ data, color = "#000" }: { data: number[], color
             type="monotone" 
             dataKey="value" 
             stroke={color} 
-            fill={color === "#000" ? "rgba(0,0,0,0.05)" : "rgba(217,255,0,0.2)"} 
-            strokeWidth={2}
+            fill="rgba(113,113,122,0.08)" 
+            strokeWidth={1.5}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -123,37 +125,38 @@ export function RevenueTrendChart({ data }: { data: any[] }) {
         <AreaChart data={data}>
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#D9FF00" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#D9FF00" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#71717A" stopOpacity={0.12}/>
+              <stop offset="95%" stopColor="#71717A" stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+          <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(0,0,0,0.04)" />
           <XAxis 
             dataKey="date" 
             axisLine={false} 
             tickLine={false} 
-            tick={{ fontSize: 10, fontWeight: 900 }}
+            tick={{ fontSize: 9, fontWeight: 700, fill: '#71717A' }}
           />
           <YAxis 
             axisLine={false} 
             tickLine={false} 
-            tick={{ fontSize: 10, fontWeight: 900 }}
+            tick={{ fontSize: 9, fontWeight: 700, fill: '#71717A' }}
           />
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: '#000', 
+              backgroundColor: '#18181B', 
               border: 'none', 
-              borderRadius: '0', 
+              borderRadius: '2px', 
               color: '#fff',
               fontSize: '10px',
-              fontWeight: '900'
+              fontWeight: '700',
+              padding: '8px 12px'
             }}
           />
           <Area 
             type="monotone" 
             dataKey="revenue" 
-            stroke="#D9FF00" 
-            strokeWidth={3}
+            stroke="#18181B" 
+            strokeWidth={2}
             fillOpacity={1} 
             fill="url(#colorRevenue)" 
           />
