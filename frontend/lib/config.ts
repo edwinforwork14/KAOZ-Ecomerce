@@ -2,7 +2,7 @@ export const brandConfig = {
   name: "KAOS",
   tagline: "Elegancia y calidad en cada detalle",
   description: "Somos una marca de ropa deportiva y casual que va contigo a todas partes. No hay nada a lo que no nos adaptemos, por eso te invitamos a ser parte de nuestros KAOS",
-  url: "https://kaoz-sport.com", // URL sugerida
+  url: "https://kaoz-sport.com",
   contact: {
     email: "info@kaoz-sport.com",
     phone: "+58 412-8494887",
@@ -32,5 +32,33 @@ export const brandConfig = {
     instagram: "kaos.vzla",
     facebook: "kaos.vzla",
     twitter: "kaos_vzla"
+  },
+  seoExtended: {
+    // Strategic misspelling and phonetic variants for search engines
+    alternateNames: ["KAOZ", "Kaoz clothing", "Kaoz streetwear", "Kaoz brand"],
+    // Full keyword ecosystem for semantic relevance
+    keywordEcosystem: [
+      // Core brand
+      "KAOS", "KAOS clothing", "KAOS streetwear", "KAOS brand", "KAOS apparel",
+      // Misspelling/phonetic variants
+      "Kaoz", "Kaoz clothing", "Kaoz streetwear", "Kaoz ropa", "Kaoz brand", "Kaoz apparel", "Kaoz fashion", "Kaoz urban wear",
+      // Category keywords
+      "streetwear", "urban clothing", "oversized fashion", "moda urbana", "ropa urbana",
+      // Premium positioning
+      "premium streetwear", "hype clothing", "designer apparel", "exclusive drops",
+      // Spanish keywords
+      "ropa deportiva", "moda minimalista", "ropa casual hombre", "ropa casual mujer"
+    ],
+    // Schema.org alternateName for KAOZ disambiguation
+    schemaAlternateName: "KAOZ",
+    // International targeting
+    targetCountries: ["VE", "US", "ES", "CO", "MX"],
+    defaultLanguage: "es",
+    // Geo location
+    businessLocation: {
+      country: "VE",
+      region: "Carabobo",
+      city: "Valencia"
+    }
   }
 }

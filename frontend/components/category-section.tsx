@@ -89,7 +89,7 @@ export default function CategorySection({ onCategoryClick }: CategorySectionProp
             }`}
           >
             <img 
-              alt={category.name} 
+              alt={`${category.name} - KAOS Premium Streetwear Collection | Moda Urbana`} 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
               src={cleanImageUrl(category.image) || "/placeholder.svg"} 
             />

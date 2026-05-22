@@ -15,7 +15,7 @@ export default function Footer() {
           {/* Brand Info */}
           <div className="md:col-span-2 space-y-5">
             <img 
-              alt="KAOS Logo White" 
+              alt="KAOS - Urban Streetwear Brand - Moda Urbana y Ropa Deportiva" 
               className="h-12 object-contain filter invert brightness-200 logo-shadow" 
               src="/kaozlogo1.jpeg" 
             />

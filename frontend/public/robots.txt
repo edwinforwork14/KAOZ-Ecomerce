@@ -1,0 +1,71 @@
+# robots.txt for KAOS - Premium Streetwear
+# https://kaoz-sport.com
+
+User-agent: *
+Allow: /
+Allow: /products/
+Allow: /catalog/
+Allow: /collections/
+Allow: /checkout/
+
+# Disallow admin and auth pages
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /api/
+
+# Disallow search result pages to prevent duplicate content
+Disallow: /*?q=
+Disallow: /*?search=
+Disallow: /*?sort=
+Disallow: /*?page=
+
+# Allow images and assets
+Allow: /images/
+Allow: /*.jpg$
+Allow: /*.png$
+Allow: /*.webp$
+Allow: /*.svg$
+
+# Crawl delay for polite crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://kaoz-sport.com/sitemap.xml
+
+# Google-specific
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /api/
+
+# Google Image
+User-agent: Googlebot-Image
+Allow: /
+Disallow: /admin/
+
+# Google Mobile
+User-agent: Googlebot-Mobile
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /api/
+
+# Yandex
+User-agent: Yandex
+Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /api/
+
+# Baidu
+User-agent: Baiduspider
+Allow: /
+Disallow: /admin/
+Disallow: /auth/

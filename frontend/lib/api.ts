@@ -106,10 +106,21 @@ export async function deleteCategory(id: string, force = false) {
 }
 
 // === CUSTOMERS ===
-export async function getAllCustomers() {
+export async function getAllCustomers(params?: any) {
   try {
+    const queryParams = new URLSearchParams()
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined && params[key] !== null) {
+          queryParams.append(key, params[key])
+        }
+      })
+    }
+    const queryString = queryParams.toString()
+    const url = queryString ? `${API_BASE_URL}/admin/customers?${queryString}` : `${API_BASE_URL}/admin/customers`
+
     const headers = await getAuthHeaders()
-    const response = await fetch(`${API_BASE_URL}/admin/customers`, { headers })
+    const response = await fetch(url, { headers })
     const data = await response.json()
     return data
   } catch (error: any) {

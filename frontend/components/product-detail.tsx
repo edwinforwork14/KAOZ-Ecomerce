@@ -160,7 +160,7 @@ export default function ProductDetail({ product: initialProduct, onBack, onCheck
                         : "opacity-60 hover:opacity-100 hover:scale-105"
                     }`}
                   >
-                    <img src={img.url} className={`w-full h-full object-cover bg-gray-50 ${isOutOfStock ? 'grayscale' : ''}`} alt={`View ${i+1}`} />
+                    <img src={img.url} className={`w-full h-full object-cover bg-gray-50 ${isOutOfStock ? 'grayscale' : ''}`} alt={`${product.name} - KAOS Premium Streetwear - Vista ${i + 1}`} />
                   </button>
                 ))}
               </div>

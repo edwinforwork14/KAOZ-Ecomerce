@@ -12,7 +12,7 @@ export default function Hero({ onExploreClick }: HeroProps) {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img 
-          alt="Hero Background" 
+          alt="KAOS Urban Streetwear Collection - Ropa Urbana Minimalista y Técnica" 
           className="w-full h-full object-cover object-[85%_12%] md:object-[50%_12%]" 
           src="/hero1.png"
         />

@@ -158,7 +158,7 @@ export default function Header({ activeTab, setActiveTab }: HeaderProps) {
           {/* Center Logo */}
           <div className="w-1/3 flex justify-center cursor-pointer" onClick={() => handleNavClick("home")}>
             <img 
-              alt="KAOS Logo" 
+              alt="KAOS - Premium Streetwear & Urban Clothing Brand Logo" 
               className="h-12 object-contain logo-shadow" 
               src="/kaozlogo1.jpeg" 
             />
