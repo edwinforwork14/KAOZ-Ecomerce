@@ -261,7 +261,7 @@ export default function OrdersPage() {
                 <Filter className="h-3 w-3 mr-2 text-neutral-400" />
                 <SelectValue placeholder="Estado Pedido" />
               </SelectTrigger>
-              <SelectContent className="rounded-none border-neutral-200 bg-white text-neutral-850">
+              <SelectContent className="rounded-none border-neutral-200 bg-white text-white">
                 <SelectItem value="all" className="text-[10px] font-bold uppercase">TODOS LOS ESTADOS</SelectItem>
                 <SelectItem value="pending" className="text-[10px] font-bold uppercase">PENDIENTES</SelectItem>
                 <SelectItem value="confirmed" className="text-[10px] font-bold uppercase">CONFIRMADOS</SelectItem>
@@ -277,7 +277,7 @@ export default function OrdersPage() {
                 <CreditCard className="h-3 w-3 mr-2 text-neutral-400" />
                 <SelectValue placeholder="Estado Pago" />
               </SelectTrigger>
-              <SelectContent className="rounded-none border-neutral-200 bg-white text-neutral-850">
+              <SelectContent className="rounded-none border-neutral-200 bg-white text-white">
                 <SelectItem value="all" className="text-[10px] font-bold uppercase">TODOS LOS PAGOS</SelectItem>
                 <SelectItem value="pending" className="text-[10px] font-bold uppercase">PAGO PENDIENTE</SelectItem>
                 <SelectItem value="paid" className="text-[10px] font-bold uppercase">PAGADO</SelectItem>
@@ -472,7 +472,7 @@ export default function OrdersPage() {
                          <SelectTrigger className="h-10 rounded-none border-neutral-200 bg-white font-bold uppercase text-[9px] tracking-widest text-neutral-800">
                            <SelectValue placeholder="Estado Pago" />
                          </SelectTrigger>
-                         <SelectContent className="rounded-none border-neutral-200 bg-white text-neutral-850">
+                         <SelectContent className="rounded-none border-neutral-200 bg-white text-white">
                            <SelectItem value="pending" className="text-[9px] font-bold uppercase">PAGO PENDIENTE</SelectItem>
                            <SelectItem value="paid" className="text-[9px] font-bold uppercase">PAGADO</SelectItem>
                            <SelectItem value="failed" className="text-[9px] font-bold uppercase">FALLIDO</SelectItem>
@@ -490,7 +490,7 @@ export default function OrdersPage() {
                           <SelectTrigger className="h-10 rounded-none border-neutral-200 bg-white font-bold uppercase text-[9px] tracking-widest text-neutral-800">
                             <SelectValue placeholder="Estado Pedido" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-none border-neutral-200 bg-white text-neutral-850">
+                          <SelectContent className="rounded-none border-neutral-200 bg-white text-white">
                             <SelectItem value="pending" className="text-[9px] font-bold uppercase">PENDIENTE</SelectItem>
                             <SelectItem value="confirmed" className="text-[9px] font-bold uppercase">CONFIRMADO</SelectItem>
                             <SelectItem value="processing" className="text-[9px] font-bold uppercase">EN PROCESO</SelectItem>
