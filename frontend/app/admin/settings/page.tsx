@@ -22,6 +22,8 @@ import {
   AlertCircle,
   Loader2,
   ArrowUpRight,
+  ChevronUp,
+  ChevronDown,
   ShieldCheck,
   Zap,
   Globe,
@@ -293,7 +295,7 @@ export default function AdminSettingsPage() {
     } catch (error) {
       toast({
         title: "ERROR DE CONEXIÃN",
-        description: "No se pudo recuperar la configuraciÃ³n de Zernio",
+        description: "No se pudo recuperar la configuracion de Zernio",
         variant: "destructive"
       })
     } finally {
@@ -538,12 +540,12 @@ export default function AdminSettingsPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-2 bg-neutral-400 animate-pulse"></div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-450">Core de Operaciones â¢ KAOS</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-450">Core de Operaciones KAOS</span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none text-neutral-900">
             ConfiguraciÃ³n
           </h1>
-          <p className="text-[10px] font-bold text-neutral-450 uppercase tracking-widest mt-2">Protocolos de ConfiguraciÃ³n Maestro</p>
+          <p className="text-[10px] font-bold text-neutral-450 uppercase tracking-widest mt-2">Protocolos de Configuracion Maestro</p>
         </div>
         <div className="flex items-center gap-6">
            <div className="flex flex-col items-end">
@@ -1352,8 +1354,7 @@ export default function AdminSettingsPage() {
                        ]
                        setSettings({ ...settings, lifestyleDropImages: defaults })
                      }}
-                     variant="outline"
-                     className="rounded-md h-9 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-750 text-xs font-semibold"
+                     className="rounded-md h-9 bg-neutral-700 text-white hover:bg-white hover:text-black border border-neutral-700 text-xs font-semibold transition-all"
                    >
                      Restaurar Predeterminados
                    </Button>
@@ -1431,7 +1432,7 @@ export default function AdminSettingsPage() {
                                      ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 text-xs font-semibold uppercase">Sin Imagen</div>
                                      )}
-                                     <div className="absolute inset-0 bg-gray-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
+                                     <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
                                         <label className="bg-white text-gray-800 text-xs font-semibold px-4 py-2 hover:bg-gray-55 cursor-pointer tracking-normal transition-colors border border-gray-300 rounded-md shadow-sm">
                                            Subir Archivo
                                            <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
@@ -1440,7 +1441,7 @@ export default function AdminSettingsPage() {
                                   </div>
 
                                   <div className="space-y-1">
-                                     <Label className="text-xs font-semibold text-gray-500">TÃ­tulo / Nombre</Label>
+                                     <Label className="text-xs font-semibold text-gray-500">Título / Nombre</Label>
                                      <Input
                                         value={img.name}
                                         onChange={(e) => {
@@ -1475,18 +1476,28 @@ export default function AdminSettingsPage() {
                                         variant="outline"
                                         disabled={idx === 0}
                                         onClick={() => moveItem("up")}
-                                        className="h-8 w-8 p-0 rounded-md border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                                        className={cn(
+                                          "h-8 w-8 p-0 rounded-md border border-gray-300 bg-white text-gray-700 transition-colors",
+                                          idx === 0
+                                            ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                            : "hover:border-gray-400 hover:bg-gray-50"
+                                        )}
                                      >
-                                        â
+                                        <ChevronUp className="h-4 w-4" />
                                      </Button>
                                      <Button
                                         size="sm"
                                         variant="outline"
                                         disabled={idx === (settings.lifestyleDropImages || []).length - 1}
                                         onClick={() => moveItem("down")}
-                                        className="h-8 w-8 p-0 rounded-md border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                                        className={cn(
+                                          "h-8 w-8 p-0 rounded-md border border-gray-300 bg-white text-gray-700 transition-colors",
+                                          idx === (settings.lifestyleDropImages || []).length - 1
+                                            ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                            : "hover:border-gray-400 hover:bg-gray-50"
+                                        )}
                                      >
-                                        â
+                                        <ChevronDown className="h-4 w-4" />
                                      </Button>
                                   </div>
                                   <Button
