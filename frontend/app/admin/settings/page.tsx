@@ -1463,7 +1463,7 @@ export default function AdminSettingsPage() {
                                            updated[idx] = { ...updated[idx], src: e.target.value }
                                            setSettings({ ...settings, lifestyleDropImages: updated })
                                         }}
-                                        className="h-9 rounded-md border-gray-300 text-xs font-mono text-gray-900"
+                                        className="h-9 rounded-md border-gray-300 text-xs font-mono text-white"
                                         placeholder="Ej: https://... o /uploads/..."
                                      />
                                   </div>
