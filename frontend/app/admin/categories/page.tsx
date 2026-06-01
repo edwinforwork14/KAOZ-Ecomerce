@@ -572,7 +572,7 @@ export default function AdminCategoriesPage() {
                     <SelectTrigger className="h-14 rounded-none border-neutral-200 focus:ring-0 uppercase font-bold text-[10px] tracking-widest bg-transparent text-neutral-800">
                       <SelectValue placeholder="RAÍZ (SIN PADRE)" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-none border-neutral-200 bg-white text-white">
+                    <SelectContent className="rounded-none border-neutral-200 bg-white text-white/80">
                       <SelectItem value="none" className="text-[10px] font-bold uppercase">RAÍZ (SIN PADRE)</SelectItem>
                       {parentCategories
                         .filter(cat => cat._id !== editingCategory._id)

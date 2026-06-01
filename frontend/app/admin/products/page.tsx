@@ -380,7 +380,7 @@ export default function ProductsPage() {
                   <SelectTrigger className="w-[140px] h-14 rounded-none border-neutral-200 font-bold text-[10px] uppercase tracking-widest bg-white text-neutral-800">
                      <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-none border-neutral-200 bg-white text-neutral-800">
+                  <SelectContent className="rounded-none border-neutral-200 bg-white text-white/80">
                      <SelectItem value="12">12 UDS / PÁG</SelectItem>
                      <SelectItem value="24">24 UDS / PÁG</SelectItem>
                      <SelectItem value="48">48 UDS / PÁG</SelectItem>
@@ -625,7 +625,7 @@ export default function ProductsPage() {
                       <SelectTrigger className="rounded-none border-neutral-200 font-bold text-xs uppercase text-neutral-800 bg-white">
                         <SelectValue placeholder="Seleccionar..." />
                       </SelectTrigger>
-                      <SelectContent className="rounded-none border-neutral-200 bg-white text-neutral-800">
+                      <SelectContent className="rounded-none border-neutral-200 bg-white text-white">
                         {parentCategories.map((cat: any) => (
                           <SelectItem key={cat.id || cat._id} value={cat.id || cat._id} className="text-xs font-bold uppercase">{cat.name}</SelectItem>
                         ))}
