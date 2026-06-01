@@ -625,7 +625,7 @@ export default function ProductsPage() {
                       <SelectTrigger className="rounded-none border-neutral-200 font-bold text-xs uppercase text-neutral-800 bg-white">
                         <SelectValue placeholder="Seleccionar..." />
                       </SelectTrigger>
-                      <SelectContent className="rounded-none border-neutral-200 bg-white text-neutral-800">
+                      <SelectContent className="rounded-none border-neutral-200 bg-white text-white">
                         {parentCategories.map((cat: any) => (
                           <SelectItem key={cat.id || cat._id} value={cat.id || cat._id} className="text-xs font-bold uppercase">{cat.name}</SelectItem>
                         ))}
