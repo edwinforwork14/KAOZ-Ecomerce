@@ -1449,7 +1449,7 @@ export default function AdminSettingsPage() {
                                            updated[idx] = { ...updated[idx], name: e.target.value }
                                            setSettings({ ...settings, lifestyleDropImages: updated })
                                         }}
-                                        className="h-9 rounded-md border-gray-300 font-semibold text-xs text-gray-900"
+                                        className="h-9 rounded-md border-gray-300 font-semibold text-xs text-white"
                                         placeholder="Ej: Acuarela"
                                      />
                                   </div>
