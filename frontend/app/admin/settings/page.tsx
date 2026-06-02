@@ -543,7 +543,7 @@ export default function AdminSettingsPage() {
             <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-450">Core de Operaciones KAOS</span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none text-neutral-900">
-            ConfiguraciÃ³n
+            Configuracion
           </h1>
           <p className="text-[10px] font-bold text-neutral-450 uppercase tracking-widest mt-2">Protocolos de Configuracion Maestro</p>
         </div>
