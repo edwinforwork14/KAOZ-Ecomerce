@@ -1,80 +1,94 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { 
-  ArrowLeft, 
-  Upload, 
-  FileText, 
-  CheckCircle2, 
-  AlertCircle, 
-  RefreshCw,
-  Zap,
+import { motion, AnimatePresence } from "framer-motion"
+import {
+  ArrowLeft,
+  Upload,
+  Package,
   ShieldCheck,
-  Package
+  CheckCircle2,
+  AlertCircle,
+  Zap,
+  Image as ImageIcon,
+  ListChecks,
+  FileText,
+  Loader2,
+  X,
+  Info,
+  ChevronRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
+import { BulkImageUploader, UploadedImage } from "@/components/admin/BulkImageUploader"
+import { BulkDraftEditor, ProductDraft } from "@/components/admin/BulkDraftEditor"
+import { BulkValidationPanel } from "@/components/admin/BulkValidationPanel"
+
+type Phase = "upload" | "edit" | "validate"
+
+const PHASES: { id: Phase; label: string; icon: any; description: string }[] = [
+  { id: "upload", label: "PRECARGA DE ACTIVOS", icon: ImageIcon, description: "Sube todas las imágenes del lote" },
+  { id: "edit", label: "ASIGNACIÓN DE PRODUCTOS", icon: Package, description: "Configura productos y variantes" },
+  { id: "validate", label: "VALIDACIÓN Y CONFIRMACIÓN", icon: ShieldCheck, description: "Revisa, corrige y publica" }
+]
 
 export default function BulkUploadPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
-  const [jsonInput, setJsonInput] = useState("")
-  const [previewData, setPreviewData] = useState<any[]>([])
 
-  const handlePreview = () => {
-    try {
-      const data = JSON.parse(jsonInput)
-      if (Array.isArray(data)) {
-        setPreviewData(data)
-      } else {
-        toast({
-          title: "ERROR DE FORMATO",
-          description: "EL JSON DEBE SER UN ARRAY DE OBJETOS",
-          variant: "destructive"
-        })
-      }
-    } catch (error) {
-      toast({
-        title: "JSON INVÁLIDO",
-        description: "POR FAVOR REVISA LA SINTAXIS DEL JSON",
-        variant: "destructive"
-      })
-    }
-  }
+  const [currentPhase, setCurrentPhase] = useState<Phase>("upload")
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [categories, setCategories] = useState<any[]>([])
+  const [assets, setAssets] = useState<Record<string, any>>({})
+  const [images, setImages] = useState<UploadedImage[]>([])
+  const [drafts, setDrafts] = useState<ProductDraft[]>([])
 
-  const handleUpload = async () => {
-    if (previewData.length === 0) return
+  // Inicializar sesión al montar
+  useEffect(() => {
+    initSession()
+  }, [])
+
+  const initSession = async () => {
     setLoading(true)
+    setError(null)
     try {
-      // Formatear datos para el backend
-      const formattedData = previewData.map(d => ({
-        name: d.name,
-        description: d.description || "",
-        price: parseFloat(d.price),
-        category: d.category, // El backend debe manejar el ID o nombre
-        brand: d.brand || "KAOS",
-        gender: d.gender || "UNISEX",
-        images: d.images || [],
-        variants: d.variants || [],
-        isFeatured: !!d.isFeatured,
-        isNew: true
-      }))
+      // Cargar categorías en paralelo
+      const [sessionResult, categoriesResult] = await Promise.all([
+        api.initBulkSession(),
+        api.getAdminCategories(false)
+      ])
 
-      const result = await api.bulkUploadProducts(formattedData)
-      if (result.success) {
-        toast({
-          title: "PROTOCOLO COMPLETADO",
-          description: `${result.count} PRODUCTOS SINCRONIZADOS CON EL CORE`,
-        })
-        router.push("/admin/products")
+      if (!sessionResult.success) {
+        throw new Error(sessionResult.error || "Error al iniciar sesión")
       }
+
+      setSessionId(sessionResult.session.id)
+      
+      if (categoriesResult.success) {
+        setCategories(categoriesResult.categories || [])
+      }
+
+      // Intentar cargar sesión existente
+      if (sessionResult.session.assets) {
+        setAssets(sessionResult.session.assets || {})
+      }
+      if (sessionResult.session.drafts) {
+        setDrafts(sessionResult.session.drafts || [])
+        if (sessionResult.session.drafts.length > 0) {
+          setCurrentPhase("edit")
+        }
+      }
+
     } catch (error: any) {
+      console.error("Error initializing bulk session:", error)
+      setError(error.message)
       toast({
-        title: "FALLO DE SINCRONIZACIÓN",
+        title: "ERROR DE SESIÓN",
         description: error.message,
         variant: "destructive"
       })
@@ -83,142 +97,258 @@ export default function BulkUploadPage() {
     }
   }
 
+  const handleImagesChange = useCallback((newImages: UploadedImage[], assetsMap: Record<string, any>) => {
+    setImages(newImages)
+    setAssets(prev => ({ ...prev, ...assetsMap }))
+  }, [])
+
+  const handleDraftsChange = useCallback((newDrafts: ProductDraft[]) => {
+    setDrafts(newDrafts)
+  }, [])
+
+  const handlePhaseComplete = async (phase: Phase) => {
+    if (phase === "upload" && sessionId) {
+      // Recargar la sesión del backend para obtener los drafts generados automáticamente
+      // con las imágenes ya asignadas
+      try {
+        const sessionResult = await api.getBulkSession(sessionId)
+        if (sessionResult.success && sessionResult.session) {
+          const sessionDrafts = sessionResult.session.drafts || []
+          if (sessionDrafts.length > 0) {
+            // Cargar assets actualizados
+            const sessionAssets = sessionResult.session.assets || {}
+            setAssets(sessionAssets)
+            setDrafts(sessionDrafts)
+            
+            // Convertir assets a UploadedImage[] para pasarlos al editor
+            const loadedImages: UploadedImage[] = Object.entries(sessionAssets).map(([key, asset]: [string, any]) => ({
+              id: key,
+              originalName: asset.originalName || key,
+              url: asset.url,
+              size: asset.size || 0,
+              width: asset.width,
+              height: asset.height,
+              status: "ready" as const
+            }))
+            setImages(loadedImages)
+          }
+        }
+      } catch (e) {
+        console.warn("Error fetching updated session:", e)
+      }
+    }
+    
+    const phaseIndex = PHASES.findIndex(p => p.id === phase)
+    if (phaseIndex < PHASES.length - 1) {
+      setCurrentPhase(PHASES[phaseIndex + 1].id)
+    }
+  }
+
+  const handleBack = (phase: Phase) => {
+    const phaseIndex = PHASES.findIndex(p => p.id === phase)
+    if (phaseIndex > 0) {
+      setCurrentPhase(PHASES[phaseIndex - 1].id)
+    }
+  }
+
+  const handleComplete = () => {
+    router.push("/admin/products")
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-1 bg-neutral-100 overflow-hidden">
+            <div className="w-full h-full bg-neutral-900 animate-progress-fast"></div>
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse text-neutral-500">
+            Inicializando Protocolo de Carga Masiva...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 space-y-8 bg-transparent min-h-screen">
+        <div className="border-2 border-red-300 bg-red-50/50 p-12 text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">ERROR DE PROTOCOLO</h2>
+          <p className="text-[10px] font-bold text-red-700 mb-6">{error}</p>
+          <div className="flex gap-4 justify-center">
+            <Button
+              onClick={initSession}
+              className="rounded-none bg-neutral-900 text-white h-14 px-10 text-[10px] font-black uppercase tracking-widest"
+            >
+              REINTENTAR
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/admin/products")}
+              className="rounded-none border-neutral-200 h-14 px-10 text-[10px] font-bold uppercase tracking-widest"
+            >
+              VOLVER AL CATÁLOGO
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="p-4 md:p-8 space-y-8 bg-transparent min-h-screen">
+    <div className="p-4 md:p-8 space-y-8 bg-transparent min-h-screen max-w-[1600px] mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-black/10 pb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-neutral-200 pb-8">
         <div>
-          <button 
+          <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-black/40 hover:text-black mb-4 transition-colors"
+            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-neutral-900 mb-4 transition-colors"
           >
             <ArrowLeft className="w-3 h-3" /> VOLVER AL CATÁLOGO
           </button>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-2 bg-kaosNeon animate-pulse"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Inyección Masiva de Datos • KAOS</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+              Protocolo de Inyección Masiva • KAOS
+            </span>
           </div>
           <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">
-            Bulk Upload
+            Carga Masiva
           </h1>
-          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest mt-2">Protocolo de Carga Industrial</p>
+          <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-2 flex items-center gap-2">
+            <Zap className="h-3 w-3" /> 
+            {PHASES.find(p => p.id === currentPhase)?.description || ""}
+          </p>
         </div>
-        <div className="flex items-center gap-6">
-           <div className="flex flex-col items-end">
-              <span className="text-[9px] font-black uppercase tracking-widest text-black/20">Modo de Carga</span>
-              <span className="text-sm font-black text-kaosNeon">JSON INJECTION</span>
-           </div>
-           <div className="w-12 h-12 bg-black flex items-center justify-center text-kaosNeon">
-              <Zap className="h-6 w-6" />
-           </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-        {/* Editor Side */}
-        <div className="xl:col-span-7 space-y-6">
-          <div className="bg-white border border-black p-8">
-             <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 bg-black text-white flex items-center justify-center"><FileText className="h-5 w-5" /></div>
-                   <div>
-                     <h3 className="text-xl font-black uppercase tracking-tighter">Editor de Manifiesto</h3>
-                     <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">Pega el JSON estructurado aquí</p>
-                   </div>
-                </div>
-                <Button 
-                  variant="outline"
-                  onClick={() => setJsonInput('[\n  {\n    "name": "PRODUCTO EJEMPLO",\n    "price": 29.99,\n    "category": "ID_CATEGORIA",\n    "brand": "KAOS",\n    "gender": "UNISEX"\n  }\n]')}
-                  className="rounded-none border-black text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white"
-                >
-                  CARGAR TEMPLATE
-                </Button>
-             </div>
-
-             <textarea
-               value={jsonInput}
-               onChange={(e) => setJsonInput(e.target.value)}
-               placeholder='[ { "name": "...", "price": ... } ]'
-               className="w-full h-[400px] p-6 font-mono text-xs bg-black text-kaosNeon border-none focus:ring-0 resize-none custom-scrollbar"
-             />
-
-             <div className="mt-6 flex gap-4">
-                <Button 
-                  onClick={handlePreview}
-                  className="flex-1 bg-black text-white rounded-none h-14 font-black uppercase tracking-widest hover:bg-gray-800 transition-all"
-                >
-                  VALIDAR ESTRUCTURA
-                </Button>
-                <Button 
-                  onClick={handleUpload}
-                  disabled={loading || previewData.length === 0}
-                  className="flex-1 bg-kaosNeon text-black rounded-none h-14 font-black uppercase tracking-widest hover:brightness-110 disabled:opacity-50 transition-all"
-                >
-                  {loading ? (
-                    <RefreshCw className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <>
-                      <Upload className="h-5 w-5 mr-2" /> 
-                      INICIAR SINCRONIZACIÓN ({previewData.length})
-                    </>
-                  )}
-                </Button>
-             </div>
-          </div>
-        </div>
-
-        {/* Info/Preview Side */}
-        <div className="xl:col-span-5 space-y-6">
-          <div className="bg-black text-white p-8">
-             <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 bg-kaosNeon text-black flex items-center justify-center"><ShieldCheck className="h-5 w-5" /></div>
-                <div>
-                  <h3 className="text-xl font-black uppercase tracking-tighter text-white">Reglas de Integración</h3>
-                  <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Requisitos del Esquema</p>
-                </div>
-             </div>
-
-             <div className="space-y-4">
-                {[
-                  { field: "name", req: "REQUERIDO", desc: "Nombre comercial del producto" },
-                  { field: "price", req: "REQUERIDO", desc: "Valor numérico (punto decimal)" },
-                  { field: "category", req: "REQUERIDO", desc: "Nombre o ID de la categoría" },
-                  { field: "brand", req: "OPCIONAL", desc: "Default: KAOS" },
-                  { field: "variants", req: "REQUERIDO", desc: "Array de { color, sizes: [{ size, stock }] }" },
-                ].map((rule, i) => (
-                  <div key={i} className="border-b border-white/5 pb-4 last:border-0">
-                    <div className="flex justify-between items-center mb-1">
-                       <code className="text-kaosNeon font-black text-xs">{rule.field}</code>
-                       <span className="text-[8px] font-black px-1.5 py-0.5 bg-white/10 text-white/40 uppercase">{rule.req}</span>
-                    </div>
-                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-tight">{rule.desc}</p>
-                  </div>
-                ))}
-             </div>
-          </div>
-
-          {previewData.length > 0 && (
-            <div className="bg-white border border-black p-8 animate-in fade-in slide-in-from-right-4 duration-500">
-               <div className="flex items-center gap-3 mb-6">
-                  <CheckCircle2 className="h-5 w-5 text-kaosNeon" />
-                  <h3 className="text-xl font-black uppercase tracking-tighter">Preview de Inyección</h3>
-               </div>
-               <div className="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
-                  {previewData.map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 p-3 bg-black/[0.02] border border-black/5">
-                       <div className="w-8 h-8 bg-black flex items-center justify-center text-white"><Package className="w-4 h-4" /></div>
-                       <div className="min-w-0">
-                          <p className="text-[10px] font-black uppercase truncate">{item.name || "PRODUCTO SIN NOMBRE"}</p>
-                          <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">${item.price || "0.00"}</p>
-                       </div>
-                    </div>
-                  ))}
-               </div>
-            </div>
+        <div className="flex items-center gap-4">
+          {sessionId && (
+            <span className="text-[8px] font-bold text-neutral-400 bg-neutral-100 px-2 py-1">
+              SESSION: {sessionId.substring(0, 8)}...
+            </span>
           )}
+          <div className="w-12 h-12 bg-neutral-900 flex items-center justify-center text-kaosNeon">
+            <Upload className="h-6 w-6" />
+          </div>
         </div>
       </div>
-      
+
+      {/* Phase Indicator */}
+      <div className="bg-white border border-neutral-200 p-1">
+        <div className="grid grid-cols-3 gap-1">
+          {PHASES.map((phase, idx) => {
+            const isActive = currentPhase === phase.id
+            const isPast = PHASES.findIndex(p => p.id === currentPhase) > idx
+            const Icon = phase.icon
+            return (
+              <button
+                key={phase.id}
+                onClick={() => {
+                  // Permitir navegación solo a fases pasadas
+                  if (isPast) setCurrentPhase(phase.id)
+                }}
+                disabled={!isPast && !isActive}
+                className={cn(
+                  "flex items-center gap-4 p-4 md:p-6 transition-all duration-300",
+                  isActive && "bg-neutral-900 text-white",
+                  isPast && "bg-kaosNeon/10 text-neutral-600 cursor-pointer hover:bg-kaosNeon/20",
+                  !isActive && !isPast && "bg-neutral-50 text-neutral-300 cursor-not-allowed"
+                )}
+              >
+                <div className={cn(
+                  "w-10 h-10 flex items-center justify-center border-2 text-xs font-black transition-all",
+                  isActive && "border-white text-white",
+                  isPast && "border-neutral-900 text-neutral-900 bg-white",
+                  !isActive && !isPast && "border-neutral-200 text-neutral-300"
+                )}>
+                  {isPast ? <CheckCircle2 className="h-5 w-5" /> : String(idx + 1).padStart(2, '0')}
+                </div>
+                <div className="hidden md:block">
+                  <p className={cn(
+                    "text-[9px] font-black uppercase tracking-widest",
+                    isActive ? "text-white/60" : "text-neutral-400"
+                  )}>
+                    FASE {idx + 1}
+                  </p>
+                  <p className={cn(
+                    "text-sm font-black uppercase tracking-tight",
+                    isActive && "text-white"
+                  )}>
+                    {phase.label}
+                  </p>
+                </div>
+                <div className="md:hidden">
+                  <Icon className={cn(
+                    "h-5 w-5",
+                    isActive && "text-white",
+                    isPast && "text-neutral-900"
+                  )} />
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Session Info Bar */}
+      <div className="bg-white border border-neutral-200 p-4 flex flex-wrap items-center gap-6 text-[9px] font-bold uppercase tracking-widest text-neutral-500">
+        <span className="flex items-center gap-1.5">
+          <Package className="h-3.5 w-3.5" /> {drafts.length} Productos
+        </span>
+        <span className="flex items-center gap-1.5">
+          <ImageIcon className="h-3.5 w-3.5" /> {images.length} Imágenes
+        </span>
+        <span className="flex items-center gap-1.5">
+          <ListChecks className="h-3.5 w-3.5" /> {drafts.filter(d => d.errors.length === 0).length} Válidos
+        </span>
+        <span className="flex items-center gap-1.5">
+          <AlertCircle className="h-3.5 w-3.5" /> {drafts.reduce((s, d) => s + d.errors.length, 0)} Errores
+        </span>
+      </div>
+
+      {/* Phase Content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentPhase}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.2 }}
+        >
+          {currentPhase === "upload" && (
+            <BulkImageUploader
+              sessionId={sessionId}
+              existingAssets={assets}
+              onImagesChange={handleImagesChange}
+              onComplete={() => handlePhaseComplete("upload")}
+            />
+          )}
+
+          {currentPhase === "edit" && (
+            <BulkDraftEditor
+              drafts={drafts}
+              categories={categories}
+              onDraftsChange={handleDraftsChange}
+              onBack={() => handleBack("edit")}
+              onComplete={() => handlePhaseComplete("edit")}
+              assets={assets}
+              allImages={images}
+            />
+          )}
+
+          {currentPhase === "validate" && (
+            <BulkValidationPanel
+              drafts={drafts}
+              sessionId={sessionId}
+              onBack={() => handleBack("validate")}
+              onComplete={handleComplete}
+              onDraftsChange={handleDraftsChange}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
+
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

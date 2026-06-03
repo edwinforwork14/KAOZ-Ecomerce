@@ -101,3 +101,29 @@ exports.publishSession = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+/**
+ * Elimina un asset de la sesión
+ */
+exports.deleteSessionAsset = async (req, res) => {
+  try {
+    const { id, assetKey } = req.params;
+    const session = await bulkProductService.deleteSessionAsset(id, decodeURIComponent(assetKey));
+    res.json({ success: true, session });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Valida la sesión completa y devuelve reporte
+ */
+exports.validateSession = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const validation = await bulkProductService.validateSession(id);
+    res.json({ success: true, ...validation });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

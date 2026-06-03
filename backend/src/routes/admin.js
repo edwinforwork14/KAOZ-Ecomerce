@@ -29,6 +29,8 @@ const {
   getSession,
   updateSessionDrafts,
   publishSession,
+  deleteSessionAsset,
+  validateSession,
 } = require("../controllers/bulkProductController");
 const { protect, authorize } = require("../middleware/auth");
 const { upload, processImage } = require("../middleware/upload");
@@ -75,6 +77,8 @@ router.get("/bulk/:id", getSession);
 router.post("/bulk/:sessionId/upload", upload.array("images", 50), uploadImages);
 router.patch("/bulk/:id/drafts", updateSessionDrafts);
 router.post("/bulk/:id/publish", publishSession);
+router.get("/bulk/:id/validate", validateSession);
+router.delete("/bulk/:id/assets/:assetKey", deleteSessionAsset);
 
 router.delete("/products/:id/images/:imageId", deleteProductImage);
 
