@@ -1,9 +1,7 @@
 const { prisma } = require("../config/database");
 const Settings = require("../services/settingsService");
 const ProductService = require("../services/productService");
-const fs = require("fs");
-const path = require("path");
-const { supabase } = require("../config/supabase");
+const { removeFiles } = require("../config/storage");
 
 // ===== PRODUCTS =====
 exports.createProduct = async (req, res) => {
@@ -85,23 +83,18 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: "Producto no encontrado" });
     }
 
-    // Eliminar imágenes de Supabase Storage
+    // Eliminar imágenes del almacenamiento local
     const allImages = [
       ...product.images,
       ...product.variants.flatMap(v => v.images || [])
     ];
 
     const filesToRemove = allImages
-      .map(image => {
-        // Extraer el nombre del archivo de la URL
-        // https://.../storage/v1/object/public/products/product-123.webp
-        const parts = image.url.split('/');
-        return parts[parts.length - 1];
-      })
-      .filter(filename => filename && filename.startsWith('product-'));
+      .map(image => image.url)
+      .filter(url => url && url.includes('/uploads/products/'));
 
     if (filesToRemove.length > 0) {
-      await supabase.storage.from("products").remove(filesToRemove);
+      await removeFiles(filesToRemove);
     }
 
     await prisma.product.delete({ where: { id } });
@@ -128,13 +121,9 @@ exports.deleteProductImage = async (req, res) => {
       return res.status(404).json({ success: false, message: "Imagen no encontrada" });
     }
 
-    // Eliminar archivo de Supabase Storage
-    if (image.url) {
-      const parts = image.url.split('/');
-      const filename = parts[parts.length - 1];
-      if (filename && filename.startsWith('product-')) {
-        await supabase.storage.from("products").remove([filename]);
-      }
+    // Eliminar archivo del almacenamiento local
+    if (image.url && image.url.includes('/uploads/products/')) {
+      await removeFiles([image.url]);
     }
 
     await prisma.productImage.delete({ where: { id: imageId } });
@@ -162,7 +151,7 @@ exports.uploadVariantImages = async (req, res) => {
 
     if (req.files && req.files.length > 0) {
       const imagesData = req.files.map(file => ({
-        url: file.url, // URL pública de Supabase
+        url: file.url, // URL pública del backend (/uploads/products)
         alt: product.name,
         productId: product.id,
         variantId: variantId

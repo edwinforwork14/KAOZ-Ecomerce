@@ -82,7 +82,7 @@ app.use(morgan("dev"));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Servir archivos estáticos (Nota: Vercel no persiste archivos en /uploads, usar Supabase Storage)
+// Servir archivos estáticos (las imágenes se guardan en /uploads del VPS)
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/images", express.static(path.join(__dirname, "../uploads")));
 

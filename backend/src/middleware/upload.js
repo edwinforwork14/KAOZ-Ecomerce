@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const sharp = require("sharp");
 const heicConvert = require("heic-convert");
-const { supabase } = require("../config/supabase");
+const { uploadFile, getPublicUrl } = require("../config/storage");
 
 // 1. (Eliminado: Creación de directorio local no compatible con Vercel Serverless)
 
@@ -66,26 +66,14 @@ const processImage = async (req, res, next) => {
           .toFormat("webp", { quality: 80 })
           .toBuffer();
 
-        // Subir a Supabase Storage bucket "products"
-        const { data, error } = await supabase.storage
-          .from("products")
-          .upload(filename, buffer, {
-            contentType: "image/webp",
-            upsert: false,
-          });
-
-        if (error) {
-          throw error;
-        }
-
-        // Obtener URL pública
-        const { data: publicData } = supabase.storage
-          .from("products")
-          .getPublicUrl(filename);
+        // Subir a almacenamiento local (bucket lógico "products")
+        await uploadFile(filename, buffer, {
+          contentType: "image/webp",
+        });
 
         // ACTUALIZAMOS la información del archivo en el request
         file.filename = filename;
-        file.url = publicData.publicUrl; // Importante: pasamos directamente la URL completa de Supabase
+        file.url = getPublicUrl(filename); // URL pública servida por el backend (/uploads/products)
         file.mimetype = "image/webp";
         // Ya no necesitamos destination ni path local
       })

@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === "production") {
 const connectDB = async () => {
   try {
     await prisma.$connect();
-    console.log("✅ Supabase (PostgreSQL) via Prisma conectado");
+    console.log("✅ PostgreSQL via Prisma conectado");
   } catch (error) {
     console.error("❌ Error al conectar a la base de datos:", error.message);
     // No salimos del proceso para permitir reintentos o manejo de errores superior
