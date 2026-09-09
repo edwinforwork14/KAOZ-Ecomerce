@@ -1,5 +1,5 @@
 const { prisma } = require("../config/database");
-const { supabase } = require("../config/supabase");
+const { uploadFile, getPublicUrl, removeFiles } = require("../config/storage");
 const sharp = require("sharp");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
@@ -34,7 +34,7 @@ class BulkProductService {
   }
 
   /**
-   * Procesa y sube una imagen a Supabase Storage
+   * Procesa y sube una imagen al almacenamiento local
    */
   async processAndUploadImage(file, sessionId) {
     try {
@@ -59,22 +59,14 @@ class BulkProductService {
         .webp({ quality: 85 })
         .toBuffer();
 
-      const { data, error } = await supabase.storage
-        .from("products")
-        .upload(filePath, buffer, {
-          contentType: "image/webp",
-          cacheControl: "3600"
-        });
-
-      if (error) throw error;
-
-      const { data: publicUrlData } = supabase.storage
-        .from("products")
-        .getPublicUrl(filePath);
+      await uploadFile(filePath, buffer, {
+        contentType: "image/webp",
+        cacheControl: "3600"
+      });
 
       return {
         originalName: file.originalname,
-        url: publicUrlData.publicUrl,
+        url: getPublicUrl(filePath),
         path: filePath,
         size: file.size,
         width: metadata.width,
@@ -414,13 +406,11 @@ class BulkProductService {
     const assets = { ...(session.assets || {}) };
     if (!assets[assetKey]) throw new Error("Asset no encontrado");
 
-    // Eliminar de Supabase
+    // Eliminar del almacenamiento local
     try {
-      await supabase.storage
-        .from("products")
-        .remove([assets[assetKey].path]);
+      await removeFiles([assets[assetKey].path]);
     } catch (e) {
-      console.warn("No se pudo eliminar de Supabase:", e.message);
+      console.warn("No se pudo eliminar la imagen:", e.message);
     }
 
     delete assets[assetKey];

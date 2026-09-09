@@ -55,7 +55,7 @@ router.post(
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, message: "No se subieron archivos" });
     }
-    // processImage ya subió los archivos a Supabase y añadió .url a cada file
+    // processImage ya subió los archivos al storage local y añadió .url a cada file
     res.json({
       success: true,
       url: req.files[0].url,
