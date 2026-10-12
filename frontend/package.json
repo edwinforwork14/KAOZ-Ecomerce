@@ -1,4 +1,4 @@
-```json
+
 {
   "name": "my-v0-project",
   "version": "0.1.0",
@@ -80,4 +80,4 @@
     "typescript": "^5"
   }
 }
-```
+
